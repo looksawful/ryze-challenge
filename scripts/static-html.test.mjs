@@ -15,3 +15,15 @@ test("static export contains meaningful HTML before JavaScript executes", () => 
   assert.match(html, /<summary[^>]*>Start For Free<\/summary>/);
   assert.match(html, /<link[^>]*stylesheet/);
 });
+
+test("static exported asset URLs honor the configured basePath", () => {
+  const html = readFileSync("out/index.html", "utf8");
+  const prefix = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+  for (const file of ["brand-mark.svg", "integration-mark.png"]) {
+    assert.ok(
+      html.includes(`src="${prefix}/${file}"`),
+      `Expected basePath-prefixed asset: ${prefix}/${file}`,
+    );
+  }
+});
