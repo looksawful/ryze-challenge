@@ -76,7 +76,8 @@
 
   @media (width <= 680px) {
     .notice {
-      inset-block-end: clamp(9rem, 20svh, 12rem);
+      inset-block-end: calc(clamp(9rem, 20svh, 12rem) + env(safe-area-inset-bottom));
+      max-block-size: calc(100svh - clamp(9rem, 20svh, 12rem) - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
       padding: 18px;
       border-radius: 16px;
     }

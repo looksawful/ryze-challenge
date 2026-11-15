@@ -35,7 +35,7 @@ export default function CookieConsent() {
   useEffect(() => {
     if (view !== "notice") return;
     function minimizeOnWheel(event: WheelEvent) {
-      if (event.deltaY <= 4 || event.ctrlKey) return;
+      if (event.deltaY <= 4 || event.ctrlKey || panelRef.current?.contains(event.target as Node)) return;
       setView("collapsed");
       setAnnouncement("Cookie settings minimized");
       if (panelRef.current?.contains(document.activeElement))
