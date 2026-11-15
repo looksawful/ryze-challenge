@@ -7,7 +7,7 @@ import styles from "./IntegrationLogos.module.css";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const LOGOS = [
-  { name: "Shopify", src: `${basePath}/platform-logos/shopify.avif` },
+  { name: "Shopify", src: `${basePath}/platform-logos/shopify.png` },
   { name: "Google Ads", src: `${basePath}/platform-logos/google-ads.svg` },
   { name: "Meta Ads", src: `${basePath}/platform-logos/meta.svg` },
   { name: "TikTok", src: `${basePath}/platform-logos/tiktok.svg` },
@@ -33,6 +33,7 @@ export default function IntegrationLogos() {
     let elapsed = 0;
     let previous = 0;
     let lastPaint = 0;
+    let slowFrames = 0;
 
     const setMode = (mode: "static" | "marquee" | "webgl") => {
       host.dataset.mode = mode;
@@ -41,6 +42,7 @@ export default function IntegrationLogos() {
       window.cancelAnimationFrame(frame);
       frame = 0;
       previous = 0;
+      slowFrames = 0;
     };
     const fallback = () => {
       stop();
@@ -61,8 +63,14 @@ export default function IntegrationLogos() {
     const tick = (now: number) => {
       frame = 0;
       if (!renderer || !visible || motion.matches || document.hidden || disposed) return;
-      elapsed += previous ? Math.min((now - previous) / 1000, 0.05) : 0;
+      const delta = previous ? Math.max(0, (now - previous) / 1000) : 0;
       previous = now;
+      slowFrames = delta > 0.3 ? slowFrames + 1 : 0;
+      if (slowFrames >= 3) {
+        fallback();
+        return;
+      }
+      elapsed += delta;
       const fps = window.innerWidth < 768 ? 30 : 60;
       if (now - lastPaint >= 1000 / fps) {
         const [index, progress] = phase();

@@ -31,3 +31,9 @@ test("a WebGL failure uses marquee and reduced motion uses static logos", () => 
   assert.match(css, /@media \(prefers-reduced-motion: no-preference\)/);
   assert.match(css, /@keyframes/);
 });
+
+test("slow WebGL frame delivery falls back to lightweight marquee", () => {
+  const component = read("../src/features/integrations/IntegrationLogos.tsx");
+  assert.match(component, /slowFrames >= 3/);
+  assert.match(component, /if \(slowFrames >= 3\) \{\s*fallback\(\)/);
+});

@@ -21,7 +21,7 @@ test("all static platform logos and brand mark use the configured basePath", () 
   const prefix = process.env.NEXT_PUBLIC_BASE_PATH || "";
   for (const file of [
     "brand-mark.svg",
-    "platform-logos/shopify.avif",
+    "platform-logos/shopify.png",
     "platform-logos/google-ads.svg",
     "platform-logos/meta.svg",
     "platform-logos/tiktok.svg",
