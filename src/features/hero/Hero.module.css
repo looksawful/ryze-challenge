@@ -123,7 +123,8 @@
       padding: 20px 0 27px;
       display: grid;
       grid-template-columns: 190px minmax(0, 1fr);
-      grid-template-rows: 45px 128px 27px 66px minmax(0, 1fr) 52px;
+      /* Keep the no-JS disclosure in an intrinsically sized grid track. */
+      grid-template-rows: 45px 128px 27px 66px minmax(0, 1fr) minmax(55px, max-content);
       grid-template-areas: "brand brand" "headline headline" "lead lead" "description description" ". ." "action integration";
       align-items: start;
     }
@@ -224,8 +225,8 @@
   /* Short landscape windows: keep the primary action above browser controls. */
   @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) and (max-height: 450px) {
     .hero {
-      padding-block: 20px max(60px, env(safe-area-inset-bottom));
-      grid-template-rows: 38px 100px 26px 52px minmax(0, 1fr) 50px;
+      padding-block: 14px max(60px, env(safe-area-inset-bottom));
+      grid-template-rows: 38px 100px 26px 52px minmax(0, 1fr) minmax(55px, max-content);
     }
     .action summary { min-block-size: 50px; }
   }
