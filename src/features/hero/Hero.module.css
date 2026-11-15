@@ -114,4 +114,27 @@
     .lead { margin-block-start: 64px; }
     .description { font-size: 18px; }
   }
+
+  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) {
+    .hero {
+      inline-size: min(580px, calc(100% - 32px));
+      min-block-size: 100svh;
+      margin-inline: auto clamp(16px, 6.6vw, 58px);
+      padding: 20px 0 27px;
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr);
+      grid-template-rows: 45px 128px 27px 66px minmax(0, 1fr) 52px;
+      grid-template-areas: "brand brand" "headline headline" "lead lead" "description description" ". ." "action integration";
+      align-items: start;
+    }
+    .brand { grid-area: brand; justify-self: end; font-size: 32px; }
+    .brandMark { inline-size: 30px; block-size: 30px; }
+    .headline { grid-area: headline; inline-size: min(410px, 100%); margin: 0; font-size: 43px; }
+    .lead { grid-area: lead; margin: 0; font-size: 19px; text-align: left; }
+    .lead br { display: none; }
+    .description { grid-area: description; max-inline-size: 390px; margin: 0; font-size: 18px; text-align: left; }
+    .action { grid-area: action; inline-size: 190px; margin: 0; align-self: end; }
+    .action summary { min-block-size: 52px; font-size: 16px; }
+    .integration { grid-area: integration; inline-size: auto; margin: 0 0 0 45px; justify-self: start; align-self: end; font-size: 15px; }
+  }
 }
