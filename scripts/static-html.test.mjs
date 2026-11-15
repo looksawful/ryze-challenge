@@ -5,7 +5,13 @@ import test from "node:test";
 test("static export contains meaningful HTML before JavaScript executes", () => {
   const html = readFileSync("out/index.html", "utf8");
   assert.match(html, /<main[^>]*data-theme="dusk"[^>]*>/);
-  assert.match(html, /<h1[^>]*>Interface preview<\/h1>/);
-  assert.match(html, /Component design and interaction details are being finalized\./);
+  assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
+  const headline = html.match(/<h1[^>]*>(.*?)<\/h1>/)?.[1].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  assert.equal(headline, "AI autopilot for your Shopify");
+  assert.match(html, /A new way to grow your store\./);
+  assert.match(html, /Paid ads, SEO, AI visibility &amp; CRO\./);
+  assert.match(html, /One AI autopilot built around your business\./);
+  assert.match(html, /Plugs into<br\/>\s*(?:<!-- -->)?any platform/);
+  assert.match(html, /<summary[^>]*>Start For Free<\/summary>/);
   assert.match(html, /<link[^>]*stylesheet/);
 });

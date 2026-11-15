@@ -5,6 +5,7 @@ import test from "node:test";
 const css = () => readFileSync("src/app/foundation.css", "utf8");
 const layout = () => readFileSync("src/app/layout.tsx", "utf8");
 const page = () => readFileSync("src/app/page.tsx", "utf8");
+const hero = () => readFileSync("src/features/hero/Hero.tsx", "utf8");
 
 test("CSS layers use the approved ordered cascade", () => {
   assert.match(css(), /@layer reset, tokens, base, layouts, components, states, utilities;/);
@@ -23,7 +24,8 @@ test("motion is opted into, not enabled by default", () => {
 
 test("server-rendered page has accessible static content in dusk", () => {
   assert.match(layout(), /import\s+["']\.\/foundation\.css["']/);
-  assert.match(page(), /data-theme="dusk"/);
-  assert.match(page(), /<h1>/);
+  assert.match(page(), /<Hero/);
+  assert.match(hero(), /data-theme="dusk"/);
+  assert.match(hero(), /<h1\b/);
   assert.doesNotMatch(page(), /"use client"/);
 });
