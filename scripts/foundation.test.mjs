@@ -54,3 +54,11 @@ test("CookieConsent supports wheel/minus collapse, reopen and accessible setting
   assert.match(consent, /Customize cookie settings/);
   assert.match(consent, /Save preferences/);
 });
+
+test("compact cookie card uses intrinsic wrapping and a content-aware width", () => {
+  const styles = readFileSync("src/features/consent/CookieConsent.module.css", "utf8");
+  assert.match(styles, /flex-wrap:\s*wrap/);
+  assert.match(styles, /\.choices\s*>\s*\*\s*\{[^}]*flex:/s);
+  assert.match(styles, /inline-size:\s*min\(20rem,/);
+  assert.match(styles, /@media\s*\(height\s*<=\s*32rem\)/);
+});
