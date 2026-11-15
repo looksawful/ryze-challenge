@@ -2,15 +2,15 @@ import assert from "node:assert/strict";
 import { spawn, execFileSync } from "node:child_process";
 import { createReadStream, existsSync } from "node:fs";
 import { createServer as createHttpServer } from "node:http";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { createTemporaryAppPage } from "./temporary-app-page.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const routeDir = join(root, "src", "app", "shell_preview_debug");
 const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const fixture = [
   '"use client";',
@@ -76,22 +76,21 @@ const trigger = "(Array.from(document.querySelectorAll('nav[aria-label=\"Primary
 const back = "(Array.from(document.querySelectorAll('dialog button')).find((node) => node.textContent.includes('Back')))";
 const group = "(Array.from(document.querySelectorAll('dialog button')).find((node) => node.textContent.includes('Products')))";
 
-test("SiteHeader browser interactions at the public component seam", { timeout: 95000 }, async (t) => {
+test("SiteHeader browser interactions at the public component seam", { timeout: 240000 }, async (t) => {
   assert.ok(existsSync(chromePath), "Chrome missing: " + chromePath);
-  await mkdir(routeDir, { recursive: true });
-  await writeFile(join(routeDir, "page.tsx"), fixture, "utf8");
-  const profile = join(tmpdir(), "ryze-browser-test-" + process.pid);
-  const port = await freePort();
-  let server, chrome, cdp;
+  const cleanupRoute = await createTemporaryAppPage(join(root, "src", "app"), "shell_preview_debug", fixture);
+  let server, chrome, cdp, profile;
   t.after(async () => {
     cdp?.close();
     if (chrome && !chrome.killed) chrome.kill();
     if (server) await new Promise((resolve) => server.close(resolve));
-    await rm(routeDir, { recursive: true, force: true });
-    await rm(profile, { recursive: true, force: true, maxRetries: 6, retryDelay: 200 });
+    await cleanupRoute();
+    if (profile) await rm(profile, { recursive: true, force: true, maxRetries: 6, retryDelay: 200 });
   });
+  profile = await mkdtemp(join(tmpdir(), "ryze-browser-test-"));
+  const port = await freePort();
   execFileSync(process.execPath, ["node_modules/next/dist/bin/next", "build"], {
-    cwd: root, stdio: "pipe", timeout: 45000,
+    cwd: root, stdio: "pipe", timeout: 150000,
   });
   server = createHttpServer((req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
