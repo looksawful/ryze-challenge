@@ -1,8 +1,10 @@
 export default function Page() {
   return (
-    <main id="main">
-      <h1>Interface preview</h1>
-      <p>Content will be added after component specifications are approved.</p>
+    <main className="preview" data-theme="dusk" id="main">
+      <div className="wrapper flow">
+        <h1>Interface preview</h1>
+        <p>Component design and interaction details are being finalized.</p>
+      </div>
     </main>
   );
 }

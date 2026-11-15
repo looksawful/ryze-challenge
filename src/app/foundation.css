@@ -1,0 +1,91 @@
+@layer reset, tokens, base, layouts, components, states, utilities;
+
+@layer reset {
+  :where(*, *::before, *::after) { box-sizing: border-box; }
+  :where(body, h1, h2, h3, p) { margin: 0; }
+  :where(img, picture, video, svg) { display: block; max-inline-size: 100%; block-size: auto; }
+  :where(button, input, select, textarea) { font: inherit; }
+}
+
+@layer tokens {
+  :root {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    --font-body: "Segoe UI", system-ui, sans-serif;
+    --accent-current: #ff5af1;
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+    --gutter: clamp(1rem, 4vw, 3rem);
+    --content-width: 72rem;
+    --text-measure: 65ch;
+    --motion-duration: 0ms;
+  }
+
+  [data-theme="dawn"] {
+    color-scheme: light;
+    --color-background: #fff;
+    --color-foreground: #111;
+    --color-surface: #f4f4f4;
+    --color-muted: #4d4d4d;
+    --color-border: #b5b5b5;
+  }
+
+  [data-theme="dusk"] {
+    color-scheme: dark;
+    --color-background: #090909;
+    --color-foreground: #f7f7f7;
+    --color-surface: #1d1d1d;
+    --color-muted: #c3c3c3;
+    --color-border: #777;
+  }
+}
+
+@layer base {
+  html { font-family: var(--font-body); }
+  body { background: var(--color-background, #fff); color: var(--color-foreground, #111); }
+  :where(h1, h2, h3) { text-wrap: balance; }
+  :where(p) { text-wrap: pretty; }
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+}
+
+@layer layouts {
+  .wrapper { inline-size: min(calc(100% - 2 * var(--gutter)), var(--content-width)); margin-inline: auto; }
+  .flow > * + * { margin-block-start: var(--flow-space, 1em); }
+  .stack { display: flex; flex-direction: column; gap: var(--stack-gap, var(--space-4)); }
+  .cluster { display: flex; align-items: center; flex-wrap: wrap; gap: var(--gap, var(--space-4)); }
+  .repel { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--gap, var(--space-4)); }
+  .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--gap, var(--space-8)); }
+  .pile { display: grid; }
+  .pile > * { grid-area: 1 / 1; }
+  .auto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--column-min, 16rem)), 1fr)); gap: var(--gap, var(--space-6)); }
+  .reel { display: flex; gap: var(--gap, var(--space-4)); overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: inline proximity; scrollbar-width: none; }
+  .reel::-webkit-scrollbar { display: none; }
+  .reel > * { flex: 0 0 min(85%, var(--item-width, 24rem)); scroll-snap-align: start; }
+}
+
+@layer components {
+  .preview { min-block-size: 100svh; display: grid; align-content: center; padding-block: var(--space-12); background: var(--color-background); color: var(--color-foreground); }
+  .preview h1 { font-size: clamp(2.5rem, 7vw, 7rem); line-height: 1.03; letter-spacing: -0.05em; }
+  .preview p { max-inline-size: var(--text-measure); color: var(--color-muted); font-size: 1rem; line-height: 1.5; }
+}
+
+@layer states {
+  :where([data-state="disabled"]) { cursor: not-allowed; }
+}
+
+@layer utilities {
+  .visually-hidden { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @layer tokens {
+    :root { --motion-duration: 240ms; }
+  }
+}
