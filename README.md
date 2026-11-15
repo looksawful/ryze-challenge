@@ -10,6 +10,8 @@ Install dependencies with `npm install`, then run `npm run dev`. Project verific
 
 - `CONTEXT.md` — terminology and project boundaries.
 - `docs/spec/hero.md` — agreed behavior.
+- `docs/spec/visual-system.md` — CSS and theme contract.
+- `docs/spec/component-inventory.md` — first-screen component boundaries.
 - `docs/spec/open-questions.md` — design choices not yet approved.
 - `docs/adr/` — architectural decisions.
 - `AGENTS.md` — contributor and agent rules.
