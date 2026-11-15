@@ -1,24 +1,19 @@
 # Issue tracker
 
-GitHub Issues is this repository's sole task tracker. Keep one issue per independently verifiable outcome; search existing issues before creating another. Do not maintain parallel task lists in documents or external systems.
+GitHub Issues is the sole task tracker. Search existing issues before creating one; keep one issue per independently verifiable outcome. Do not maintain parallel task lists.
 
-## Writing issues
+## Intake and tickets
 
-- **Human report:** state the problem or goal, expected result, and reproduction steps or evidence when applicable. Ask for missing information instead of inventing it.
-- **Agent-ready ticket:** state **What to build**, observable **Acceptance criteria**, **Blocked by** (issue links or "None"), and **Verification** (commands or manual checks). Link a parent issue when one exists.
-- Record approved decisions in the canonical issue description or linked specification. Keep unresolved choices explicitly open. Avoid speculative implementation detail that will go stale.
-- New requests start as `needs-triage`. Use `ready-for-agent` only when the scope is approved and actionable; use `ready-for-human` for required human decisions or review. Apply exactly one state role from `triage-labels.md`.
-- Execute only approved scope. Link each implementation PR to its issue. Close issues only after verification and accepted review. External PRs are not an incoming triage surface by default.
+- **Human report:** state the problem or goal, expected result, and reproduction steps or evidence when relevant. Classify the request as a bug or enhancement.
+- **Triage:** use `/triage` for incoming requests. Check for existing implementations and prior decisions; verify claims where possible. Record established facts and specific missing questions for `needs-info`.
+- **Agent brief:** after triage, put the actionable brief in the issue description or one comment: **What to build**, observable **Acceptance criteria**, **Blocked by** (linked issues or “None”), and **Verification** (commands or manual checks). Link a parent issue when relevant. For `ready-for-human`, say what requires human judgment.
+- **Generated tickets:** `/to-tickets` produces already-specified tickets; do not triage them again. Preserve their dependency links. `ready-for-agent` means an approved, self-contained brief, **not** permission to start while blockers remain. Work on the unblocked frontier only.
+- **States:** use exactly one of the five state labels from `triage-labels.md`; incoming requests begin at `needs-triage`. Keep bug/enhancement classification in the issue text without introducing new required labels.
 
-## Writing comments
+## Execution and updates
 
-Post only material updates: **Decision**, **Implemented**, **Verified**, or **Blocked**. One short comment may combine relevant fields:
-
-- **Decision:** what changed in the agreed scope, and where the canonical requirement was updated.
-- **Implemented:** PR or commit link, plus the observable result.
-- **Verified:** exact revision, checks performed, pass/fail outcome, and remaining gaps. Put detailed evidence in the PR; link it rather than repeating it across issues.
-- **Blocked:** concrete blocker and the owner or decision needed to proceed.
-
-Distinguish proposals from verified results. Update the issue description when later decisions supersede old requirements; preserve historical evidence rather than silently erasing it. Avoid repeated status reports, tool transcripts, unrelated research and "no changes made" comments when they add no decision or actionable fact.
-
-Review all published issue, PR and comment text for personal information, local machine details, credentials, asset rights and unverified claims. Apply the publication rules in `AGENTS.md`.
+- Execute only approved scope. Link each implementation PR to its issue. Close only after verification and accepted review. External PRs are not an incoming triage surface by default.
+- Post material **decisions, agent briefs, triage notes, implementation results, verification results or blockers**. Keep each update concise and actionable; no mandatory comment prefix.
+- For implementation, link the PR/commit. For verification, identify the tested revision, actual checks and pass/fail results, plus remaining gaps. Link detailed evidence in the PR instead of duplicating it across issues.
+- Update the issue description or linked specification when a later decision supersedes an earlier requirement; retain useful history. Skip repetitive progress reports, tool transcripts and research without an actionable finding.
+- Treat all issues, PRs and comments as potentially public. Apply the publication checks in `AGENTS.md`.
