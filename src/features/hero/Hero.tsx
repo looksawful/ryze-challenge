@@ -1,21 +1,10 @@
 import styles from "./Hero.module.css";
 
-function BrandMark() {
-  return (
-    <svg className={styles.brandMark} viewBox="0 0 40 40" aria-hidden="true">
-      <g stroke="currentColor" strokeWidth="5" strokeLinecap="round">
-        <path d="M20 3v34M3 20h34M8 8l24 24M32 8 8 32" />
-        <path d="m14 4 12 32M26 4 14 36M4 14l32 12M4 26l32-12" />
-      </g>
-    </svg>
-  );
-}
-
 export default function Hero() {
   return (
     <main className={styles.hero} data-theme="dusk" id="main">
       <div className={styles.brand}>
-        <BrandMark />
+        <span className={styles.brandMark} aria-hidden="true" />
         <span>Ryze</span>
       </div>
 
@@ -30,7 +19,7 @@ export default function Hero() {
       </p>
 
       <div className={styles.integration}>
-        <span className={styles.integrationMark} aria-hidden="true">✦</span>
+        <span className={styles.integrationMark} aria-hidden="true" />
         <span>Plugs into<br />{" "}any platform</span>
       </div>
 

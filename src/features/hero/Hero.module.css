@@ -22,7 +22,12 @@
     letter-spacing: -0.06em;
   }
 
-  .brandMark { inline-size: 40px; block-size: 40px; flex: none; }
+  .brandMark {
+    inline-size: 40px;
+    block-size: 40px;
+    flex: none;
+    background: url("/brand-mark.svg") center / contain no-repeat;
+  }
 
   .headline {
     inline-size: min(100%, 600px);
@@ -71,9 +76,10 @@
   }
 
   .integrationMark {
-    color: #f6aa00;
-    font-size: 47px;
-    line-height: 1;
+    inline-size: 54px;
+    block-size: 55px;
+    flex: none;
+    background: url("/integration-mark.png") center / contain no-repeat;
   }
 
   .action {
