@@ -137,4 +137,68 @@
     .action summary { min-block-size: 52px; font-size: 16px; }
     .integration { grid-area: integration; inline-size: auto; margin: 0 0 0 45px; justify-self: start; align-self: end; font-size: 15px; }
   }
+
+  @media (min-width: 1024px) {
+    .hero {
+      inline-size: min(920px, calc(100% - 48px));
+      min-block-size: min(876px, 100svh);
+      margin-inline: auto;
+      margin-block-start: 74px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: 100px 235px 115px minmax(180px, 1fr) 130px;
+      align-items: start;
+      padding: 28px 24px 128px;
+    }
+    .brand { grid-column: 2; grid-row: 1; justify-self: end; margin-inline-end: 45px; font-size: 80px; }
+    .brandMark { inline-size: 77px; block-size: 77px; }
+    .headline { grid-column: 1 / -1; grid-row: 2; inline-size: min(620px, 100%); justify-self: center; margin: 0; font-size: clamp(52px, 4.4vw, 62px); }
+    .lead { grid-column: 1 / -1; grid-row: 3; justify-self: center; margin: 0; font-size: 24px; }
+    .description { grid-column: 1 / -1; grid-row: 4; justify-self: center; max-inline-size: 390px; margin: 0; font-size: 24px; }
+    .action { grid-column: 1; grid-row: 5; inline-size: min(308px, 100%); margin: 0; }
+    .action summary { min-block-size: 90px; }
+    .integration { grid-column: 2; grid-row: 5; justify-self: end; inline-size: auto; margin: 20px 0 0; }
+  }
+
+  @media (min-width: 1600px) {
+    .hero {
+      inline-size: min(100%, 1897px);
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: 60px 520px minmax(190px, 1fr);
+      padding: 28px 0 80px;
+    }
+    .brand { grid-column: 10 / 13; grid-row: 1; margin-inline-end: 210px; }
+    .headline { grid-column: 2 / 12; grid-row: 2; inline-size: 100%; justify-self: stretch; font-size: clamp(100px, 8.5vw, 160px); }
+    .lead { grid-column: 2 / 5; grid-row: 3; justify-self: start; align-self: start; text-align: left; }
+    .lead br { display: none; }
+    .description { grid-column: 2 / 5; grid-row: 3; justify-self: start; align-self: start; margin-block-start: 54px; text-align: left; }
+    .action { grid-column: 9 / 11; grid-row: 3; inline-size: min(308px, 100%); margin: 20px 0 0 -36px; }
+    .integration { grid-column: 11 / 13; grid-row: 3; justify-self: start; margin: 38px 0 0 -12px; }
+  }
+
+  @media (min-width: 2400px) {
+    .hero {
+      inline-size: min(1947px, calc(100% - 560px));
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: 270px 240px minmax(150px, 1fr) 130px;
+      padding: 0 20px 100px;
+    }
+    .brand { grid-column: 1 / 4; grid-row: 1; justify-self: start; align-self: center; margin-inline: -290px 0; }
+    .headline { grid-column: 1 / 10; grid-row: 2 / 4; inline-size: calc(100% - 60px); font-size: clamp(100px, 5.7vw, 160px); }
+    .lead { grid-column: 10 / 13; grid-row: 3; align-self: start; margin-block-start: 0; font-size: 19px; }
+    .description { grid-column: 10 / 13; grid-row: 3; margin-block-start: 40px; font-size: 19px; }
+    .action { grid-column: 10 / 12; grid-row: 4; margin: 0; }
+    .integration { grid-column: 12 / 13; grid-row: 4; inline-size: 190px; margin: 20px 0 0 20px; }
+  }
+
+  @media (min-width: 1024px) and (max-height: 900px) {
+    .hero { min-block-size: calc(100svh - 20px); margin-block-start: 20px; }
+  }
+
+  @media (min-width: 1024px) and (max-width: 1599px) and (max-height: 900px) {
+    .hero {
+      grid-template-rows: 80px 170px 90px minmax(150px, 1fr) 110px;
+      padding-block: 20px 40px;
+    }
+  }
 }
