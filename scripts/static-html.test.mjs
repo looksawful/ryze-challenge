@@ -16,14 +16,20 @@ test("static export contains meaningful HTML before JavaScript executes", () => 
   assert.match(html, /<link[^>]*stylesheet/);
 });
 
-test("static exported asset URLs honor the configured basePath", () => {
+test("all static platform logos and brand mark use the configured basePath", () => {
   const html = readFileSync("out/index.html", "utf8");
   const prefix = process.env.NEXT_PUBLIC_BASE_PATH || "";
-
-  for (const file of ["brand-mark.svg", "integration-mark.png"]) {
-    assert.ok(
-      html.includes(`src="${prefix}/${file}"`),
-      `Expected basePath-prefixed asset: ${prefix}/${file}`,
-    );
+  for (const file of [
+    "brand-mark.svg",
+    "platform-logos/shopify.avif",
+    "platform-logos/google-ads.svg",
+    "platform-logos/meta.svg",
+    "platform-logos/tiktok.svg",
+    "platform-logos/google-analytics.svg",
+  ]) {
+    assert.ok(html.includes(`src="${prefix}/${file}"`), `Expected asset: ${prefix}/${file}`);
+  }
+  for (const alt of ["Shopify", "Google Ads", "Meta Ads", "TikTok", "Google Analytics"]) {
+    assert.ok(html.includes(`alt="${alt}"`), `Missing accessible logo: ${alt}`);
   }
 });

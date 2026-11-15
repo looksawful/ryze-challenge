@@ -73,12 +73,6 @@
     text-align: right;
   }
 
-  .integrationMark {
-    inline-size: 54px;
-    block-size: 55px;
-    flex: none;
-    object-fit: contain;
-  }
 
   .action {
     inline-size: min(100%, 358px);
