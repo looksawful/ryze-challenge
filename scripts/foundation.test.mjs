@@ -29,3 +29,10 @@ test("server-rendered page has accessible static content in dusk", () => {
   assert.match(hero(), /<h1\b/);
   assert.doesNotMatch(page(), /"use client"/);
 });
+
+const heroStyles = () => readFileSync("src/features/hero/Hero.module.css", "utf8");
+
+test("Hero preserves reflow rather than clipping oversized text", () => {
+  assert.doesNotMatch(heroStyles(), /white-space:\s*nowrap/);
+  assert.doesNotMatch(heroStyles(), /overflow:\s*clip/);
+});
