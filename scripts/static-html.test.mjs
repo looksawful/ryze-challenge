@@ -27,3 +27,14 @@ test("static exported asset URLs honor the configured basePath", () => {
     );
   }
 });
+
+test("cookie consent notice renders in the initial static HTML", () => {
+  const html = readFileSync("out/index.html", "utf8");
+  assert.match(html, /data-cookie-consent/);
+  assert.match(html, /data-view="notice"/);
+  assert.match(html, /Cookie settings/);
+  assert.match(html, /Minimize cookie settings/);
+  assert.match(html, /Customize cookie settings/);
+  assert.match(html, /Reject all cookies/);
+  assert.match(html, /Accept all cookies/);
+});
