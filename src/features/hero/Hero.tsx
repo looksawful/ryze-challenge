@@ -1,10 +1,13 @@
+import Image from "next/image";
 import styles from "./Hero.module.css";
+
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export default function Hero() {
   return (
     <main className={styles.hero} data-theme="dusk" id="main">
       <div className={styles.brand}>
-        <span className={styles.brandMark} aria-hidden="true" />
+        <Image className={styles.brandMark} src={`${basePath}/brand-mark.svg`} alt="" width={40} height={40} unoptimized loading="eager" />
         <span>Ryze</span>
       </div>
 
@@ -19,7 +22,7 @@ export default function Hero() {
       </p>
 
       <div className={styles.integration}>
-        <span className={styles.integrationMark} aria-hidden="true" />
+        <Image className={styles.integrationMark} src={`${basePath}/integration-mark.png`} alt="" width={54} height={55} unoptimized loading="eager" />
         <span>Plugs into<br />{" "}any platform</span>
       </div>
 
