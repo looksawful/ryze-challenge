@@ -1,6 +1,7 @@
 import Image from "next/image";
 import styles from "./Hero.module.css";
 import IntegrationLogos from "../integrations/IntegrationLogos";
+import HeroAction from "./HeroAction";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -27,10 +28,9 @@ export default function Hero() {
         <span>Plugs into<br />{" "}any platform</span>
       </div>
 
-      <details className={styles.action}>
-        <summary>Start For Free</summary>
-        <p>The domain preview is not available yet.</p>
-      </details>
+      <div className={styles.action}>
+        <HeroAction />
+      </div>
     </main>
   );
 }
