@@ -9,7 +9,7 @@ type DomainResult = { domain: string; error?: never } | { domain?: never; error:
 
 const examples = ["yourstore.com", "shop.example.com", "https://yourstore.com"];
 
-// Accept a domain or URL, but never guess spellings, protocols beyond HTTPS, or destination pages.
+// Accept domains and HTTP(S) URLs without guessing spellings or destination pages.
 function normalizeStoreDomain(value: string): DomainResult {
   const raw = value.trim();
   if (!raw) return { error: "Enter your store domain or URL." };
@@ -53,6 +53,7 @@ export default function HeroAction() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputId = useId();
   const helpId = useId();
+  const errorId = useId();
 
   function availableMode(): Mode {
     const width = rootRef.current?.closest("main")?.getBoundingClientRect().width ?? 0;
@@ -159,7 +160,7 @@ export default function HeroAction() {
             onBlur={() => setFocused(false)}
             placeholder={focused ? "Store domain or URL" : ""}
             aria-invalid={Boolean(error)}
-            aria-describedby={helpId}
+            aria-describedby={error ? `${helpId} ${errorId}` : helpId}
           />
           {!value && !focused && (
             <span key={exampleIndex} className={styles.example} aria-hidden="true">
@@ -167,17 +168,17 @@ export default function HeroAction() {
             </span>
           )}
         </div>
-        <button type="submit" className={styles.submit}>{stage === "thinking" ? "Preparing…" : "Continue"}</button>
+        <button type="submit" className={styles.submit} disabled={stage === "thinking"}>{stage === "thinking" ? "Preparing…" : "Continue"}</button>
       </form>
       <p id={helpId} className={styles.help}>Demo only. No data is sent.</p>
-      {error && <p role="alert" className={styles.feedback}>{error}</p>}
+      {error && <p id={errorId} role="alert" className={styles.feedback}>{error}</p>}
       {stage === "thinking" && (
         <p role="status" className={styles.feedback}>Preparing an example response for {accepted}…</p>
       )}
       {stage === "result" && (
         <section className={styles.result} aria-label="Example response">
           <p className={styles.resultEyebrow}>Demo response · no store analysis performed</p>
-          <p>For <strong>{accepted}</strong>, a Ryze workflow could explore paid ads, SEO, AI visibility and CRO.</p>
+          <p role="status">For <strong>{accepted}</strong>, a Ryze workflow could explore paid ads, SEO, AI visibility and CRO.</p>
           <div className={styles.resultActions}>
             <button type="button" onClick={() => setPreviewOpen(true)}>Preview experience</button>
             <button type="button" onClick={() => {
@@ -204,7 +205,12 @@ export default function HeroAction() {
         <summary ref={triggerRef} onClick={open}>Start For Free</summary>
         <p>Enable JavaScript to try the domain-entry demo.</p>
       </details>
-      {mode === "inline" && <div className={styles.inline}>{form}</div>}
+      {mode === "inline" && (
+        <div className={styles.inline}>
+          <button type="button" className={styles.inlineClose} onClick={close} aria-label="Close domain entry">×</button>
+          {form}
+        </div>
+      )
       <dialog
         ref={dialogRef}
         className={styles.drawer}
