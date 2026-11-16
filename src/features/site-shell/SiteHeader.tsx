@@ -458,7 +458,7 @@ export function SiteHeader({
           <a className={styles.mobileDockItem} href={shopifyPricingHref}>
             <DockIcon name="pricing" /><span>Pricing</span>
           </a>
-          <a className={styles.mobileDockItem} href={shopifyStartHref}>
+          <a className={styles.mobileDockItem} href={shopifyStartHref} aria-label="Get started with Ryze">
             <DockIcon name="start" /><span>Start</span>
           </a>
         </nav>

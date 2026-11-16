@@ -741,7 +741,7 @@
       border-radius: 16px;
       color: inherit;
       background: transparent;
-      font: 600 10px/1.2 system-ui, sans-serif;
+      font: 600 11px/1.2 system-ui, sans-serif;
       text-decoration: none;
       cursor: pointer;
       touch-action: manipulation;
@@ -751,6 +751,14 @@
     .mobileDockItem[aria-expanded="true"] {
       background: color-mix(in oklab, var(--nav-foreground) 12%, transparent);
       color: var(--nav-foreground);
+    }
+    .mobileDockItem:last-child {
+      background: var(--accent-current);
+      color: #18171d;
+    }
+    .mobileDockItem:last-child:is(:hover, :focus-visible) {
+      background: color-mix(in oklab, var(--accent-current) 85%, white);
+      color: #18171d;
     }
     .mobileDockItem svg { flex: 0 0 auto; }
     .header[data-variant="dock"] .mobileDialog {
