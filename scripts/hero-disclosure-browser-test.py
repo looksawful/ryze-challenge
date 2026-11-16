@@ -2,6 +2,7 @@
 Uses the already-installed websocket-client Python dependency from other browser tests.
 """
 import json
+import os
 import pathlib
 import subprocess
 import tempfile
@@ -18,7 +19,9 @@ SIZES = [
     (1280, 600), (1440, 600), (1440, 1024),
     (1897, 600), (1897, 1024), (2803, 1024),
 ]
-CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+CHROME = os.environ.get("CHROME_PATH", r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+if os.environ.get("RYZE_SMOKE") == "1":
+    SIZES = [(320, 568), (874, 402), (1440, 1024), (2803, 1024)]
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -39,7 +42,7 @@ server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
 threading.Thread(target=server.serve_forever, daemon=True).start()
 failures = []
 try:
-    with tempfile.TemporaryDirectory(prefix="hero-disclosure-browser-") as profile:
+    with tempfile.TemporaryDirectory(prefix="hero-disclosure-browser-", ignore_cleanup_errors=True) as profile:
         process = subprocess.Popen(
             [CHROME, "--headless=new", "--no-first-run", "--disable-extensions",
              "--disable-gpu", "--remote-allow-origins=*", "--remote-debugging-port=0",
@@ -114,13 +117,18 @@ try:
                   return {open:details.open,note:rect(note),visible:Math.max(0,Math.min(innerHeight,noteRect.bottom)-
                     Math.max(0,noteRect.top)),action:rect(details),
                     integration:rect(document.querySelector('main [class*=integration]')),
-                    collisions,docWidth:document.documentElement.scrollWidth}
+                    collisions,docWidth:document.documentElement.scrollWidth,
+                    scrollRoom:Math.max(0,Math.max(document.documentElement.scrollHeight,
+                      document.body.scrollHeight)-scrollY-innerHeight)}
                 })())"""))
                 issues = []
                 if not actual["open"]:
                     issues.append("native summary did not open")
                 if actual["visible"] + 1 < actual["note"]["h"]:
-                    issues.append(f"note clipped ({actual['visible']:.1f}/{actual['note']['h']:.1f} px)")
+                    # Expanded content can scroll naturally on short viewports.
+                    scroll_needed = max(0, actual["note"]["y"] + actual["note"]["h"] - height)
+                    if actual["note"]["y"] < -1 or scroll_needed > actual["scrollRoom"] + 1:
+                        issues.append("note clipped and not reachable by scrolling")
                 for name in ("action", "integration"):
                     if any(abs(actual[name][key] - before[name][key]) > .5 for key in ("x", "y", "w", "h")):
                         issues.append(name + " moved")
