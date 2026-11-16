@@ -14,7 +14,7 @@ Implement one responsive Hero for a product landing page. Do not implement other
 - Provide independent mobile presentation with shared navigation data. Existing menu code is a reference; its animation and organization are not approved as final.
 
 ## Hero action
-- The primary button animates into a minimal chat-like domain-entry field.
+- On sufficiently wide layouts, the primary button morphs in place into a domain-entry field. On narrow/mobile layouts, it instead opens an accessible bottom drawer with the field and submit control. Choose the mode by available layout width, not device identity; keep reduced-motion and no-JS paths meaningful.
 - Prewritten example prompts cycle as animated placeholder-style suggestions, without extra control clutter.
 - Accept domains and full URLs. Provide forgiving but unambiguous input normalization, careful IDN/transliteration handling and understandable validation feedback.
 - Valid submission starts a simulated thinking sequence, then an animated prepared response containing a preview action. No live AI or external request is required.
