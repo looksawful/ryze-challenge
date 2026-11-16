@@ -23,9 +23,9 @@ Implement one responsive Hero for a product landing page. Do not implement other
 - Existing button and transformation design are not final.
 
 ## Consent
-- The existing consent component is the reference for options and actions.
-- It must appear on each fresh page load; deliberately do not persist its selection across reloads.
-- Its dismissal animates into a compact settings affordance and supports reopening.
+- `HomeworkCookieNotice` is the shared, borderless notice for JavaScript-capable visitors. Without JavaScript the notice and settings link are absent.
+- Accept, reject and customization choices persist in localStorage until changed; this preview does not install trackers.
+- After a choice the notice closes. The `Cookie settings` link following the Hero reopens preferences, including after reload. No separate reduced-motion or WebGL fallback design is needed.
 
 ## Brand, integrations and effects
 - Distinguish symbol, wordmark and combined lockup; distinguish customer marks from integration marks.
@@ -38,5 +38,5 @@ Implement one responsive Hero for a product landing page. Do not implement other
 - Menu and CTA do not perform unexpected external navigation.
 - A valid domain reaches a deterministic result; invalid input gives usable feedback.
 - Repeating the CTA scenario works without reloading.
-- Consent reappears after reload and can collapse and reopen.
+- Consent choices persist across reloads; the settings link reopens them. Without JavaScript no consent panel appears.
 - Slow or unsupported WebGL never blocks essential content.

@@ -15,12 +15,12 @@ Status: Inventory candidates, not approved implementations.
 | Action | `HeroAction` | Button → input → thinking → result → simulated preview; original form is not sufficient |
 | Mascot | `RizzieMascot` | Speech-bubble navigation feedback, animation design pending |
 | Message | `RizzieMessage` (provisional) | Replaces previous bubble; ~5s auto-hide, pause on hover/focus |
-| Consent | `CookieConsent` | Responsive collapse/reopen implemented and published (#14); real-device acceptance remains open |
+| Consent | `HomeworkCookieNotice` | Homework design, JS-only, localStorage preferences and footer-level settings reopener; real-device acceptance remains open |
 
 Reference implementations were located for Hero, MegaMenu, CookieNotice, a domain form, integration logo morph and product shelf; their availability does **not** establish feature completeness, visual approval or permission to copy assets. Source and license review precedes any migration.
 
 ## Boundaries
-No footer, destination pages, full catalog, backend, login, live model or broad imported library is part of the initial screen. Storybook has a real Hero preview; other component stories remain gated by their review. Mobile navigation is still being developed with shared destination data (#11).
+No full footer beyond the Cookie settings reopener, destination pages, full catalog, backend, login, live model or broad imported library is part of the initial screen. Storybook has a real Hero preview; other component stories remain gated by their review. Mobile navigation is still being developed with shared destination data (#11).
 
 ## Rejected shortcuts
 - Reusing the current domain form as the complete transforming HeroAction.
