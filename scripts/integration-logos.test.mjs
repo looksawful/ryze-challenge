@@ -37,3 +37,14 @@ test("slow WebGL frame delivery falls back to lightweight marquee", () => {
   assert.match(component, /slowFrames >= 3/);
   assert.match(component, /if \(slowFrames >= 3\) \{\s*fallback\(\)/);
 });
+
+test("Storybook exposes the actual integrations component in isolated states and themes", () => {
+  const component = read("../src/features/integrations/IntegrationLogos.tsx");
+  const stories = read("../src/features/integrations/IntegrationLogos.stories.tsx");
+  assert.match(component, /previewMode\??:/);
+  assert.match(component, /previewMode = "auto"/);
+  for (const name of ["Static", "ReducedMotion", "Marquee", "WebGL", "Dawn", "Dusk", "ThemeComparison", "RuntimeSwitching"]) {
+    assert.match(stories, new RegExp("export const " + name + "\\b"), name);
+  }
+  assert.match(stories, /<IntegrationLogos/);
+});

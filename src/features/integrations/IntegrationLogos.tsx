@@ -15,7 +15,10 @@ const LOGOS = [
 ] as const;
 const CYCLE = MORPH_DURATIONS.reduce((sum, duration) => sum + duration + SETTLE_DURATION, 0);
 
-export default function IntegrationLogos() {
+export type IntegrationPreviewMode = "auto" | "static" | "reduced" | "marquee" | "webgl";
+
+/** Preview-only mode selection. The app uses the unchanged automatic runtime path. */
+export default function IntegrationLogos({ previewMode = "auto" }: { previewMode?: IntegrationPreviewMode }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -23,6 +26,18 @@ export default function IntegrationLogos() {
     const host = hostRef.current;
     const canvas = canvasRef.current;
     if (!host || !canvas) return;
+
+    // Storybook-only presentation of the real static/reduced/marquee branches.
+    // Never run a GPU renderer for those stories; real reduced motion wins.
+    if (previewMode === "static" || previewMode === "reduced" || previewMode === "marquee") {
+      const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const sync = () => {
+        host.dataset.mode = previewMode === "marquee" && !motion.matches ? "marquee" : "static";
+      };
+      sync();
+      motion.addEventListener("change", sync);
+      return () => motion.removeEventListener("change", sync);
+    }
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let disposed = false;
@@ -156,7 +171,7 @@ export default function IntegrationLogos() {
       canvas.removeEventListener("webglcontextlost", onLost);
       renderer?.dispose();
     };
-  }, []);
+  }, [previewMode]);
 
   return (
     <div ref={hostRef} className={styles.root} data-mode="static">
