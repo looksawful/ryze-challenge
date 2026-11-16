@@ -1,6 +1,6 @@
 @layer components {
   .root {
-    --integration-logo-size: clamp(36px, 3.2vw, 52px);
+    --integration-logo-size: clamp(40px, 3.2vw, 52px);
     --integration-gap: clamp(8px, 0.8vw, 14px);
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(8ch, max-content);
@@ -21,7 +21,7 @@
 
   .staticList {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--integration-logo-size)), 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     align-content: center;
     justify-items: center;
     gap: clamp(3px, 0.4vw, 8px);
@@ -63,13 +63,13 @@
   }
 
   @media (min-width: 1024px) and (max-width: 1599px) {
-    .root { --integration-logo-size: 36px; --integration-gap: 8px; }
+    .root { --integration-logo-size: 38px; --integration-gap: 8px; }
     .staticList { gap: 2px; }
     .caption { font-size: 14px; }
   }
 
   @media (min-width: 1600px) {
-    .root { --integration-logo-size: 32px; --integration-gap: 6px; }
+    .root { --integration-logo-size: 42px; --integration-gap: 6px; }
     .staticList { gap: 3px; }
     .caption { font-size: 14px; }
   }

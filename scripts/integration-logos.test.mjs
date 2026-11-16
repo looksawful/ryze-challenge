@@ -32,7 +32,7 @@ test("static is the only fallback for reduced motion, WebGL loss and slow frames
 });
 
 test("intrinsic logo grid and proportional caption are inside the component", () => {
-  assert.match(css, /repeat\(auto-fit, minmax\(/);
+  assert.match(css, /repeat\(5, minmax\(0, 1fr\)\)/);
   assert.match(css, /--integration-logo-size: clamp\(/);
   assert.match(css, /\.caption/);
   assert.match(css, /font-size: clamp\(/);
