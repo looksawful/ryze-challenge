@@ -1,12 +1,12 @@
 import CookieConsent from "@/features/consent/CookieConsent";
-import Hero from "@/features/hero/Hero";
+import { HeroWithNavigation } from "@/features/site-shell/HeroWithNavigation";
 
 export default function Page() {
   return (
     <>
-      <Hero>
+      <HeroWithNavigation>
         <CookieConsent />
-      </Hero>
+      </HeroWithNavigation>
     </>
   );
 }
