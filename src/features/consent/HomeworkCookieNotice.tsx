@@ -5,7 +5,8 @@ import { footerGroups } from "../site-shell/link-model";
 import styles from "./HomeworkCookieNotice.module.css";
 
 type CookiePreferences = { analytics: boolean; marketing: boolean };
-type RyzeCookieNoticeProps = { onSave?: (preferences: CookiePreferences) => void; rememberChoice?: boolean };
+type CookieView = "notice" | "settings" | "closed";
+type RyzeCookieNoticeProps = { onSave?: (preferences: CookiePreferences) => void; rememberChoice?: boolean; initialView?: CookieView };
 const privacyHref = footerGroups.flatMap((group) => group.links).find((link) => link.id === "privacy")?.href;
 const storageKey = "ryze-cookie-preferences";
 const settingsEvent = "ryze:cookie-settings";
@@ -14,6 +15,24 @@ const changedEvent = "ryze:cookie-preferences-changed";
 function subscribeToMount() { return () => {}; }
 function getClientMounted() { return true; }
 function getServerMounted() { return false; }
+
+// Match text to the background actually sampled under the floating notice.
+// A light section may sit inside a dark theme, so inherited text tokens alone
+// cannot guarantee contrast.
+function foregroundForBackground(background: string): string {
+  const rgb = background.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (!rgb) return "var(--color-foreground)";
+
+  const linear = (value: number) => {
+    const channel = value / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance = 0.2126 * linear(Number(rgb[1])) + 0.7152 * linear(Number(rgb[2])) + 0.0722 * linear(Number(rgb[3]));
+  const darkContrast = (luminance + 0.05) / (0.0056 + 0.05);
+  const lightContrast = (0.9301 + 0.05) / (luminance + 0.05);
+  if (darkContrast >= lightContrast) return darkContrast >= 4.5 ? "#111" : "#000";
+  return lightContrast >= 4.5 ? "#f7f7f7" : "#fff";
+}
 
 function readChoice() {
   try {
@@ -36,9 +55,9 @@ export function HomeworkCookieSettingsButton({ className = styles.reopen }: { cl
 }
 
 // Choices are local; this component does not install or enable tracking.
-export function HomeworkCookieNotice({ onSave, rememberChoice = true }: RyzeCookieNoticeProps) {
+export function HomeworkCookieNotice({ onSave, rememberChoice = true, initialView }: RyzeCookieNoticeProps) {
   const storedChoice = useSyncExternalStore(subscribe, rememberChoice ? readChoice : () => null, () => null);
-  const [view, setView] = useState<"notice" | "settings" | "closed">("notice");
+  const [view, setView] = useState<CookieView>(initialView ?? "notice");
   const [preferences, setPreferences] = useState<CookiePreferences>({ analytics: false, marketing: false });
   const mounted = useSyncExternalStore(subscribeToMount, getClientMounted, getServerMounted);
   const titleId = useId();
@@ -46,7 +65,7 @@ export function HomeworkCookieNotice({ onSave, rememberChoice = true }: RyzeCook
   const titleRef = useRef<HTMLHeadingElement>(null);
   const customizeRef = useRef<HTMLButtonElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
-  const visible = view === "settings" || (view === "notice" && !storedChoice);
+  const visible = view === "settings" || (view === "notice" && (initialView === "notice" || !storedChoice));
 
   function openSettings() {
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -70,22 +89,24 @@ export function HomeworkCookieNotice({ onSave, rememberChoice = true }: RyzeCook
   useEffect(() => {
     if (!visible || !mounted) return;
     let frame = 0;
+    const navigation = document.querySelector<HTMLElement>('header[data-variant="dock"]');
     function matchBackground() {
       const dock = noticeRef.current;
       if (!dock) return;
-      const navigation = (document.querySelector("[data-ryze-mobile-dock]")?.getBoundingClientRect().height ? document.querySelector("[data-ryze-mobile-dock]") : document.querySelector(".navbar"))?.getBoundingClientRect();
-      const clearance = navigation && navigation.top > window.innerHeight / 2 ? window.innerHeight - navigation.top + 8 : 16;
+      const navigationRect = navigation?.matches('[data-docked="false"]') ? navigation.getBoundingClientRect() : null;
+      const clearance = navigationRect && navigationRect.height > 0 && navigationRect.bottom >= window.innerHeight - 1
+        ? Math.max(16, Math.ceil(window.innerHeight - navigationRect.top + 8))
+        : 16;
       dock.style.setProperty("--cookie-bottom", `${clearance}px`);
       const rect = dock.getBoundingClientRect();
       let underlay = document.elementsFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
         .find(element => !dock.contains(element) && !element.closest(".site-panel, [data-ryze-menu]"));
       if (!underlay) return;
-      const foreground = getComputedStyle(underlay).getPropertyValue("--color-foreground");
       while (underlay) {
         const background = getComputedStyle(underlay).backgroundColor;
         if (background !== "transparent" && !/rgba\([^)]*,\s*0\s*\)/.test(background)) {
           dock.style.setProperty("--cookie-background", background);
-          dock.style.setProperty("--cookie-foreground", foreground);
+          dock.style.setProperty("--cookie-foreground", foregroundForBackground(background));
           break;
         }
         underlay = underlay.parentElement ?? undefined;
@@ -115,8 +136,10 @@ export function HomeworkCookieNotice({ onSave, rememberChoice = true }: RyzeCook
     const observer = new MutationObserver(scheduleBackground);
     observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ["data-theme"] });
     const resizeObserver = new ResizeObserver(scheduleBackground);
-    const navigation = document.querySelector(".navbar");
-    if (navigation) resizeObserver.observe(navigation);
+    if (navigation) {
+      observer.observe(navigation, { attributes: true, attributeFilter: ["data-docked"] });
+      resizeObserver.observe(navigation);
+    }
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
