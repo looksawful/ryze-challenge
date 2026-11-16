@@ -27,13 +27,21 @@ export function SiteHeader({
   const [desktopGroup, setDesktopGroup] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileGroup, setMobileGroup] = useState<string | null>(null);
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<{ text: string } | null>(null);
+  const [noticeHovered, setNoticeHovered] = useState(false);
+  const [noticeFocused, setNoticeFocused] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const wasMobileOpen = useRef(false);
   const desktopNavRef = useRef<HTMLElement>(null);
   const hoverOpenedRef = useRef<string | null>(null);
   const mobileBackRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!notice || noticeHovered || noticeFocused) return;
+    const timeout = window.setTimeout(() => setNotice(null), 5000);
+    return () => window.clearTimeout(timeout);
+  }, [notice, noticeHovered, noticeFocused]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -106,7 +114,7 @@ export function SiteHeader({
     if (!previewMode) return;
     event.preventDefault();
     onPreviewDestination?.(destination);
-    if (!onPreviewDestination) setNotice(previewNotice(destination));
+    if (!onPreviewDestination) setNotice({ text: previewNotice(destination) });
     setDesktopGroup(null);
     closeMobile();
   }
@@ -287,9 +295,22 @@ export function SiteHeader({
       </noscript>
 
       {notice && !onPreviewDestination && (
-        <div className={styles.notice} role="status">
-          <p>{notice}</p>
-          <button type="button" onClick={() => setNotice("")} aria-label="Dismiss message">×</button>
+        <div
+          className={styles.notice}
+          role="status"
+          onMouseEnter={() => setNoticeHovered(true)}
+          onMouseLeave={() => setNoticeHovered(false)}
+          onFocusCapture={() => setNoticeFocused(true)}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) setNoticeFocused(false);
+          }}
+        >
+          <p>{notice.text}</p>
+          <button type="button" onClick={() => {
+            setNotice(null);
+            setNoticeHovered(false);
+            setNoticeFocused(false);
+          }} aria-label="Dismiss message">×</button>
         </div>
       )}
     </header>
