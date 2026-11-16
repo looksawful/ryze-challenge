@@ -209,7 +209,7 @@
     }
     .action { grid-column: 1; grid-row: 5; inline-size: min(308px, 100%); margin: 0; }
     .action summary { min-block-size: 90px; }
-    .integration { grid-column: 2; grid-row: 5; justify-self: end; inline-size: min(100%, 290px); margin: 20px 0 0; }
+    .integration { grid-column: 2; grid-row: 5; justify-self: end; inline-size: min(100%, 380px); margin: 20px 0 0; }
   }
 
   @media (min-width: 1600px) {

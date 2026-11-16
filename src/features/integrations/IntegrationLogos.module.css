@@ -1,6 +1,6 @@
 @layer components {
   .root {
-    --integration-logo-size: clamp(40px, 3.2vw, 52px);
+    --integration-logo-size: clamp(50px, 3.2vw, 56px);
     --integration-gap: clamp(8px, 0.8vw, 14px);
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(8ch, max-content);
@@ -63,7 +63,7 @@
   }
 
   @media (min-width: 1024px) and (max-width: 1599px) {
-    .root { --integration-logo-size: 38px; --integration-gap: 8px; }
+    .root { --integration-logo-size: 56px; --integration-gap: 8px; }
     .staticList { gap: 2px; }
     .caption { font-size: 14px; }
   }
