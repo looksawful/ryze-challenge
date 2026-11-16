@@ -1,27 +1,25 @@
-# Ryze Challenge · Storybook интеграций
-Дата: 2026-11-16
-Репозиторий: looksawful/ryze-challenge, локальная ветка dev.
-Статус: разработка превью, без отдельного Storybook и без изменений Figma / prod.
+# RYZE Challenge · Integrations Storybook
+Дата: 2026-11-16. Один Storybook, ветка dev.
 
-## Реализовано
-- Созданы `src/features/integrations/IntegrationLogos.stories.tsx` и локальные стили превью.
-- Восемь историй зарегистрированы в одном действующем Storybook, раздел `RYZE/Integrations`:
-  `Static`, `ReducedMotion`, `Marquee`, `WebGL`, `Dawn`, `Dusk`, `ThemeComparison`, `RuntimeSwitching`.
-- Каждая история использует действующий `IntegrationLogos`, не копию, и реальные ассеты пяти платформ.
-- Для обзора добавлен необязательный `previewMode`. **При отсутствии пропса** автоматическое поведение страницы не изменено.
-- Static/Reduced используют настоящую статическую DOM-ветку; Marquee — существующую CSS-анимацию; WebGL — реальную GPU-попытку с существующим fallback. При системной настройке reduced motion анимация не запускается.
-- Интерактивный просмотр позволяет менять режим, тему и перезапускать компонент; отображается фактический `data-mode`, а не предполагаемый.
+## Текущий результат
+- Раздел `RYZE/Integrations`: **одна история `Preview`** (`ryze-integrations--preview`).
+- В стандартной панели Storybook Controls два аргумента: `Mode = auto | static | marquee | webgl` (по умолчанию auto) и `Theme = dawn | dusk` (по умолчанию dusk).
+- Размер экрана регулируется штатным Viewport Storybook.
+- Превью рендерит реальный `IntegrationLogos`. Обычная страница не передаёт `previewMode` и продолжает использовать автоматическую деградацию.
+- Reduced motion показывает static через существующий `prefers-reduced-motion`; не выделяется в отдельную историю.
+- WebGL действительно инициализируется; при неподдерживаемом окружении срабатывает реальный marquee fallback.
+- Удалены 7 лишних историй, пользовательский UI переключения, информационная панель, CSS-модуль, кнопка перезапуска.
+- Это упрощение предыдущей версии с 8 историями в commit `eb033b5`; решение пользователя: **одна история с Controls, не набор отдельных страниц**.
 
-## Проверка
-- Целевой тест `node --test scripts/integration-logos.test.mjs`: 5/5 PASS (первый RED с отсутствующим story, затем GREEN).
+## Проверки
+- `node --test scripts/integration-logos.test.mjs`: 5/5 PASS (RED → GREEN при смене структуры).
 - `npm run typecheck`: PASS.
 - `npm run build-storybook`: PASS.
-- Живой Storybook `http://127.0.0.1:6007/index.json`: обнаружены все 8 историй.
-- Основная история: `http://127.0.0.1:6007/?path=/story/ryze-integrations--runtime-switching`.
+- Собранный `storybook-static/index.json`: ровно 1 история `RYZE/Integrations`.
+- Живой `http://127.0.0.1:6007/index.json`: ровно 1 история.
+- Адрес: `http://127.0.0.1:6007/?path=/story/ryze-integrations--preview`.
 
-## Границы
-- Сам Storybook требует JavaScript: история Static иллюстрирует то же HTML/CSS-состояние, но не заменяет реальную проверку браузера с отключённым JS.
-- WebGL-история не симулирует графический адаптер: при невозможности создать настоящий контекст показывает Marquee. Подпись фактического режима отражает этот переход.
-- Не проводились ручные проверки физического iPhone/Safari, GPU FPS/энергопотребления, пиксельной точности.
-- Не переносились стили/компоненты из `awful-homework`, не менялись другие компоненты, Figma, Asana, настройки Windows и prod.
-- Права и финальная визуальная приёмка логотипов остаются в Issue #15 / #16.
+## Ограничения
+- Storybook требует JS: Static лишь показывает HTML/CSS-представление, не тестирует браузер с отключённым JS.
+- Проверка на физическом iPhone/Safari и аппаратный GPU/FPS не выполнялась в рамках этой правки.
+- Нет правок Figma, других компонентов, `prod`, Asana или системных настроек. Другие незакоммиченные изменения в локальной dev-копии оставлены без изменений.
