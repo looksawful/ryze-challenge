@@ -9,7 +9,7 @@ const read = (path) => readFile(join(root, path), "utf8");
 test("application renders a single shared navigable first screen", async () => {
   const page = await read("src/app/page.tsx");
   assert.match(page, /<HeroWithNavigation\s*\/>/);
-  assert.match(page, /<CookieConsent\s*\/>/);
+  assert.match(page, /<HomeworkCookieNotice\s*\/>/);
   assert.doesNotMatch(page, /<Hero\s*\/>/);
 });
 
