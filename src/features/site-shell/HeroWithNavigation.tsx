@@ -7,10 +7,11 @@ import styles from "./HeroWithNavigation.module.css";
 
 export function HeroWithNavigation() {
   return (
-    <div className={styles.stage}>
+    <div className={styles.stage} data-ryze-dark-end>
       <div className={styles.navigation}>
         <SiteHeader
-          variant="hero"
+          variant="dock"
+          enhancement="auto"
           onPreviewDestination={(destination) => {
             window.dispatchEvent(new CustomEvent("rizzie:message", {
               detail: { text: previewNotice(destination) },

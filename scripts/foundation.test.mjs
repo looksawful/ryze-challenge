@@ -25,7 +25,8 @@ test("motion is opted into, not enabled by default", () => {
 test("server-rendered page has accessible static content in dusk", () => {
   assert.match(layout(), /import\s+["']\.\/foundation\.css["']/);
   assert.match(page(), /<Hero/);
-  assert.match(hero(), /data-theme="dusk"/);
+  assert.match(layout(), /<body data-theme="dusk"/);
+  assert.match(hero(), /data-theme=\{theme\}/);
   assert.match(hero(), /<h1\b/);
   assert.doesNotMatch(page(), /"use client"/);
 });

@@ -1,0 +1,35 @@
+@layer components {
+  .canvas {
+    min-height: 240svh;
+    background: #030303;
+    font-family: "Ryze Satoshi", Arial, sans-serif;
+  }
+
+  .dark {
+    position: relative;
+    min-height: 130svh;
+    background: #030303;
+  }
+
+  .light {
+    min-height: 110svh;
+    background: #fff;
+  }
+
+  .brand {
+    position: absolute;
+    top: clamp(1.25rem, 3.5vw, 3rem);
+    right: clamp(1rem, 4vw, 4rem);
+    width: 126px;
+    height: auto;
+    pointer-events: none;
+  }
+
+  @media (max-width: 42rem) {
+    .brand {
+      top: 1rem;
+      right: 1rem;
+      width: 95px;
+    }
+  }
+}
