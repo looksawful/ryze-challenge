@@ -3,6 +3,7 @@ Run after npm run build: python scripts/consent_browser_test.py
 Requires Chrome and the websocket-client Python package, no app dependencies.
 """
 import json
+import os
 import pathlib
 import subprocess
 import tempfile
@@ -21,7 +22,9 @@ SIZES = [
     (1897, 600), (1897, 1024), (2399, 1024), (2400, 700),
     (2400, 1024), (2803, 1024),
 ]
-CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+CHROME = os.environ.get("CHROME_PATH", r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+if os.environ.get("RYZE_SMOKE") == "1":
+    SIZES = [(320, 568), (874, 402), (1440, 1024), (2803, 1024)]
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
