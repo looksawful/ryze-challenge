@@ -2,6 +2,7 @@
 Uses the already-installed websocket-client Python dependency from other browser tests.
 """
 import json
+import os
 import pathlib
 import subprocess
 import tempfile
@@ -18,7 +19,9 @@ SIZES = [
     (1280, 600), (1440, 600), (1440, 1024),
     (1897, 600), (1897, 1024), (2803, 1024),
 ]
-CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+CHROME = os.environ.get("CHROME_PATH", r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+if os.environ.get("RYZE_SMOKE") == "1":
+    SIZES = [(320, 568), (874, 402), (1440, 1024), (2803, 1024)]
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
