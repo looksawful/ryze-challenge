@@ -99,7 +99,10 @@ export default function HeroAction() {
     if (!mode) return;
     const hero = rootRef.current?.closest("main");
     if (!hero) return;
-    const observer = new ResizeObserver(() => setMode((current) => current ? availableMode() : null));
+    const observer = new ResizeObserver(() => {
+      const next: Mode = hero.getBoundingClientRect().width >= 800 ? "inline" : "drawer";
+      setMode((current) => current && current !== next ? next : current);
+    });
     observer.observe(hero);
     return () => observer.disconnect();
   }, [mode]);
