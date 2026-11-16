@@ -34,17 +34,13 @@ test("all static platform logos and brand mark use the configured basePath", () 
   }
 });
 
-test("cookie consent notice renders in the initial static HTML", () => {
+test("no Cookies markup is emitted in static HTML when JavaScript is absent", () => {
   const html = readFileSync("out/index.html", "utf8");
-  assert.match(html, /data-cookie-consent/);
-  assert.match(html, /data-view="notice"/);
-  assert.match(html, /Cookie settings/);
-  assert.match(html, /Minimize cookie settings/);
-  assert.match(html, /Customize cookie settings/);
-  assert.match(html, /Reject all cookies/);
-  assert.match(html, /Accept all cookies/);
+  assert.doesNotMatch(html, /<aside[^>]*>\s*<h2[^>]*>Cookie settings/i);
+  assert.doesNotMatch(html, />Customize cookie settings</);
+  assert.doesNotMatch(html, />Accept all cookies</);
+  assert.doesNotMatch(html, /data-cookie-settings-trigger/);
 });
-
 test("rendered first screen includes the real header, mobile menu and no-JS links", () => {
   const html = readFileSync("out/index.html", "utf8");
   assert.match(html, /data-variant="dock"/);
