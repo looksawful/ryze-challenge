@@ -664,7 +664,7 @@
       width: auto;
     }
   }
-  @media (width < 42rem) {
+  @media (width < 64rem) {
     .header[data-variant="dock"] {
       inset: auto 0 0;
       padding: 0;
@@ -678,33 +678,40 @@
     .header[data-variant="dock"][data-docked="true"] .inner {
       position: fixed;
       inset: max(10px, env(safe-area-inset-top)) 16px auto auto;
-      width: 112px;
+      width: 52px;
       min-height: 49px;
       height: 49px;
-      padding: 0 .45rem;
+      padding: 0;
       justify-content: center;
-      background: #19191c;
-      border: 1px solid rgb(255 255 255 / 13%);
+      background: var(--nav-surface);
+      color: var(--nav-foreground);
+      border: 1px solid var(--nav-line);
       border-radius: 15px;
       box-shadow: 0 5px 20px rgb(0 0 0 / 13%);
     }
     .header[data-variant="dock"] .brand,
-    .header[data-variant="dock"][data-docked="true"] .brand {
-      position: static;
-      display: inline-flex;
-      width: 95px;
-      height: auto;
-      opacity: 1;
-      visibility: visible;
+    .header[data-variant="dock"][data-docked="true"] .brand,
+    .header[data-variant="dock"] .desktopNavigation,
+    .header[data-variant="dock"] .booking { display: none; }
+    .header[data-variant="dock"] .actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       pointer-events: auto;
     }
-    .header[data-variant="dock"] .brandImage,
-    .header[data-variant="dock"][data-docked="true"] .brandImage {
-      width: 95px;
-      filter: none;
+    .header[data-variant="dock"] .mobileToggle {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 47px;
+      border: 0;
+      color: var(--nav-foreground);
+      background: transparent;
     }
-    .header[data-variant="dock"] .desktopNavigation,
-    .header[data-variant="dock"] .actions { display: none; }
+    .header[data-variant="dock"] .mobileToggle:focus-visible {
+      outline: 2px solid var(--nav-foreground);
+      outline-offset: 3px;
+    }
     .header[data-variant="dock"] .mobileDock {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -714,11 +721,11 @@
       inset: auto 12px max(10px, env(safe-area-inset-bottom));
       margin-inline: auto;
       padding: 5px;
-      color: #1b1c21;
-      background: #fcfcfd;
-      border: 1px solid #d9dbe2;
+      color: var(--nav-foreground);
+      background: var(--nav-surface);
+      border: 1px solid var(--nav-line);
       border-radius: 21px;
-      box-shadow: 0 16px 38px rgb(0 0 0 / 20%), inset 0 1px #fff;
+      box-shadow: 0 16px 38px rgb(0 0 0 / 20%), inset 0 1px rgb(255 255 255 / 6%);
       pointer-events: auto;
     }
     .mobileDockItem {
@@ -734,7 +741,7 @@
       border-radius: 16px;
       color: inherit;
       background: transparent;
-      font: 600 10px/1.2 system-ui, sans-serif;
+      font: 600 11px/1.2 system-ui, sans-serif;
       text-decoration: none;
       cursor: pointer;
       touch-action: manipulation;
@@ -742,11 +749,20 @@
     .mobileDockItem:hover,
     .mobileDockItem:focus-visible,
     .mobileDockItem[aria-expanded="true"] {
-      background: #e7e9ef;
-      color: #111217;
+      background: color-mix(in oklab, var(--nav-foreground) 12%, transparent);
+      color: var(--nav-foreground);
+    }
+    .mobileDockItem:last-child {
+      background: var(--accent-current);
+      color: #18171d;
+    }
+    .mobileDockItem:last-child:is(:hover, :focus-visible) {
+      background: color-mix(in oklab, var(--accent-current) 85%, white);
+      color: #18171d;
     }
     .mobileDockItem svg { flex: 0 0 auto; }
     .header[data-variant="dock"] .mobileDialog {
+      pointer-events: auto;
       position: fixed;
       inset: 0 0 0 auto;
       width: min(90vw, 400px);
@@ -765,6 +781,25 @@
       border-bottom: 1px solid var(--nav-line);
     }
     .header[data-variant="dock"] .mobileList { padding-bottom: 2rem; }
+    .header[data-variant="dock"] .mobileSiteSection { display: grid; }
+    .header[data-variant="dock"] .mobileSiteSection + .mobileSiteSection {
+      margin-top: 1rem;
+      border-top: 1px solid var(--nav-line);
+    }
+    .header[data-variant="dock"] .mobileSiteSection .mobileSectionTitle {
+      padding-block: 1.1rem .6rem;
+      color: var(--nav-muted);
+      font-size: .75rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .header[data-variant="dock"] .mobileDockItem:focus-visible {
+      outline: 2px solid var(--nav-foreground);
+      outline-offset: -3px;
+    }
+    .header[data-variant="dock"] .notice {
+      inset-block-end: calc(100px + env(safe-area-inset-bottom));
+    }
     .header[data-variant="dock"] .productHighlights {
       padding: 1rem .1rem;
       border-radius: 0;

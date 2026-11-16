@@ -3,8 +3,11 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
 import Image from "next/image";
-import { bookingLink, headerLinks, navigationGroups, navigationProductCards, previewNotice } from "./link-model";
-import type { SiteDestination } from "./link-model";
+import {
+  bookingLink, headerLinks, mobileSiteSections, navigationGroups, navigationProductCards,
+  previewNotice, shopifyDockSections, shopifyPricingHref, shopifyStartHref,
+} from "./link-model";
+import type { ShopifyDockSection, SiteDestination } from "./link-model";
 import styles from "./SiteHeader.module.css";
 
 export type NavigationMode = "auto" | "static" | "reduced" | "no-webgl" | "lightweight" | "full";
@@ -61,16 +64,16 @@ function FeaturedProducts({ onSelect }: { onSelect: (event: MouseEvent<HTMLAncho
   );
 }
 
-type DockIconName = "home" | "grid" | "cases" | "pricing" | "menu";
-
+type DockIconName = "ads" | "seo" | "cro" | "pricing" | "start";
 function DockIcon({ name }: { name: DockIconName }) {
-  const common = { fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  const common = { fill: "none", stroke: "currentColor", strokeWidth: 1.8,
+    strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   return <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true" {...common}>
-    {name === "home" && <><path d="M3 10.5 12 3l9 7.5V20H4v-9.5"/><path d="M9 20v-7h6v7"/></>}
-    {name === "grid" && <><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></>}
-    {name === "cases" && <><path d="M4 20h16"/><path d="M6 16v-5m6 5V5m6 11V9"/></>}
+    {name === "ads" && <><path d="M3 10h4l12-6v16L7 14H3z"/><path d="M7 14l2 6h4l-3-5"/></>}
+    {name === "seo" && <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></>}
+    {name === "cro" && <path d="m5 3 14 10-7 1.5-2 6L5 3z"/>}
     {name === "pricing" && <><path d="M13 3H5a2 2 0 0 0-2 2v8l8 8a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8L13 3Z"/><circle cx="8" cy="8" r="1.3"/></>}
-    {name === "menu" && <path d="M4 6h16M4 12h16M4 18h16"/>}
+    {name === "start" && <path d="M4 12h15m-6-6 6 6-6 6"/>}
   </svg>;
 }
 
@@ -90,21 +93,18 @@ export function SiteHeader({
   const [renderedGroup, setRenderedGroup] = useState<string | null>(null);
   const activeRef = useRef<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileGroup, setMobileGroup] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ id: number; text: string } | null>(null);
   const [noticeHovered, setNoticeHovered] = useState(false);
   const [noticeFocused, setNoticeFocused] = useState(false);
   const noticeId = useRef(0);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
-  const mobileMoreRef = useRef<HTMLButtonElement>(null);
   const brandRef = useRef<HTMLAnchorElement>(null);
   const wasMobileOpen = useRef(false);
   const desktopNavRef = useRef<HTMLElement>(null);
   const rootRef = useRef<HTMLElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const panelMotionRef = useRef<{ play: () => unknown; reverse: () => unknown; kill: () => unknown; revert: () => unknown } | null>(null);
-  const mobileBackRef = useRef<HTMLButtonElement>(null);
 
   const openGroup = useCallback((id: string | null) => {
     activeRef.current = id;
@@ -128,7 +128,7 @@ export function SiteHeader({
     } else {
       if (dialog.open) dialog.close();
       if (wasMobileOpen.current) {
-        const visibleTrigger = [mobileMoreRef.current, menuTriggerRef.current, brandRef.current]
+        const visibleTrigger = [menuTriggerRef.current, brandRef.current]
           .find((item) => item && item.getClientRects().length);
         visibleTrigger?.focus({ preventScroll: true });
       }
@@ -148,16 +148,11 @@ export function SiteHeader({
     const handle = () => {
       if (desktop.matches) {
         setMobileOpen(false);
-        setMobileGroup(null);
       }
     };
     desktop.addEventListener("change", handle);
     return () => desktop.removeEventListener("change", handle);
   }, []);
-
-  useEffect(() => {
-    if (mobileOpen && mobileGroup) mobileBackRef.current?.focus();
-  }, [mobileOpen, mobileGroup]);
 
   useEffect(() => {
     if (!desktopGroup) return;
@@ -293,7 +288,6 @@ export function SiteHeader({
 
   function closeMobile() {
     setMobileOpen(false);
-    setMobileGroup(null);
   }
 
   function selectDestination(event: MouseEvent<HTMLAnchorElement>, destination: SiteDestination) {
@@ -309,6 +303,21 @@ export function SiteHeader({
     closeMobile();
   }
 
+  function selectShopifySection(event: MouseEvent<HTMLAnchorElement>, section: ShopifyDockSection) {
+    event.preventDefault();
+    const target = document.getElementById(section.targetId);
+    if (target) {
+      target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+      return;
+    }
+    if (onPreviewDestination) onPreviewDestination({ id: section.id, label: section.label, href: section.href });
+    else {
+      setNoticeHovered(false);
+      setNoticeFocused(false);
+      setNotice({ id: ++noticeId.current, text: section.label + " is not available in this preview yet." });
+    }
+  }
+
   function destinationAnchor(destination: SiteDestination, className: string, mega = false) {
     return (
       <a key={destination.id} href={destination.href} className={className}
@@ -322,7 +331,6 @@ export function SiteHeader({
     );
   }
 
-  const activeMobile = navigationGroups.find((group) => group.id === mobileGroup);
   const panelGroup = navigationGroups.find((group) => group.id === renderedGroup);
 
   return (
@@ -414,65 +422,50 @@ export function SiteHeader({
 
       {mode !== "static" && (
         <dialog ref={dialogRef} className={styles.mobileDialog} data-preview-part="mobile-menu"
-                data-theme={theme} aria-label={activeMobile?.label ?? "Navigation menu"}
+                data-theme={theme} aria-label="Ryze site navigation"
                 onClick={(event) => { if (event.target === event.currentTarget) closeMobile(); }}
                 onCancel={(event) => { event.preventDefault(); closeMobile(); }}
                 onClose={closeMobile}>
           <div className={styles.mobileBar}>
-            {activeMobile ? (
-              <button className={styles.mobileBack} ref={mobileBackRef}
-                      type="button" onClick={() => setMobileGroup(null)}>
-                <span aria-hidden="true">‹</span> Back
-              </button>
-            ) : <span className={styles.mobileHeading}>Explore Ryze</span>}
+            <span className={styles.mobileHeading}>Explore Ryze</span>
             <button className={styles.mobileClose} type="button" aria-label="Close navigation"
-                    onClick={closeMobile}><span aria-hidden="true">×</span></button>
+                    onClick={closeMobile}><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M5 5 19 19M19 5 5 19" />
+                </svg></button>
           </div>
-          {activeMobile ? (
-            <div className={styles.mobileList}>
-              <h2 className={styles.mobileSectionTitle}>{activeMobile.label}</h2>
-              {activeMobile.id === "products" && <FeaturedProducts onSelect={selectDestination} />}
-              {activeMobile.links.map((destination) => destinationAnchor(destination, styles.mobileLink))}
-            </div>
-          ) : (
-            <div className={styles.mobileList}>
-              {navigationGroups.map((group) => (
-                <button type="button" className={styles.mobileGroup} key={group.id}
-                        onClick={() => setMobileGroup(group.id)}>
-                  <span>{group.label}</span><span aria-hidden="true">›</span>
-                </button>
-              ))}
-              {headerLinks.map((destination) => destinationAnchor(destination, styles.mobileLink))}
-              {destinationAnchor(bookingLink, styles.mobileBooking)}
-            </div>
-          )}
+          <nav className={styles.mobileList} aria-label="Site destinations">
+            {mobileSiteSections.map((group) => (
+              <section key={group.id} className={styles.mobileSiteSection}>
+                <h2 className={styles.mobileSectionTitle}>{group.label}</h2>
+                {group.links.map((destination) => destinationAnchor(destination, styles.mobileLink))}
+              </section>
+            ))}
+          </nav>
         </dialog>
       )}
 
-      {variant === "dock" && mode !== "static" && (
-        <nav className={styles.mobileDock} aria-label="Mobile primary navigation">
-          {([
-            { id: "mobile-home", label: "Home", href: "https://www.get-ryze.ai/", icon: "home" },
-            { id: "mobile-products", label: "Products", href: "https://www.get-ryze.ai/", icon: "grid" },
-            { id: "mobile-cases", label: "Cases", href: "#selected-works", icon: "cases" },
-            { id: "mobile-pricing", label: "Pricing", href: "https://www.get-ryze.ai/pricing", icon: "pricing" },
-          ] as const).map((destination) => (
-            <a key={destination.id} className={styles.mobileDockItem} href={destination.href}
-               onClick={(event) => selectDestination(event, destination)}>
-              <DockIcon name={destination.icon} />
-              <span>{destination.label}</span>
+      {variant === "dock" && (
+        <nav className={styles.mobileDock} aria-label="Shopify quick navigation"
+             data-preview-part="mobile-dock">
+          {shopifyDockSections.map((section, index) => (
+            <a key={section.id} className={styles.mobileDockItem} href={section.href}
+               onClick={(event) => selectShopifySection(event, section)}>
+              <DockIcon name={index === 0 ? "ads" : index === 1 ? "seo" : "cro"} />
+              <span>{section.label}</span>
             </a>
           ))}
-          <button ref={mobileMoreRef} className={styles.mobileDockItem} type="button"
-                  aria-label="More navigation" aria-expanded={mobileOpen}
-                  aria-haspopup="dialog" onClick={() => setMobileOpen(true)}>
-            <DockIcon name="menu" /><span>More</span>
-          </button>
+          <a className={styles.mobileDockItem} href={shopifyPricingHref}>
+            <DockIcon name="pricing" /><span>Pricing</span>
+          </a>
+          <a className={styles.mobileDockItem} href={shopifyStartHref} aria-label="Get started with Ryze">
+            <DockIcon name="start" /><span>Start</span>
+          </a>
         </nav>
       )}
 
       <noscript><nav aria-label="All destinations" className={styles.noScriptLinks}>
-        {navigationGroups.flatMap((group) => group.links).concat(headerLinks, [bookingLink])
+        {mobileSiteSections.flatMap((group) => group.links).concat(headerLinks, [bookingLink, { id: "start-nojs", label: "Get started", href: shopifyStartHref }])
           .map((link) => <a key={link.id} href={link.href}>{link.label}</a>)}
       </nav></noscript>
 

@@ -122,6 +122,76 @@ export const footerGroups: readonly DestinationGroup[] = [
   },
 ];
 
+// Mobile global navigation: the current product is Shopify Autopilot; all
+// other products are one tap away once the upper hamburger is open.
+export const mobileSiteSections: readonly DestinationGroup[] = [
+  {
+    id: "mobile-products",
+    label: "Products",
+    links: [
+      ...navigationGroups[0].links,
+      { id: "mobile-seo", label: "SEO / GEO", href: "https://www.get-ryze.ai/seo" },
+      { id: "mobile-agents", label: "Agents", href: "https://www.get-ryze.ai/agents" },
+      { id: "mobile-agency", label: "Agency", href: "https://www.get-ryze.ai/agency" },
+    ],
+  },
+  {
+    id: "mobile-explore",
+    label: "Explore",
+    links: [
+      navigationGroups[2].links[1], // Integrations
+      { id: "mobile-cases", label: "Case Studies", href: "https://www.get-ryze.ai/case-studies" },
+    ],
+  },
+  {
+    id: "mobile-resources",
+    label: "Resources",
+    links: [
+      navigationGroups[2].links[0], // MCP
+      navigationGroups[2].links[2], // Docs
+      { id: "mobile-tools", label: "Free Tools", href: "https://www.get-ryze.ai/tools" },
+      { id: "mobile-blog", label: "Blog", href: "https://www.get-ryze.ai/blog" },
+      footerGroups[3].links[1], // Compare
+    ],
+  },
+  {
+    id: "mobile-company",
+    label: "Company",
+    links: [headerLinks[1]], // About
+  },
+];
+
+export type ShopifyDockSection = Readonly<{
+  id: string;
+  label: string;
+  targetId: string;
+  href: string; // Working no-JS fallback while the local section is unavailable.
+}>;
+
+export const shopifyDockSections: readonly ShopifyDockSection[] = [
+  {
+    id: "shopify-ads",
+    label: "Ads",
+    targetId: "shopify-paid-ads",
+    href: "https://www.get-ryze.ai/shopify-claude-ai-for-paid-ads-geo-cro",
+  },
+  {
+    id: "shopify-seo-ai",
+    label: "SEO / AI",
+    targetId: "shopify-seo-ai",
+    href: "https://www.get-ryze.ai/seo",
+  },
+  {
+    id: "shopify-cro",
+    label: "CRO",
+    targetId: "shopify-cro",
+    href: "https://www.get-ryze.ai/shopify-claude-ai-for-paid-ads-geo-cro",
+  },
+];
+
+export const shopifyPricingHref = "https://www.get-ryze.ai/pricing";
+export const shopifyStartHref = "https://reports.get-ryze.ai/o/all";
+
 export function previewNotice(destination: SiteDestination): string {
   return `On the live site, ${destination.label} would open ${destination.href}; this preview stays on the same page.`;
 }
