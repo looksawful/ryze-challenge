@@ -8,10 +8,11 @@ export interface RizzieMessageProps {
   onClose: () => void;
   side?: "right" | "left" | "top";
   style?: CSSProperties;
+  variant?: "bubble" | "toast";
 }
 
-/** Speech bubble belongs to the mascot; it is not an app-wide toast. */
-export default function RizzieMessage({ text, onClose, side = "right", style }: RizzieMessageProps) {
+/** Same accessible message, anchored to Rizzie or shown as a toast in the static fallback. */
+export default function RizzieMessage({ text, onClose, side = "right", style, variant = "bubble" }: RizzieMessageProps) {
   const [paused, setPaused] = useState(false);
   const remaining = useRef(5000);
   const started = useRef(0);
@@ -36,7 +37,7 @@ export default function RizzieMessage({ text, onClose, side = "right", style }: 
 
   return (
     <aside
-      className={styles.bubble}
+      className={`${styles.bubble} ${variant === "toast" ? styles.toast : ""}`}
       data-rizzie-bubble=""
       data-side={side}
       style={style}

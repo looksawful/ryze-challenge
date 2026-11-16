@@ -74,6 +74,8 @@
     block-size: 100%;
     margin: 0;
   }
+  /* With scripts unavailable Rizzie renders nothing, including no reserved gap. */
+  .mascot:empty { display: none; }
 
   .integration {
     display: flex;
@@ -177,9 +179,9 @@
     .mascot {
       position: absolute;
       inline-size: 190px;
-      block-size: 110px;
+      block-size: 185px;
       inset-inline-start: 0;
-      inset-block-end: 84px;
+      inset-block-end: 0;
       margin: 0;
     }
     .action { grid-area: action; inline-size: 190px; margin: 0; align-self: end; }
@@ -233,6 +235,19 @@
     .mascot { grid-column: 6 / 9; grid-row: 3; inline-size: 100%; align-self: start; }
     .action { grid-column: 9 / 11; grid-row: 3; inline-size: min(308px, 100%); margin: 20px 0 0 -36px; }
     .integration { grid-column: 11 / 13; grid-row: 3; justify-self: start; margin: 38px 0 0 -12px; }
+  }
+
+  /* Short wide Figma composition: Rizzie to the right, clear of the CTA. */
+  @media (min-width: 1600px) and (max-width: 2399px) and (max-height: 800px) {
+    .mascot {
+      position: absolute;
+      grid-column: auto;
+      grid-row: auto;
+      inset-inline-end: clamp(26px, 4.5vw, 105px);
+      inset-block-start: clamp(300px, 46svh, 390px);
+      inline-size: 210px;
+      block-size: 225px;
+    }
   }
 
   @media (min-width: 2400px) {
