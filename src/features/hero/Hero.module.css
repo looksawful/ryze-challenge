@@ -297,4 +297,21 @@
     .action summary { min-block-size: 50px; }
   }
 
+  /* Short mobile: shrink the empty sprite stage, not the surrounding content. */
+  @media (max-width: 359px) and (min-height: 568px) and (max-height: 660px) {
+    .mascot { block-size: 100px; }
+  }
+  @media (min-width: 360px) and (max-width: 699px) and (min-height: 568px) and (max-height: 760px) {
+    .mascot { block-size: 72px; }
+  }
+
+  /* Reserve the Dock's 76px plus 8px gap; keep Rizzie outside the CTA column. */
+  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) {
+    .hero { min-block-size: calc(100svh - 84px); padding-block-end: 0; }
+    .mascot {
+      inset-inline-start: -82px;
+      inset-block-end: max(0px, calc(100% - 100svh + 84px));
+    }
+  }
+
 }
