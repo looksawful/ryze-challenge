@@ -96,8 +96,10 @@ export default function HeroAction({ activation, onOpenChange }: HeroActionProps
   useEffect(() => {
     if (!activation) return;
     returnFocusRef.current = activation.trigger;
-    setMode(availableMode());
-    const frame = window.requestAnimationFrame(() => inputRef.current?.focus());
+    const frame = window.requestAnimationFrame(() => {
+      setMode(availableMode());
+      inputRef.current?.focus();
+    });
     return () => window.cancelAnimationFrame(frame);
   }, [activation]);
 
