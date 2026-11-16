@@ -117,7 +117,8 @@
       padding: 20px 0 27px;
       display: grid;
       grid-template-columns: 190px minmax(0, 1fr);
-      grid-template-rows: 45px 128px 27px 66px minmax(0, 1fr) 52px;
+      /* Keep the no-JS disclosure in an intrinsically sized grid track. */
+      grid-template-rows: 45px 128px 27px 66px minmax(0, 1fr) minmax(55px, max-content);
       grid-template-areas: "brand brand" "headline headline" "lead lead" "description description" ". ." "action integration";
       align-items: start;
     }
@@ -129,6 +130,13 @@
     .description { grid-area: description; max-inline-size: 390px; margin: 0; font-size: 18px; text-align: left; }
     .action { grid-area: action; inline-size: 190px; margin: 0; align-self: end; }
     .action summary { min-block-size: 52px; font-size: 16px; }
+    /* The native no-JS message appears below the button without shifting the Grid. */
+    .action p {
+      position: absolute;
+      inset-block-start: 100%;
+      inset-inline: 0;
+      margin-block-start: 12px;
+    }
     .integration { grid-area: integration; inline-size: auto; margin: 0 0 0 45px; justify-self: start; align-self: end; font-size: 15px; }
   }
 
@@ -195,4 +203,33 @@
       padding-block: 20px 40px;
     }
   }
+  /* Reserve room for mobile browser controls without clipping accessible text. */
+  @media (max-width: 699px) {
+    .hero { padding-block-end: max(80px, 11svh, calc(env(safe-area-inset-bottom) + 48px)); }
+    .integration { padding-block-start: 16px; }
+  }
+
+  /* Redistribute spacing rather than exceeding the short visual viewport. */
+  @media (max-width: 699px) and (max-height: 820px) {
+    .hero { padding-block-start: clamp(24px, calc(12svh - 50.4px), 48px); }
+    .headline { margin-block-start: clamp(16px, calc(12svh - 55.4px), 43px); }
+    .lead { margin-block-start: clamp(20px, calc(24svh - 114.8px), 82px); }
+    .description { margin-block-start: clamp(16px, calc(6svh - 22.2px), 27px); }
+    .action { margin-block-start: clamp(20px, calc(24svh - 114.8px), 82px); }
+  }
+
+  @media (max-width: 699px) and (max-height: 720px) {
+    .lead, .action { margin-block-start: clamp(16px, calc(28svh - 147.6px), 82px); }
+    .description { margin-block-start: clamp(12px, calc(6svh - 26px), 23px); }
+  }
+
+  /* Short landscape windows: keep the primary action above browser controls. */
+  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) and (max-height: 450px) {
+    .hero {
+      padding-block: 14px max(60px, env(safe-area-inset-bottom));
+      grid-template-rows: 38px 100px 26px 52px minmax(0, 1fr) minmax(55px, max-content);
+    }
+    .action summary { min-block-size: 50px; }
+  }
+
 }
