@@ -61,6 +61,21 @@ test("Cookie Storybook args hook lives directly in its render function", () => {
   assert.match(source, /render:\s*function CookieStoryRender\(args\) \{\s*const \[, updateArgs\] = useArgs/);
 });
 
+test("Cookie placement reads the real bottom-docked navigation", () => {
+  const source = readFileSync("src/features/consent/HomeworkCookieNotice.tsx", "utf8");
+  assert.match(source, /header\[data-variant="dock"\]/);
+  assert.match(source, /matches\('\[data-docked="false"\]'\)/);
+  assert.match(source, /navigationRect\.top/);
+  assert.doesNotMatch(source, /data-ryze-mobile-dock/);
+});
+
+test("Storybook Closed and Notice controls never modify stored consent", () => {
+  const source = readFileSync("src/features/consent/HomeworkCookieNotice.stories.tsx", "utf8");
+  assert.doesNotMatch(source, /localStorage\.(?:setItem|removeItem)/);
+  assert.doesNotMatch(source, /Reject all cookies/);
+  assert.match(source, /initialView=\{state\}/);
+});
+
 test("Homework cookie visual matches the borderless, intrinsically sized reference", () => {
   const styles = readFileSync("src/features/consent/HomeworkCookieNotice.module.css", "utf8");
   assert.match(styles, /border:\s*0;/);
