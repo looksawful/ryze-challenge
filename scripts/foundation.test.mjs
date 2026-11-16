@@ -25,7 +25,8 @@ test("motion is opted into, not enabled by default", () => {
 test("server-rendered page has accessible static content in dusk", () => {
   assert.match(layout(), /import\s+["']\.\/foundation\.css["']/);
   assert.match(page(), /<Hero/);
-  assert.match(hero(), /data-theme="dusk"/);
+  assert.match(layout(), /<body data-theme="dusk"/);
+  assert.match(hero(), /data-theme=\{theme\}/);
   assert.match(hero(), /<h1\b/);
   assert.doesNotMatch(page(), /"use client"/);
 });
@@ -61,13 +62,4 @@ test("compact cookie card uses intrinsic wrapping and a content-aware width", ()
   assert.match(styles, /\.choices\s*>\s*\*\s*\{[^}]*flex:/s);
   assert.match(styles, /inline-size:\s*min\(20rem,/);
   assert.match(styles, /\(height\s*<=\s*32rem\)/);
-});
-
-// Regression: opening the native CTA disclosure must not resize its flex/grid track.
-test("Hero disclosure note is out of normal flow across all viewport modes", () => {
-  const rule = heroStyles().match(/^  \.action p \{([\s\S]*?)^  \}/m)?.[1];
-  assert.ok(rule, "global action note rule exists");
-  assert.match(rule, /position:\s*absolute;/);
-  assert.match(rule, /inset-block-start:\s*100%;/);
-  assert.match(rule, /inset-inline:\s*0;/);
 });

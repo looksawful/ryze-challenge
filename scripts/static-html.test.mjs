@@ -47,7 +47,7 @@ test("cookie consent notice renders in the initial static HTML", () => {
 
 test("rendered first screen includes the real header, mobile menu and no-JS links", () => {
   const html = readFileSync("out/index.html", "utf8");
-  assert.match(html, /data-variant="hero"/);
+  assert.match(html, /data-variant="dock"/);
   assert.match(html, /aria-label="Primary navigation"/);
   assert.match(html, /aria-label="Toggle navigation menu"/);
   assert.match(html, /aria-label="All destinations"/);

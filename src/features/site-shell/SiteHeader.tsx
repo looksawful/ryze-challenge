@@ -1,41 +1,117 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
-import {
-  bookingLink,
-  headerLinks,
-  navigationGroups,
-  previewNotice,
-} from "./link-model";
+import Image from "next/image";
+import { bookingLink, headerLinks, navigationGroups, navigationProductCards, previewNotice } from "./link-model";
 import type { SiteDestination } from "./link-model";
 import styles from "./SiteHeader.module.css";
+
+export type NavigationMode = "auto" | "static" | "reduced" | "no-webgl" | "lightweight" | "full";
+export type NavigationTheme = "dawn" | "dusk";
 
 type SiteHeaderProps = {
   brand?: ReactNode;
   previewMode?: boolean;
-  variant?: "ryze" | "hero";
+  variant?: "ryze" | "hero" | "dock";
+  theme?: NavigationTheme;
+  enhancement?: NavigationMode;
   onPreviewDestination?: (destination: SiteDestination) => void;
+  onDockChange?: (docked: boolean) => void;
 };
+
+function useNavigationMode(requested: NavigationMode): Exclude<NavigationMode, "auto"> {
+  const [mode, setMode] = useState<Exclude<NavigationMode, "auto">>(
+    requested === "auto" ? "lightweight" : requested,
+  );
+  useEffect(() => {
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => {
+      if (requested === "static") return setMode("static");
+      if (requested === "reduced" || motion.matches) return setMode("reduced");
+      if (requested !== "auto") return setMode(requested);
+      const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+      setMode((memory !== undefined && memory <= 4) || (navigator.hardwareConcurrency || 8) <= 4 ? "lightweight" : "full");
+    };
+    sync();
+    motion.addEventListener("change", sync);
+    return () => motion.removeEventListener("change", sync);
+  }, [requested]);
+  return mode;
+}
+
+function FeaturedProducts({ onSelect }: { onSelect: (event: MouseEvent<HTMLAnchorElement>, destination: SiteDestination) => void }) {
+  return (
+    <section className={styles.productHighlights} aria-label="Ryze product capabilities">
+      <p className={styles.productHighlightsHeading}>Products</p>
+      <div className={styles.productCards}>
+        {navigationProductCards.map((destination) => (
+          <a key={destination.id} className={styles.productCard} href={destination.href}
+             data-mega-item onClick={(event) => onSelect(event, destination)}>
+            <span className={styles.productVisual}>
+              <Image src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}${destination.image}`} alt="" width={destination.width} height={destination.height}
+                     sizes="(max-width: 720px) 45vw, 190px" unoptimized />
+            </span>
+            <strong className={styles.productCardTitle}>{destination.label}</strong>
+            <span className={styles.productCardDescription}>{destination.description}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+type DockIconName = "home" | "grid" | "cases" | "pricing" | "menu";
+
+function DockIcon({ name }: { name: DockIconName }) {
+  const common = { fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  return <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true" {...common}>
+    {name === "home" && <><path d="M3 10.5 12 3l9 7.5V20H4v-9.5"/><path d="M9 20v-7h6v7"/></>}
+    {name === "grid" && <><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></>}
+    {name === "cases" && <><path d="M4 20h16"/><path d="M6 16v-5m6 5V5m6 11V9"/></>}
+    {name === "pricing" && <><path d="M13 3H5a2 2 0 0 0-2 2v8l8 8a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8L13 3Z"/><circle cx="8" cy="8" r="1.3"/></>}
+    {name === "menu" && <path d="M4 6h16M4 12h16M4 18h16"/>}
+  </svg>;
+}
 
 export function SiteHeader({
   brand,
   previewMode = true,
   variant = "ryze",
+  theme = "dusk",
+  enhancement = "lightweight",
   onPreviewDestination,
+  onDockChange,
 }: SiteHeaderProps) {
+  const mode = useNavigationMode(enhancement);
+  const premium = mode === "full" || mode === "no-webgl";
+  const uid = useId().replace(/:/g, "");
   const [desktopGroup, setDesktopGroup] = useState<string | null>(null);
+  const [renderedGroup, setRenderedGroup] = useState<string | null>(null);
+  const activeRef = useRef<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileGroup, setMobileGroup] = useState<string | null>(null);
-  const [notice, setNotice] = useState<{ text: string } | null>(null);
+  const [notice, setNotice] = useState<{ id: number; text: string } | null>(null);
   const [noticeHovered, setNoticeHovered] = useState(false);
   const [noticeFocused, setNoticeFocused] = useState(false);
+  const noticeId = useRef(0);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileMoreRef = useRef<HTMLButtonElement>(null);
+  const brandRef = useRef<HTMLAnchorElement>(null);
   const wasMobileOpen = useRef(false);
   const desktopNavRef = useRef<HTMLElement>(null);
-  const hoverOpenedRef = useRef<string | null>(null);
+  const rootRef = useRef<HTMLElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const panelMotionRef = useRef<{ play: () => unknown; reverse: () => unknown; kill: () => unknown; revert: () => unknown } | null>(null);
   const mobileBackRef = useRef<HTMLButtonElement>(null);
+
+  const openGroup = useCallback((id: string | null) => {
+    activeRef.current = id;
+    setDesktopGroup(id);
+    // Keep outgoing content mounted until the reverse GSAP timeline completes.
+    setRenderedGroup((rendered) => !premium || rendered === null ? id : rendered);
+  }, [premium]);
 
   useEffect(() => {
     if (!notice || noticeHovered || noticeFocused) return;
@@ -51,29 +127,32 @@ export function SiteHeader({
       dialog.querySelector<HTMLButtonElement>("button")?.focus();
     } else {
       if (dialog.open) dialog.close();
-      if (wasMobileOpen.current) menuTriggerRef.current?.focus();
+      if (wasMobileOpen.current) {
+        const visibleTrigger = [mobileMoreRef.current, menuTriggerRef.current, brandRef.current]
+          .find((item) => item && item.getClientRects().length);
+        visibleTrigger?.focus({ preventScroll: true });
+      }
     }
     wasMobileOpen.current = mobileOpen;
   }, [mobileOpen]);
 
   useEffect(() => {
     if (!mobileOpen) return;
-    const previousOverflow = document.body.style.overflow;
+    const original = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previousOverflow; };
+    return () => { document.body.style.overflow = original; };
   }, [mobileOpen]);
 
   useEffect(() => {
-    // Keep synchronized with the layout rule in SiteHeader.module.css.
     const desktop = window.matchMedia("(min-width: 64rem)");
-    const closeOnDesktop = () => {
+    const handle = () => {
       if (desktop.matches) {
         setMobileOpen(false);
         setMobileGroup(null);
       }
     };
-    desktop.addEventListener("change", closeOnDesktop);
-    return () => desktop.removeEventListener("change", closeOnDesktop);
+    desktop.addEventListener("change", handle);
+    return () => desktop.removeEventListener("change", handle);
   }, []);
 
   useEffect(() => {
@@ -84,233 +163,331 @@ export function SiteHeader({
     if (!desktopGroup) return;
     function handleEscape(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
-      hoverOpenedRef.current = null;
-      setDesktopGroup(null);
-      document.getElementById("ryze-trigger-" + desktopGroup)?.focus();
+      const id = activeRef.current;
+      openGroup(null);
+      if (id) document.getElementById(uid + "-trigger-" + id)?.focus();
     }
-    function handleOutsidePointer(event: PointerEvent) {
-      if (!desktopNavRef.current?.contains(event.target as Node)) {
-        hoverOpenedRef.current = null;
-        setDesktopGroup(null);
-      }
+    function handleOutside(event: PointerEvent) {
+      if (!desktopNavRef.current?.contains(event.target as Node)) openGroup(null);
     }
     document.addEventListener("keydown", handleEscape);
-    document.addEventListener("pointerdown", handleOutsidePointer);
+    document.addEventListener("pointerdown", handleOutside);
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.removeEventListener("pointerdown", handleOutsidePointer);
+      document.removeEventListener("pointerdown", handleOutside);
     };
-  }, [desktopGroup]);
+  }, [desktopGroup, openGroup, uid]);
+
+  // The complete menu uses the original reversible clip-path + stagger idea.
+  // The library is downloaded only after the first premium menu opens.
+  useEffect(() => {
+    if (!renderedGroup || !premium) return;
+    let alive = true;
+    const currentGroup = renderedGroup;
+    const panel = panelRef.current;
+    if (!panel) return;
+    import("gsap").then(({ gsap }) => {
+      if (!alive || !panel.isConnected) return;
+      const links = panel.querySelectorAll("[data-mega-item]");
+      const heading = panel.querySelectorAll("[data-mega-heading]");
+      const timeline = gsap.timeline({
+        paused: true,
+        onReverseComplete: () => setRenderedGroup((id) =>
+          id === currentGroup ? activeRef.current : id),
+      });
+      const anchor = document.getElementById(uid + "-trigger-" + currentGroup)?.getBoundingClientRect();
+      const bounds = panel.getBoundingClientRect();
+      const fromAbove = bounds.top > (anchor?.bottom ?? 0);
+      const x = Math.max(0, Math.min(bounds.width - 80, (anchor?.left ?? bounds.left) - bounds.left));
+      const rightInset = Math.max(0, bounds.width - x - (anchor?.width ?? 80));
+      const collapsed = fromAbove
+        ? `inset(0px ${rightInset}px ${Math.max(0, bounds.height - 12)}px ${x}px round 14px)`
+        : `inset(${Math.max(0, bounds.height - 12)}px ${rightInset}px 0px ${x}px round 14px)`;
+      timeline.fromTo(panel,
+        { autoAlpha: 0, clipPath: collapsed, y: fromAbove ? -10 : 10, scale: 0.98 },
+        { autoAlpha: 1, clipPath: "inset(0px 0px 0px 0px round 24px)", y: 0, scale: 1,
+          duration: 0.64, ease: "back.out(1.3)", easeReverse: "power3.out" }, 0);
+      timeline.fromTo(heading, { autoAlpha: 0, y: -8 },
+        { autoAlpha: 1, y: 0, duration: 0.24, ease: "power2.out", stagger: 0.04 }, 0.1);
+      timeline.fromTo(links, { autoAlpha: 0, y: -17, scale: 0.97, filter: "blur(4px)" },
+        { autoAlpha: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.34,
+          stagger: { amount: 0.18 }, ease: "power3.out" }, 0.14);
+      panelMotionRef.current = timeline;
+      if (activeRef.current === currentGroup) timeline.play();
+      else timeline.progress(1).reverse();
+    }).catch(() => {
+      if (alive) {
+        // GSAP is optional. Keep the usable menu if its chunk cannot load.
+        panel.style.visibility = "visible";
+        setRenderedGroup(activeRef.current);
+      }
+    });
+    return () => {
+      alive = false;
+      panelMotionRef.current?.revert();
+      panelMotionRef.current?.kill();
+      panelMotionRef.current = null;
+    };
+  }, [renderedGroup, premium, uid]);
+
+  useEffect(() => {
+    const animation = panelMotionRef.current;
+    if (!premium || !animation) return;
+    if (desktopGroup === renderedGroup) animation.play();
+    else animation.reverse();
+  }, [desktopGroup, renderedGroup, premium]);
+
+  // The Homework nav crosses at the end of the dark showcase, not after
+  // an arbitrary number of scroll pixels. Relocate while briefly invisible:
+  // the dock must never fly across the content.
+  useEffect(() => {
+    if (variant !== "dock") return;
+    const node = rootRef.current;
+    if (!node) return;
+    let disposed = false;
+    let gsapApi: typeof import("gsap").gsap | null = null;
+    let lastDocked: boolean | null = null;
+    const position = (force = false) => {
+      const darkEnd = document.querySelector<HTMLElement>("[data-ryze-dark-end]");
+      const docked = darkEnd
+        ? darkEnd.getBoundingClientRect().bottom <= 80
+        : window.scrollY >= Math.max(160, window.innerHeight * 0.7);
+      if (docked === lastDocked && !force) return;
+      const changed = docked !== lastDocked;
+      lastDocked = docked;
+      const settle = () => {
+        node.dataset.docked = String(docked);
+        onDockChange?.(docked);
+      };
+      if (changed && docked) openGroup(null);
+      if (gsapApi && premium && changed && !force) {
+        gsapApi.killTweensOf(node);
+        gsapApi.timeline()
+          .to(node, { autoAlpha: 0, duration: 0.12, ease: "power2.in" })
+          .call(settle)
+          .to(node, { autoAlpha: 1, duration: 0.42, ease: "power3.out" });
+      } else {
+        gsapApi?.killTweensOf(node);
+        settle();
+        node.style.removeProperty("opacity");
+        node.style.removeProperty("visibility");
+      }
+    };
+    position(true);
+    if (premium) import("gsap").then(({ gsap }) => {
+      if (!disposed) gsapApi = gsap;
+    }).catch(() => { /* Position and content remain usable without GSAP. */ });
+    const onScroll = () => position();
+    const onResize = () => position(true);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      disposed = true;
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      gsapApi?.killTweensOf(node);
+      node.style.removeProperty("opacity");
+      node.style.removeProperty("visibility");
+    };
+  }, [variant, premium, openGroup, onDockChange]);
 
   function closeMobile() {
     setMobileOpen(false);
     setMobileGroup(null);
   }
 
-  function selectDestination(
-    event: MouseEvent<HTMLAnchorElement>,
-    destination: SiteDestination,
-  ) {
+  function selectDestination(event: MouseEvent<HTMLAnchorElement>, destination: SiteDestination) {
     if (!previewMode) return;
     event.preventDefault();
-    onPreviewDestination?.(destination);
-    if (!onPreviewDestination) setNotice({ text: previewNotice(destination) });
-    setDesktopGroup(null);
+    if (onPreviewDestination) onPreviewDestination(destination);
+    else {
+      setNoticeHovered(false);
+      setNoticeFocused(false);
+      setNotice({ id: ++noticeId.current, text: previewNotice(destination) });
+    }
+    openGroup(null);
     closeMobile();
   }
 
-  function destinationAnchor(destination: SiteDestination, className: string) {
+  function destinationAnchor(destination: SiteDestination, className: string, mega = false) {
     return (
-      <a
-        key={destination.id}
-        href={destination.href}
-        className={className}
-        onClick={(event) => selectDestination(event, destination)}
-        target={destination.id === bookingLink.id && !previewMode ? "_blank" : undefined}
-        rel={destination.id === bookingLink.id && !previewMode ? "noopener noreferrer" : undefined}
-      >
+      <a key={destination.id} href={destination.href} className={className}
+         data-mega-item={mega || undefined}
+         onClick={(event) => selectDestination(event, destination)}
+         target={destination.id === bookingLink.id && !previewMode ? "_blank" : undefined}
+         rel={destination.id === bookingLink.id && !previewMode ? "noopener noreferrer" : undefined}>
         <span>{destination.label}</span>
-        {destination.description && (
-          <span className={styles.description}>{destination.description}</span>
-        )}
+        {destination.description && <span className={styles.description}>{destination.description}</span>}
       </a>
     );
   }
 
   const activeMobile = navigationGroups.find((group) => group.id === mobileGroup);
+  const panelGroup = navigationGroups.find((group) => group.id === renderedGroup);
 
   return (
-    <header className={styles.header} data-theme="dusk" data-variant={variant}>
+    <header ref={rootRef} className={styles.header} data-theme={theme}
+            data-variant={variant} data-enhancement={mode} data-docked="false">
       <div className={styles.inner}>
-        <a
-          href="https://www.get-ryze.ai/"
-          className={styles.brand}
-          onClick={(event) => selectDestination(event, {
-            id: "brand",
-            label: "Ryze",
-            href: "https://www.get-ryze.ai/",
-          })}
-          aria-label="Ryze home"
-        >
-          {brand ?? <span className={styles.wordmark}>Ryze</span>}
+        <a ref={brandRef} href="https://www.get-ryze.ai/" className={styles.brand}
+           data-preview-part="header-brand"
+           onClick={(event) => selectDestination(event, {
+             id: "brand", label: "Ryze", href: "https://www.get-ryze.ai/",
+           })} aria-label="Ryze home">
+          {brand ?? <Image className={styles.brandImage} src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/ryze-lockup-white.svg`} alt=""
+                           width={126} height={40} unoptimized priority />}
         </a>
 
-        <nav
-          ref={desktopNavRef}
-          className={styles.desktopNavigation}
-          aria-label="Primary navigation"
-          onMouseLeave={() => {
-            hoverOpenedRef.current = null;
-            setDesktopGroup(null);
-          }}
-        >
-          {navigationGroups.map((group) => (
-            <div
-              className={styles.group}
-              key={group.id}
-              onMouseEnter={() => {
-                hoverOpenedRef.current = group.id;
-                setDesktopGroup(group.id);
-              }}
-            >
-              <button
-                className={styles.navTrigger}
-                id={"ryze-trigger-" + group.id}
-                type="button"
-                aria-expanded={desktopGroup === group.id}
-                aria-controls={`ryze-mega-${group.id}`}
-                onClick={() => {
-                  if (hoverOpenedRef.current === group.id) {
-                    hoverOpenedRef.current = null;
-                    setDesktopGroup(group.id);
-                  } else {
-                    setDesktopGroup((current) => current === group.id ? null : group.id);
-                  }
-                }}
-              >
-                {group.label}
-                <span aria-hidden="true" className={styles.chevron}>⌄</span>
-              </button>
-              {desktopGroup === group.id && (
-                <div className={styles.megaPanel} id={`ryze-mega-${group.id}`}>
-                  <span className={styles.megaEyebrow}>Explore {group.label}</span>
+        {mode === "static" ? (
+          <nav className={styles.staticNavigation} aria-label="Primary navigation">
+            {navigationGroups.map((group) => (
+              <details className={styles.staticGroup} key={group.id}>
+                <summary>{group.label}<span aria-hidden="true">⌄</span></summary>
+                <div className={styles.staticPanel}>
+                  {group.id === "products" && <FeaturedProducts onSelect={selectDestination} />}
                   <div className={styles.megaGrid}>
-                    {group.links.map((destination) =>
-                      destinationAnchor(destination, styles.megaLink),
-                    )}
+                    {group.links.map((destination) => destinationAnchor(destination, styles.megaLink, true))}
                   </div>
                 </div>
-              )}
-            </div>
-          ))}
-          {headerLinks.map((destination) =>
-            destinationAnchor(destination, styles.directLink),
-          )}
-        </nav>
+              </details>
+            ))}
+            {headerLinks.map((destination) => destinationAnchor(destination, styles.directLink))}
+          </nav>
+        ) : (
+          <nav ref={desktopNavRef} className={styles.desktopNavigation}
+               data-preview-part="header-navigation" aria-label="Primary navigation"
+               onPointerLeave={(event) => { if (event.pointerType === "mouse") openGroup(null); }}>
+            {navigationGroups.map((group) => (
+              <div className={styles.group} key={group.id}
+                   onPointerEnter={(event) => { if (event.pointerType === "mouse") openGroup(group.id); }}>
+                <button className={styles.navTrigger} id={uid + "-trigger-" + group.id}
+                        type="button" aria-expanded={desktopGroup === group.id}
+                        aria-controls={desktopGroup === group.id ? uid + "-mega-" + group.id : undefined}
+                        onClick={() => openGroup(activeRef.current === group.id ? null : group.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === "ArrowDown") {
+                            event.preventDefault();
+                            openGroup(group.id);
+                            requestAnimationFrame(() =>
+                              panelRef.current?.querySelector<HTMLAnchorElement>("a")?.focus({ preventScroll: true }));
+                          }
+                        }}>
+                  {group.label}<span aria-hidden="true" className={styles.chevron}>⌄</span>
+                </button>
+              </div>
+            ))}
+            {headerLinks.map((destination) => destinationAnchor(destination, styles.directLink))}
+            {panelGroup && (
+              <div ref={panelRef} className={styles.megaPanel} id={uid + "-mega-" + panelGroup.id}
+                   data-preview-part="mega-menu" data-open={desktopGroup === panelGroup.id}
+                   aria-hidden={desktopGroup !== panelGroup.id}
+                   inert={desktopGroup !== panelGroup.id}>
+                <div className={styles.megaPanelTop} data-mega-heading>
+                  <span className={styles.megaEyebrow}>EXPLORE RYZE / {panelGroup.label.toUpperCase()}</span>
+                  <span className={styles.megaPanelIndex}>0{navigationGroups.indexOf(panelGroup) + 1} / 03</span>
+                </div>
+                <div className={styles.megaContent}>
+                  {panelGroup.id === "products" && <FeaturedProducts onSelect={selectDestination} />}
+                  <div className={styles.megaLinksColumn}>
+                    <p className={styles.megaSectionName} data-mega-heading>{panelGroup.label}</p>
+                    <div className={styles.megaGrid}>
+                      {panelGroup.links.map((destination) => destinationAnchor(destination, styles.megaLink, true))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </nav>
+        )}
 
-        <div className={styles.actions}>
+        <div className={styles.actions} data-preview-part="header-actions">
           {destinationAnchor(bookingLink, styles.booking)}
-          <button
-            ref={menuTriggerRef}
-            type="button"
-            className={styles.mobileToggle}
-            aria-label="Toggle navigation menu"
-            aria-expanded={mobileOpen}
-            onClick={() => {
-              if (mobileOpen) closeMobile();
-              else setMobileOpen(true);
-            }}
-          >
-            <span className={styles.toggleLines} aria-hidden="true"><i /><i /></span>
-          </button>
+          {mode !== "static" && (
+            <button ref={menuTriggerRef} type="button" className={styles.mobileToggle}
+                    aria-label="Toggle navigation menu" aria-expanded={mobileOpen}
+                    onClick={() => mobileOpen ? closeMobile() : setMobileOpen(true)}>
+              <span className={styles.toggleLines} aria-hidden="true"><i /><i /></span>
+            </button>
+          )}
         </div>
       </div>
 
-      <dialog
-        ref={dialogRef}
-        className={styles.mobileDialog}
-        aria-label={activeMobile?.label ?? "Navigation menu"}
-        onCancel={(event) => {
-          event.preventDefault();
-          closeMobile();
-        }}
-        onClose={closeMobile}
-      >
-        <div className={styles.mobileBar}>
-          {activeMobile ? (
-            <button
-              className={styles.mobileBack}
-              ref={mobileBackRef}
-              type="button"
-              onClick={() => setMobileGroup(null)}
-            >
-              <span aria-hidden="true">‹</span> Back
-            </button>
-          ) : (
-            <span className={styles.mobileHeading}>Explore Ryze</span>
-          )}
-          <button
-            className={styles.mobileClose}
-            type="button"
-            aria-label="Close navigation"
-            onClick={closeMobile}
-          >
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>
-        {activeMobile ? (
-          <div className={styles.mobileList}>
-            <h2 className={styles.mobileSectionTitle}>{activeMobile.label}</h2>
-            {activeMobile.links.map((destination) =>
-              destinationAnchor(destination, styles.mobileLink),
-            )}
-          </div>
-        ) : (
-          <div className={styles.mobileList}>
-            {navigationGroups.map((group) => (
-              <button
-                type="button"
-                className={styles.mobileGroup}
-                key={group.id}
-                onClick={() => setMobileGroup(group.id)}
-              >
-                <span>{group.label}</span>
-                <span aria-hidden="true">›</span>
+      {mode !== "static" && (
+        <dialog ref={dialogRef} className={styles.mobileDialog} data-preview-part="mobile-menu"
+                data-theme={theme} aria-label={activeMobile?.label ?? "Navigation menu"}
+                onClick={(event) => { if (event.target === event.currentTarget) closeMobile(); }}
+                onCancel={(event) => { event.preventDefault(); closeMobile(); }}
+                onClose={closeMobile}>
+          <div className={styles.mobileBar}>
+            {activeMobile ? (
+              <button className={styles.mobileBack} ref={mobileBackRef}
+                      type="button" onClick={() => setMobileGroup(null)}>
+                <span aria-hidden="true">‹</span> Back
               </button>
-            ))}
-            {headerLinks.map((destination) =>
-              destinationAnchor(destination, styles.mobileLink),
-            )}
-            {destinationAnchor(bookingLink, styles.mobileBooking)}
+            ) : <span className={styles.mobileHeading}>Explore Ryze</span>}
+            <button className={styles.mobileClose} type="button" aria-label="Close navigation"
+                    onClick={closeMobile}><span aria-hidden="true">×</span></button>
           </div>
-        )}
-      </dialog>
+          {activeMobile ? (
+            <div className={styles.mobileList}>
+              <h2 className={styles.mobileSectionTitle}>{activeMobile.label}</h2>
+              {activeMobile.id === "products" && <FeaturedProducts onSelect={selectDestination} />}
+              {activeMobile.links.map((destination) => destinationAnchor(destination, styles.mobileLink))}
+            </div>
+          ) : (
+            <div className={styles.mobileList}>
+              {navigationGroups.map((group) => (
+                <button type="button" className={styles.mobileGroup} key={group.id}
+                        onClick={() => setMobileGroup(group.id)}>
+                  <span>{group.label}</span><span aria-hidden="true">›</span>
+                </button>
+              ))}
+              {headerLinks.map((destination) => destinationAnchor(destination, styles.mobileLink))}
+              {destinationAnchor(bookingLink, styles.mobileBooking)}
+            </div>
+          )}
+        </dialog>
+      )}
 
-      <noscript>
-        <nav aria-label="All destinations" className={styles.noScriptLinks}>
-          {navigationGroups.flatMap((group) => group.links).concat(headerLinks, [bookingLink]).map((link) => (
-            <a key={link.id} href={link.href}>{link.label}</a>
+      {variant === "dock" && mode !== "static" && (
+        <nav className={styles.mobileDock} aria-label="Mobile primary navigation">
+          {([
+            { id: "mobile-home", label: "Home", href: "https://www.get-ryze.ai/", icon: "home" },
+            { id: "mobile-products", label: "Products", href: "https://www.get-ryze.ai/", icon: "grid" },
+            { id: "mobile-cases", label: "Cases", href: "#selected-works", icon: "cases" },
+            { id: "mobile-pricing", label: "Pricing", href: "https://www.get-ryze.ai/pricing", icon: "pricing" },
+          ] as const).map((destination) => (
+            <a key={destination.id} className={styles.mobileDockItem} href={destination.href}
+               onClick={(event) => selectDestination(event, destination)}>
+              <DockIcon name={destination.icon} />
+              <span>{destination.label}</span>
+            </a>
           ))}
+          <button ref={mobileMoreRef} className={styles.mobileDockItem} type="button"
+                  aria-label="More navigation" aria-expanded={mobileOpen}
+                  aria-haspopup="dialog" onClick={() => setMobileOpen(true)}>
+            <DockIcon name="menu" /><span>More</span>
+          </button>
         </nav>
-      </noscript>
+      )}
+
+      <noscript><nav aria-label="All destinations" className={styles.noScriptLinks}>
+        {navigationGroups.flatMap((group) => group.links).concat(headerLinks, [bookingLink])
+          .map((link) => <a key={link.id} href={link.href}>{link.label}</a>)}
+      </nav></noscript>
 
       {notice && !onPreviewDestination && (
-        <div
-          className={styles.notice}
-          role="status"
-          onMouseEnter={() => setNoticeHovered(true)}
-          onMouseLeave={() => setNoticeHovered(false)}
-          onFocusCapture={() => setNoticeFocused(true)}
-          onBlurCapture={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget)) setNoticeFocused(false);
-          }}
-        >
+        <div key={notice.id} className={styles.notice} data-preview-part="destination-notice"
+             role="status"
+             onMouseEnter={() => setNoticeHovered(true)}
+             onMouseLeave={() => setNoticeHovered(false)}
+             onFocusCapture={() => setNoticeFocused(true)}
+             onBlurCapture={(event) => {
+               if (!event.currentTarget.contains(event.relatedTarget)) setNoticeFocused(false);
+             }}>
           <p>{notice.text}</p>
-          <button type="button" onClick={() => {
-            setNotice(null);
-            setNoticeHovered(false);
-            setNoticeFocused(false);
-          }} aria-label="Dismiss message">×</button>
+          <button type="button" aria-label="Dismiss message"
+                  onClick={() => { setNotice(null); setNoticeHovered(false); setNoticeFocused(false); }}>×</button>
         </div>
       )}
     </header>

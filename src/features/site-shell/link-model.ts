@@ -125,3 +125,42 @@ export const footerGroups: readonly DestinationGroup[] = [
 export function previewNotice(destination: SiteDestination): string {
   return `On the live site, ${destination.label} would open ${destination.href}; this preview stays on the same page.`;
 }
+
+export type NavigationProduct = SiteDestination & Readonly<{
+  image: string;
+  width: number;
+  height: number;
+}>;
+
+// Original illustrated Homework shelf, with real Ryze landing destinations.
+// Reused by desktop MegaMenu and mobile product navigation.
+export const navigationProductCards: readonly NavigationProduct[] = [
+  {
+    id: "paid-ads-card",
+    label: "Paid Ads",
+    href: "https://www.get-ryze.ai/",
+    description: "Campaigns, creatives and budget optimization.",
+    image: "/ryze-media/navigation/paid-ads-walkthrough.webp", width: 1920, height: 1080,
+  },
+  {
+    id: "seo-card",
+    label: "SEO & AI Visibility",
+    href: "https://www.get-ryze.ai/seo",
+    description: "Search rankings, content and AI citations.",
+    image: "/ryze-media/navigation/seo.png", width: 1920, height: 1080,
+  },
+  {
+    id: "cro-card",
+    label: "CRO",
+    href: "https://www.get-ryze.ai/shopify-claude-ai-for-paid-ads-geo-cro",
+    description: "Product pages, experiments and conversion.",
+    image: "/ryze-media/navigation/site-audit.png", width: 1920, height: 1080,
+  },
+  {
+    id: "reporting-card",
+    label: "Reporting",
+    href: "https://help.get-ryze.ai/agent/reports",
+    description: "Performance, attribution and weekly summaries.",
+    image: "/ryze-media/navigation/reporting.png", width: 1920, height: 1080,
+  },
+];
