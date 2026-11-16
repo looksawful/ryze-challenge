@@ -3,20 +3,18 @@ import IntegrationLogos, { type IntegrationPreviewMode } from "./IntegrationLogo
 
 type Controls = {
   mode: IntegrationPreviewMode;
-  theme: "dawn" | "dusk";
 };
 
 const meta = {
   title: "Design System/Components/Integrations",
   parameters: { layout: "fullscreen" },
-  args: { mode: "auto", theme: "dusk" },
+  args: { mode: "auto" },
   argTypes: {
     mode: { name: "Mode", control: "select", options: ["auto", "static"] },
-    theme: { name: "Theme", control: "radio", options: ["dawn", "dusk"] },
   },
-  render: ({ mode, theme }) => (
+  render: ({ mode }, context) => (
     <div
-      data-theme={theme}
+      data-theme={context.globals.theme === "dawn" ? "dawn" : "dusk"}
       style={{
         minHeight: "100vh",
         display: "grid",
@@ -27,7 +25,7 @@ const meta = {
       }}
     >
       <div style={{ width: "min(100%, 358px)" }}>
-        <IntegrationLogos key={mode + theme} previewMode={mode} />
+        <IntegrationLogos key={mode + context.globals.theme} previewMode={mode} />
       </div>
     </div>
   ),

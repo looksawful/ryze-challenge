@@ -28,3 +28,11 @@ The primary working tree D:\inwork\ryze-challenge contains uncommitted Hero/Rizz
 ## Known limitations
 
 Storybook requires JavaScript, so it cannot prove a no-JS fallback. Simulated preview links are not real navigation. Global theme toolbar must not imply every component supports every theme.
+
+## Debug pass · 2026-11-16
+
+- Reproduced two Storybook presentation defects using focused red tests.
+- Integrations and Navigation stories had local `theme=dusk` controls that overrode the global Storybook theme toolbar. They now consume `context.globals.theme` and retain functional component modes.
+- Hero story included a review label in its sidebar title, contrary to the approved short-name policy. Moved the status to `parameters.status = "review"`.
+- Verification: 2/2 focused regression tests, 26/26 existing tests, typecheck, Storybook build and targeted ESLint passed.
+- Browser-level screenshot comparison still pending. Existing integration test wording still refers to Theme controls; its behavioral assertions should be reviewed during T06.
