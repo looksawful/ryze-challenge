@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import Hero from "../hero/Hero";
+import RizzieLab from "./RizzieLab";
 import type { RizzieScenario } from "./mascot-model";
 
 type Props = {
@@ -69,3 +70,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {};
+
+export const MotionLab: Story = {
+  name: "Motion Lab",
+  parameters: {
+    layout: "fullscreen",
+    controls: { disable: true },
+    docs: { description: { story: "Inspect every existing sprite action, capability fallback and real mouse drag. Use Replay after one-shot actions and Reset to restore the starting position." } },
+  },
+  render: (_args, context) => <RizzieLab theme={context.globals.theme === "dawn" ? "dawn" : "dusk"} />,
+};
