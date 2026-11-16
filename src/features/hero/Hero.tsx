@@ -42,7 +42,6 @@ export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, them
 
       <div className={styles.integration}>
         <IntegrationLogos />
-        <span>Plugs into<br />{" "}any platform</span>
       </div>
 
       <div className={styles.action}>

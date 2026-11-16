@@ -4,14 +4,17 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const hero = read("../src/features/hero/Hero.tsx");
+const component = read("../src/features/integrations/IntegrationLogos.tsx");
+const css = read("../src/features/integrations/IntegrationLogos.module.css");
 
-test("Hero uses the actual integration logo component, not a placeholder graphic", () => {
+test("Hero renders the complete integrations component, including its caption", () => {
   assert.match(hero, /<IntegrationLogos\s*\/>/);
-  assert.doesNotMatch(hero, /integration-mark\.png/);
+  assert.doesNotMatch(hero, /Plugs into/);
+  assert.match(component, /Plugs into/);
+  assert.match(component, /any platform/);
 });
 
-test("all five approved platform marks are rendered as semantic static HTML", () => {
-  const component = read("../src/features/integrations/IntegrationLogos.tsx");
+test("five approved logos remain in semantic static HTML", () => {
   for (const name of ["Shopify", "Google Ads", "Meta Ads", "TikTok", "Google Analytics"]) {
     assert.ok(component.includes(name), name);
   }
@@ -19,21 +22,19 @@ test("all five approved platform marks are rendered as semantic static HTML", ()
   assert.match(component, /<li/);
 });
 
-test("a WebGL failure uses marquee and reduced motion uses static logos", () => {
-  const component = read("../src/features/integrations/IntegrationLogos.tsx");
+test("static is the only fallback for reduced motion, WebGL loss and slow frames", () => {
   assert.match(component, /prefers-reduced-motion: reduce/);
-  assert.match(component, /"marquee"/);
-  assert.match(component, /"webgl"/);
-  assert.match(component, /"static"/);
   assert.match(component, /webglcontextlost/);
-  const css = read("../src/features/integrations/IntegrationLogos.module.css");
-  assert.match(css, /flex-wrap: wrap/);
-  assert.match(css, /@media \(prefers-reduced-motion: no-preference\)/);
-  assert.match(css, /@keyframes/);
+  assert.match(component, /slowFrames >= 3/);
+  assert.match(component, /host\.dataset\.mode = "static"/);
+  assert.doesNotMatch(component + css, /marquee|logo-scroll|logo-scroll/);
+  assert.match(css, /prefers-reduced-motion: no-preference/);
 });
 
-test("slow WebGL frame delivery falls back to lightweight marquee", () => {
-  const component = read("../src/features/integrations/IntegrationLogos.tsx");
-  assert.match(component, /slowFrames >= 3/);
-  assert.match(component, /if \(slowFrames >= 3\) \{\s*fallback\(\)/);
+test("intrinsic logo grid and proportional caption are inside the component", () => {
+  assert.match(css, /repeat\(auto-fit, minmax\(/);
+  assert.match(css, /--integration-logo-size: clamp\(/);
+  assert.match(css, /\.caption/);
+  assert.match(css, /font-size: clamp\(/);
+  assert.match(component, /className=\{styles\.caption\}/);
 });

@@ -15,7 +15,10 @@ const LOGOS = [
 ] as const;
 const CYCLE = MORPH_DURATIONS.reduce((sum, duration) => sum + duration + SETTLE_DURATION, 0);
 
-export default function IntegrationLogos() {
+export type IntegrationPreviewMode = "auto" | "static" | "webgl";
+
+/** Storybook can preview the static state; the app uses automatic progressive enhancement. */
+export default function IntegrationLogos({ previewMode = "auto" }: { previewMode?: IntegrationPreviewMode }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -23,6 +26,11 @@ export default function IntegrationLogos() {
     const host = hostRef.current;
     const canvas = canvasRef.current;
     if (!host || !canvas) return;
+
+    if (previewMode === "static") {
+      host.dataset.mode = "static";
+      return;
+    }
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let disposed = false;
@@ -35,9 +43,6 @@ export default function IntegrationLogos() {
     let lastPaint = 0;
     let slowFrames = 0;
 
-    const setMode = (mode: "static" | "marquee" | "webgl") => {
-      host.dataset.mode = mode;
-    };
     const stop = () => {
       window.cancelAnimationFrame(frame);
       frame = 0;
@@ -48,7 +53,7 @@ export default function IntegrationLogos() {
       stop();
       renderer?.dispose();
       renderer = undefined;
-      setMode(motion.matches ? "static" : "marquee");
+      host.dataset.mode = "static";
     };
     const phase = () => {
       let time = elapsed % CYCLE;
@@ -100,7 +105,7 @@ export default function IntegrationLogos() {
           return;
         }
         renderer = next;
-        setMode("webgl");
+        host.dataset.mode = "webgl";
         renderer.resize();
         renderer.draw(0, 0, host.closest("[data-theme]")?.getAttribute("data-theme") !== "dawn");
         start();
@@ -111,14 +116,14 @@ export default function IntegrationLogos() {
     const onMotion = () => {
       if (motion.matches) {
         stop();
-        setMode("static");
+        host.dataset.mode = "static";
       } else if (renderer) {
-        setMode("webgl");
+        host.dataset.mode = "webgl";
         start();
       } else if (!attempted) {
         void initialize();
       } else {
-        setMode("marquee");
+        host.dataset.mode = "static";
       }
     };
     const onLost = (event: Event) => {
@@ -156,31 +161,21 @@ export default function IntegrationLogos() {
       canvas.removeEventListener("webglcontextlost", onLost);
       renderer?.dispose();
     };
-  }, []);
+  }, [previewMode]);
 
   return (
-    <div ref={hostRef} className={styles.root} data-mode="static">
-      <ul className={styles.staticList} aria-label="Platforms shown">
-        {LOGOS.map(({ name, src }) => (
-          <li key={name} className={styles.staticItem}>
-            <Image className={styles.logo} src={src} alt={name} width={26} height={26} loading="eager" unoptimized />
-          </li>
-        ))}
-      </ul>
-      <div className={styles.marquee} aria-hidden="true">
-        <div className={styles.track}>
-          {[0, 1].map((copy) => (
-            <ul key={copy} className={styles.marqueeList}>
-              {LOGOS.map(({ name, src }) => (
-                <li key={name} className={styles.marqueeItem}>
-                  <Image className={styles.logo} src={src} alt="" width={42} height={42} unoptimized />
-                </li>
-              ))}
-            </ul>
+    <div className={styles.root}>
+      <div ref={hostRef} className={styles.visual} data-mode="static">
+        <ul className={styles.staticList} aria-label="Platforms shown">
+          {LOGOS.map(({ name, src }) => (
+            <li key={name} className={styles.staticItem}>
+              <Image className={styles.logo} src={src} alt={name} width={52} height={52} loading="eager" unoptimized />
+            </li>
           ))}
-        </div>
+        </ul>
+        <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
       </div>
-      <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
+      <span className={styles.caption}>Plugs into<br />any platform</span>
     </div>
   );
 }

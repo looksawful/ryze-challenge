@@ -1,34 +1,41 @@
 @layer components {
   .root {
-    position: relative;
-    display: block;
-    flex: none;
-    inline-size: 88px;
-    block-size: 64px;
-    overflow: hidden;
+    --integration-logo-size: clamp(36px, 3.2vw, 52px);
+    --integration-gap: clamp(8px, 0.8vw, 14px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(8ch, max-content);
+    align-items: center;
+    column-gap: var(--integration-gap);
+    inline-size: 100%;
+    min-inline-size: 0;
   }
 
-  .staticList,
-  .marqueeList {
+  .visual {
+    position: relative;
+    inline-size: 100%;
+    min-inline-size: 0;
+    min-block-size: clamp(70px, 6.5vw, 112px);
+    display: grid;
+    place-items: center;
+  }
+
+  .staticList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--integration-logo-size)), 1fr));
+    align-content: center;
+    justify-items: center;
+    gap: clamp(3px, 0.4vw, 8px);
+    inline-size: 100%;
     list-style: none;
     padding: 0;
     margin: 0;
   }
 
-  .staticList {
-    display: flex;
-    flex-wrap: wrap;
-    align-content: center;
-    justify-content: center;
-    gap: 4px;
-    inline-size: 100%;
-    block-size: 100%;
-  }
-
   .staticItem {
-    flex: 0 0 26px;
-    inline-size: 26px;
-    block-size: 26px;
+    inline-size: min(100%, var(--integration-logo-size));
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
   }
 
   .logo {
@@ -38,7 +45,15 @@
     object-fit: contain;
   }
 
-  .marquee,
+  .caption {
+    font-size: clamp(13px, 1vw, 18px);
+    line-height: 1.3;
+    font-weight: 400;
+    color: #999ba4;
+    text-align: right;
+    white-space: nowrap;
+  }
+
   .canvas {
     display: none;
     position: absolute;
@@ -47,50 +62,21 @@
     block-size: 100%;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .root[data-mode="webgl"] .canvas,
-    .root[data-mode="marquee"] .marquee {
-      display: block;
-    }
+  @media (min-width: 1600px) {
+    .root { --integration-logo-size: 32px; --integration-gap: 6px; }
+    .staticList { gap: 3px; }
+    .caption { font-size: 14px; }
+  }
 
-    .root[data-mode="webgl"] .staticList,
-    .root[data-mode="marquee"] .staticList {
+  @media (prefers-reduced-motion: no-preference) {
+    .visual[data-mode="webgl"] .canvas { display: block; }
+    .visual[data-mode="webgl"] .staticList {
       position: absolute;
       inline-size: 1px;
       block-size: 1px;
       overflow: hidden;
       white-space: nowrap;
       clip-path: inset(50%);
-    }
-
-    .marquee {
-      overflow: hidden;
-      mask-image: linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
-    }
-
-    .track {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      block-size: 100%;
-      inline-size: max-content;
-      animation: logo-scroll 12s linear infinite;
-    }
-
-    .marqueeList {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .marqueeItem {
-      flex: 0 0 42px;
-      inline-size: 42px;
-      block-size: 42px;
-    }
-
-    @keyframes logo-scroll {
-      to { transform: translateX(calc(-50% - 6px)); }
     }
   }
 }
