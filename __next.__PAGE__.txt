@@ -2,26 +2,27 @@
 2:"/ryze-challenge/_next/static/chunks/3qfy96eoyh-ek.js"
 3:I[39756,["$2"],"default"]
 4:I[37457,["$2"],"default"]
-8:"/ryze-challenge/_next/static/chunks/2n6imj9f7amx4.js"
-9:I[5500,["$2","$8"],"Image"]
-a:I[98587,["$2","$8"],"default"]
-b:I[54089,["$2","$8"],"default"]
-c:I[97367,["$2"],"OutletBoundary"]
-d:"$Sreact.suspense"
-10:"ViewportBoundary"
-11:I[97367,["$2"],"$10"]
-12:"MetadataBoundary"
-13:I[97367,["$2"],"$12"]
+8:"/ryze-challenge/_next/static/chunks/2gd640pl25gi0.js"
+9:I[87566,["$2","$8"],"SiteHeader"]
+a:I[5500,["$2","$8"],"Image"]
+b:I[98587,["$2","$8"],"default"]
+c:I[54089,["$2","$8"],"default"]
+d:I[97367,["$2"],"OutletBoundary"]
+e:"$Sreact.suspense"
+11:"ViewportBoundary"
+12:I[97367,["$2"],"$11"]
+13:"MetadataBoundary"
+14:I[97367,["$2"],"$13"]
 :HL["/ryze-challenge/_next/static/chunks/0cfggns8ajrig.css","style"]
-:HL["/ryze-challenge/_next/static/chunks/10qv812d-w7x1.css","style"]
+:HL["/ryze-challenge/_next/static/chunks/09iwxmnse0ecm.css","style"]
 6:X
-7:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[[["$","main",null,{"className":"LeQebW_hero","data-theme":"dusk","id":"main","children":[["$","div",null,{"className":"LeQebW_brand","children":[["$","$L9",null,{"className":"LeQebW_brandMark","src":"/ryze-challenge/brand-mark.svg","alt":"","width":40,"height":40,"unoptimized":true,"loading":"eager"}],["$","span",null,{"children":"Ryze"}]]}],["$","h1",null,{"className":"LeQebW_headline","children":[["$","span",null,{"children":["AI autopilot ",["$","span",null,{"className":"LeQebW_muted","children":"for"}]]}]," ",["$","span",null,{"children":[["$","span",null,{"className":"LeQebW_muted","children":"your"}]," Shopify"]}]]}],["$","p",null,{"className":"LeQebW_lead","children":["A new way to grow",["$","br",null,{}]," ","your store."]}],["$","p",null,{"className":"LeQebW_description","children":"Paid ads, SEO, AI visibility & CRO. One AI autopilot built around your business."}],["$","div",null,{"className":"LeQebW_integration","children":[["$","$La",null,{}],["$","span",null,{"children":["Plugs into",["$","br",null,{}]," ","any platform"]}]]}],["$","details",null,{"className":"LeQebW_action","children":[["$","summary",null,{"children":"Start For Free"}],["$","p",null,{"children":"The domain preview is not available yet."}]]}]]}],["$","$Lb",null,{}]],[["$","link","0",{"rel":"stylesheet","href":"/ryze-challenge/_next/static/chunks/10qv812d-w7x1.css","precedence":"next"}],["$","script","script-0",{"src":"/ryze-challenge/_next/static/chunks/2n6imj9f7amx4.js","async":true}]],["$","$Lc",null,{"children":["$","$d",null,{"name":"Next.MetadataOutlet","children":"$@e"}]}]]}],"p":"$@f","v":null,"s":"$6"}}]]
-0:{"t":{"t":{"s":"","h":80,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/ryze-challenge/_next/static/chunks/0cfggns8ajrig.css","precedence":"next"}],["$","script","script-0",{"src":"/ryze-challenge/_next/static/chunks/3qfy96eoyh-ek.js","async":true}]],["$","html",null,{"lang":"en","children":["$","body",null,{"data-theme":"dusk","children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]]}]}]}]]}],"p":"$@5","v":null,"s":"$6"},"c":"$Q7"},"h":{"r":["$","$1","h",{"children":[null,["$","$L11",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L13",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$d",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Ryze — AI autopilot for your Shopify"}],["$","meta","1",{"name":"description","content":"A new way to grow your store."}]]}]}],null]}],null]}],"p":"$@14","v":null,"s":"$6"}},"a":"$@15","u":"$@16","b":"CQd9RraIGWfzCJ25vamMM"}
-e:null
+7:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[[["$","div",null,{"className":"LShPzW_stage","children":[["$","div",null,{"className":"LShPzW_navigation","children":["$","$L9",null,{"variant":"hero"}]}],["$","main",null,{"className":"LeQebW_hero","data-theme":"dusk","id":"main","children":[["$","div",null,{"className":"LeQebW_brand","children":[["$","$La",null,{"className":"LeQebW_brandMark","src":"/ryze-challenge/brand-mark.svg","alt":"","width":40,"height":40,"unoptimized":true,"loading":"eager"}],["$","span",null,{"children":"Ryze"}]]}],["$","h1",null,{"className":"LeQebW_headline","children":[["$","span",null,{"children":["AI autopilot ",["$","span",null,{"className":"LeQebW_muted","children":"for"}]]}]," ",["$","span",null,{"children":[["$","span",null,{"className":"LeQebW_muted","children":"your"}]," Shopify"]}]]}],["$","p",null,{"className":"LeQebW_lead","children":["A new way to grow",["$","br",null,{}]," ","your store."]}],["$","p",null,{"className":"LeQebW_description","children":"Paid ads, SEO, AI visibility & CRO. One AI autopilot built around your business."}],["$","div",null,{"className":"LeQebW_integration","children":[["$","$Lb",null,{}],["$","span",null,{"children":["Plugs into",["$","br",null,{}]," ","any platform"]}]]}],["$","details",null,{"className":"LeQebW_action","children":[["$","summary",null,{"children":"Start For Free"}],["$","p",null,{"children":"The domain preview is not available yet."}]]}]]}]]}],["$","$Lc",null,{}]],[["$","link","0",{"rel":"stylesheet","href":"/ryze-challenge/_next/static/chunks/09iwxmnse0ecm.css","precedence":"next"}],["$","script","script-0",{"src":"/ryze-challenge/_next/static/chunks/2gd640pl25gi0.js","async":true}]],["$","$Ld",null,{"children":["$","$e",null,{"name":"Next.MetadataOutlet","children":"$@f"}]}]]}],"p":"$@10","v":null,"s":"$6"}}]]
+0:{"t":{"t":{"s":"","h":80,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/ryze-challenge/_next/static/chunks/0cfggns8ajrig.css","precedence":"next"}],["$","script","script-0",{"src":"/ryze-challenge/_next/static/chunks/3qfy96eoyh-ek.js","async":true}]],["$","html",null,{"lang":"en","children":["$","body",null,{"data-theme":"dusk","children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]]}]}]}]]}],"p":"$@5","v":null,"s":"$6"},"c":"$Q7"},"h":{"r":["$","$1","h",{"children":[null,["$","$L12",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L14",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$e",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Ryze — AI autopilot for your Shopify"}],["$","meta","1",{"name":"description","content":"A new way to grow your store."}]]}]}],null]}],null]}],"p":"$@15","v":null,"s":"$6"}},"a":"$@16","u":"$@17","b":"a8q9pfx_Q80vPzsp3-H4c"}
+f:null
 6:300
-16:true
+17:true
 6:C
-15:0
+16:0
 5:"$undefined"
-14:"$undefined"
-f:"$undefined"
+15:"$undefined"
+10:"$undefined"

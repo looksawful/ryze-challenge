@@ -1,4 +1,4 @@
 :HL["/ryze-challenge/_next/static/chunks/0cfggns8ajrig.css","style"]
-:HL["/ryze-challenge/_next/static/chunks/10qv812d-w7x1.css","style"]
+:HL["/ryze-challenge/_next/static/chunks/09iwxmnse0ecm.css","style"]
 1:[["children",{"s":"__PAGE__","h":160}]]
-0:{"b":"CQd9RraIGWfzCJ25vamMM","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"a8q9pfx_Q80vPzsp3-H4c","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
