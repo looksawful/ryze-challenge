@@ -38,28 +38,22 @@ test("Hero preserves reflow rather than clipping oversized text", () => {
   assert.doesNotMatch(heroStyles(), /overflow:\s*clip/);
 });
 
-test("CookieConsent renders on each visit without persistent consent", () => {
-  const consent = readFileSync("src/features/consent/CookieConsent.tsx", "utf8");
-  assert.match(page(), /<CookieConsent\s*\/>/);
-  assert.match(consent, /useState<ConsentView>\("notice"\)/);
-  assert.doesNotMatch(consent, /localStorage|sessionStorage|document\.cookie/);
+test("Homework Cookies are JS-only and retain a choice until changed", () => {
+  const consent = readFileSync("src/features/consent/HomeworkCookieNotice.tsx", "utf8");
+  assert.match(page(), /<HomeworkCookieNotice\s*\/>/);
+  assert.match(page(), /<HomeworkCookieSettingsButton\s*\/>/);
+  assert.match(consent, /if \(!mounted \|\| !visible\) return null/);
+  assert.match(consent, /localStorage\.setItem/);
+  assert.match(consent, /ryze:cookie-settings/);
+  for (const label of ["Accept all cookies", "Reject all cookies", "Customize cookie settings", "Save preferences"]) {
+    assert.ok(consent.includes(label), label);
+  }
 });
 
-test("CookieConsent supports wheel/minus collapse, reopen and accessible settings", () => {
-  const consent = readFileSync("src/features/consent/CookieConsent.tsx", "utf8");
-  assert.match(consent, /wheel/);
-  assert.match(consent, /Minimize cookie settings/);
-  assert.match(consent, /Open cookie settings/);
-  assert.match(consent, /Accept all cookies/);
-  assert.match(consent, /Reject all cookies/);
-  assert.match(consent, /Customize cookie settings/);
-  assert.match(consent, /Save preferences/);
-});
-
-test("compact cookie card uses intrinsic wrapping and a content-aware width", () => {
-  const styles = readFileSync("src/features/consent/CookieConsent.module.css", "utf8");
+test("Homework cookie visual matches the borderless, intrinsically sized reference", () => {
+  const styles = readFileSync("src/features/consent/HomeworkCookieNotice.module.css", "utf8");
+  assert.match(styles, /border:\s*0;/);
+  assert.match(styles, /box-shadow:\s*none;/);
   assert.match(styles, /flex-wrap:\s*wrap/);
-  assert.match(styles, /\.choices\s*>\s*\*\s*\{[^}]*flex:/s);
-  assert.match(styles, /inline-size:\s*min\(20rem,/);
-  assert.match(styles, /\(height\s*<=\s*32rem\)/);
+  assert.match(styles, /max-block-size:\s*calc\(100svh/);
 });

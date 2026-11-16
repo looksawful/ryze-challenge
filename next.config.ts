@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   basePath,
   images: { unoptimized: true },
+  allowedDevOrigins: ["127.0.0.1", "100.110.158.49", "titan.tail85619a.ts.net"],
 };
 
 export default nextConfig;
