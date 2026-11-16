@@ -10,7 +10,7 @@ Install dependencies with `npm install`, then run `npm run dev`. Project verific
 
 - `npm run storybook` opens the local-only workbench at `http://127.0.0.1:6007/`. It fails instead of silently choosing another port if 6007 is occupied.
 - `npm run build-storybook` verifies the static Storybook build; its output is ignored by Git.
-- The workbench uses the application's foundation CSS with `dusk` / `dawn` theme controls. The catalog stays empty until individual components are approved for stories.
+- The workbench uses the application's foundation CSS with `dusk` / `dawn` theme controls. Stories include the real Hero, the SiteHeader/MegaMenu and the assembled first screen with navigation. Use the viewport toolbar to review responsive behavior.
 
 ## Documentation
 

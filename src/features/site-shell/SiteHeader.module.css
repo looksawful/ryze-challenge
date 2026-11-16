@@ -34,6 +34,12 @@
     letter-spacing: -0.05em;
   }
 
+  /* Keep the approved Hero brand visible; navigation is its own overlay. */
+  .header[data-variant="hero"] { background: transparent; }
+  .header[data-variant="hero"] .brand,
+  .header[data-variant="hero"] .booking { display: none; }
+  .header[data-variant="hero"] .inner { justify-content: flex-end; }
+
   .desktopNavigation { display: none; }
 
   .actions {
