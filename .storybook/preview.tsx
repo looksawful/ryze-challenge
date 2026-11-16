@@ -16,7 +16,7 @@ const preview: Preview = {
           background: "var(--color-background)",
           color: "var(--color-foreground)",
           minHeight: "100vh",
-          padding: context.parameters.fullScreen ? 0 : "2rem",
+          padding: context.parameters.layout === "fullscreen" ? 0 : "2rem",
         }}
       >
         <Story />

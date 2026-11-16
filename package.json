@@ -6,10 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "storybook": "storybook dev -p 6007 --exact-port",
     "build-storybook": "storybook build",
-    "test": "node --test scripts/foundation.test.mjs scripts/integration-logos.test.mjs scripts/brand-intro.test.mjs",
+    "test": "node --test scripts/foundation.test.mjs scripts/integration-logos.test.mjs scripts/brand-intro.test.mjs scripts/site-shell.test.mjs scripts/temporary-app-page.test.mjs",
     "test:static": "node --test scripts/static-html.test.mjs"
   },
   "dependencies": {
