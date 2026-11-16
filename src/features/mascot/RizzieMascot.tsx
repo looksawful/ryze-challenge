@@ -95,7 +95,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
     });
     setBubbleStyle({ position: "fixed", left: placed.x, top: placed.y });
     setBubbleSide(placed.side);
-  }, [message, detached]);
+  }, [message]);
 
   useEffect(() => {
     const zone = zoneRef.current;
@@ -122,11 +122,10 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
   }, [message, measure]);
 
   useEffect(() => {
-    setHydrated(true);
     const hasMatchMedia = typeof window.matchMedia === "function";
     const hasObserver = typeof window.ResizeObserver !== "undefined" &&
       typeof window.IntersectionObserver !== "undefined";
-    setSupported(hasMatchMedia && hasObserver && typeof window.PointerEvent !== "undefined" && typeof Element.prototype.setPointerCapture === "function");
+    const hasPointerSupport = typeof window.PointerEvent !== "undefined" && typeof Element.prototype.setPointerCapture === "function";
     const motionQuery = hasMatchMedia ? window.matchMedia("(prefers-reduced-motion: no-preference)") : null;
     const desktopQuery = hasMatchMedia ? window.matchMedia("(min-width: 820px) and (pointer: fine)") : null;
     const coarseQuery = hasMatchMedia ? window.matchMedia("(pointer: coarse)") : null;
@@ -137,14 +136,19 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
       setTouchPoints(navigator.maxTouchPoints ?? 0);
       setViewportWidth(window.innerWidth);
     };
-    if (!hasObserver) setVisible(true);
-    sync();
+    const initialFrame = window.requestAnimationFrame(() => {
+      setSupported(hasMatchMedia && hasObserver && hasPointerSupport);
+      if (!hasObserver) setVisible(true);
+      sync();
+      setHydrated(true);
+    });
     motionQuery?.addEventListener?.("change", sync);
     desktopQuery?.addEventListener?.("change", sync);
     coarseQuery?.addEventListener?.("change", sync);
     document.addEventListener("visibilitychange", sync);
     window.addEventListener("resize", sync, { passive: true });
     return () => {
+      window.cancelAnimationFrame(initialFrame);
       motionQuery?.removeEventListener?.("change", sync);
       desktopQuery?.removeEventListener?.("change", sync);
       coarseQuery?.removeEventListener?.("change", sync);
@@ -166,8 +170,13 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
     const img = new window.Image();
     img.src = atlasSrc;
     if (typeof img.decode !== "function") {
-      setSupported(false);
-      return;
+      const frame = window.requestAnimationFrame(() => {
+        if (!cancelled) setSupported(false);
+      });
+      return () => {
+        cancelled = true;
+        window.cancelAnimationFrame(frame);
+      };
     }
     img.decode().then(() => {
       if (cancelled) return;
