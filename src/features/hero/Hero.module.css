@@ -33,10 +33,7 @@
     inline-size: min(100%, 600px);
     margin-block-start: 43px;
     min-inline-size: 0;
-    font-size: clamp(32px, 11.4vw, 48px);
-    font-weight: 800;
-    line-height: 1.04;
-    letter-spacing: -0.065em;
+    --type-heading-size: clamp(32px, 11.4vw, 48px);
     text-align: left;
   }
 
@@ -46,9 +43,7 @@
 
   .lead {
     margin-block-start: 90px;
-    font-size: 21px;
-    line-height: 1.38;
-    font-weight: 600;
+    --type-lead-size: 21px;
     text-align: center;
   }
 
@@ -56,8 +51,7 @@
     max-inline-size: 350px;
     margin-block-start: 27px;
     color: #777a83;
-    font-size: 22px;
-    line-height: 1.38;
+    --type-paragraph-size: 22px;
     text-align: center;
   }
 
@@ -146,7 +140,7 @@
     .hero { padding-inline: 16px; }
     .headline > span + span { text-align: left; }
     .lead { margin-block-start: 64px; }
-    .description { font-size: 18px; }
+    .description { --type-paragraph-size: 18px; }
   }
 
   @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) {
@@ -164,10 +158,10 @@
     }
     .brand { grid-area: brand; justify-self: end; font-size: 32px; }
     .brandMark { inline-size: 30px; block-size: 30px; }
-    .headline { grid-area: headline; inline-size: min(410px, 100%); margin: 0; font-size: 43px; }
-    .lead { grid-area: lead; margin: 0; font-size: 19px; text-align: left; }
+    .headline { grid-area: headline; inline-size: min(410px, 100%); margin: 0; --type-heading-size: 43px; }
+    .lead { grid-area: lead; margin: 0; --type-lead-size: 19px; text-align: left; }
     .lead br { display: none; }
-    .description { grid-area: description; max-inline-size: 390px; margin: 0; font-size: 18px; text-align: left; }
+    .description { grid-area: description; max-inline-size: 390px; margin: 0; --type-paragraph-size: 18px; text-align: left; }
     .mascot {
       position: absolute;
       inline-size: 190px;
@@ -195,9 +189,9 @@
     }
     .brand { grid-column: 2; grid-row: 1; justify-self: end; margin-inline-end: 45px; font-size: 80px; }
     .brandMark { inline-size: 77px; block-size: 77px; }
-    .headline { grid-column: 1 / -1; grid-row: 2; inline-size: min(620px, 100%); justify-self: center; margin: 0; font-size: clamp(52px, 4.4vw, 62px); }
-    .lead { grid-column: 1 / -1; grid-row: 3; justify-self: center; margin: 0; font-size: 24px; }
-    .description { grid-column: 1 / -1; grid-row: 4; justify-self: center; max-inline-size: 390px; margin: 0; font-size: 24px; }
+    .headline { grid-column: 1 / -1; grid-row: 2; inline-size: min(620px, 100%); justify-self: center; margin: 0; --type-heading-size: clamp(52px, 4.4vw, 62px); }
+    .lead { grid-column: 1 / -1; grid-row: 3; justify-self: center; margin: 0; --type-lead-size: 24px; }
+    .description { grid-column: 1 / -1; grid-row: 4; justify-self: center; max-inline-size: 390px; margin: 0; --type-paragraph-size: 24px; }
     .mascot {
       grid-column: 1;
       grid-row: 4;
@@ -220,7 +214,7 @@
       padding: 28px 0 80px;
     }
     .brand { grid-column: 10 / 13; grid-row: 1; margin-inline-end: 210px; }
-    .headline { grid-column: 2 / 12; grid-row: 2; inline-size: 100%; justify-self: stretch; font-size: clamp(100px, 8.5vw, 160px); }
+    .headline { grid-column: 2 / 12; grid-row: 2; inline-size: 100%; justify-self: stretch; --type-heading-size: clamp(100px, 8.5vw, 160px); }
     .lead { grid-column: 2 / 5; grid-row: 3; justify-self: start; align-self: start; text-align: left; }
     .lead br { display: none; }
     .description { grid-column: 2 / 5; grid-row: 3; justify-self: start; align-self: start; margin-block-start: 54px; text-align: left; }
@@ -250,9 +244,9 @@
       padding: 0 20px 100px;
     }
     .brand { grid-column: 1 / 4; grid-row: 1; justify-self: start; align-self: center; margin-inline: -290px 0; }
-    .headline { grid-column: 1 / 10; grid-row: 2 / 4; inline-size: calc(100% - 60px); font-size: clamp(100px, 5.7vw, 160px); }
-    .lead { grid-column: 10 / 13; grid-row: 3; align-self: start; margin-block-start: 0; font-size: 19px; }
-    .description { grid-column: 10 / 13; grid-row: 3; margin-block-start: 40px; font-size: 19px; }
+    .headline { grid-column: 1 / 10; grid-row: 2 / 4; inline-size: calc(100% - 60px); --type-heading-size: clamp(100px, 5.7vw, 160px); }
+    .lead { grid-column: 10 / 13; grid-row: 3; align-self: start; margin-block-start: 0; --type-lead-size: 19px; }
+    .description { grid-column: 10 / 13; grid-row: 3; margin-block-start: 40px; --type-paragraph-size: 19px; }
     .mascot { grid-column: 8 / 10; grid-row: 4; inline-size: 100%; margin: 0; }
     .action { grid-column: 10 / 12; grid-row: 4; margin: 0; }
     .integration { grid-column: 12 / 13; grid-row: 4; inline-size: clamp(290px, 13vw, 320px); margin: 20px 0 0 20px; }

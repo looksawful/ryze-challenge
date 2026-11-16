@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import styles from "./Hero.module.css";
 import IntegrationLogos from "../integrations/IntegrationLogos";
-import HeroAction from "./HeroAction";
+import HeroAction, { type HeroActionHandle } from "./HeroAction";
+import { Typography } from "../../ui/Typography";
 import RizzieMascot from "../mascot/RizzieMascot";
 import type { RizzieScenario } from "../mascot/mascot-model";
 
@@ -17,7 +18,7 @@ type HeroProps = {
 };
 
 export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, theme = "dusk" }: HeroProps) {
-  const [activation, setActivation] = useState<{ trigger: HTMLAnchorElement } | null>(null);
+  const actionRef = useRef<HeroActionHandle>(null);
   const [actionOpen, setActionOpen] = useState(false);
   return (
     <main className={styles.hero} data-theme={theme} id="main">
@@ -26,18 +27,18 @@ export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, them
         <span>Ryze</span>
       </div>
 
-      <h1 className={styles.headline}>
+      <Typography as="h1" variant="heading" className={styles.headline}>
         <span>AI autopilot <span className={styles.muted}>for</span></span>{" "}
         <span><span className={styles.muted}>your</span> Shopify</span>
-      </h1>
+      </Typography>
 
-      <p className={styles.lead}>A new way to grow<br />{" "}your store.</p>
-      <p className={styles.description}>
+      <Typography as="p" variant="lead" className={styles.lead}>A new way to grow<br />{" "}your store.</Typography>
+      <Typography as="p" variant="paragraph" className={styles.description}>
         Paid ads, SEO, AI visibility &amp; CRO. One AI autopilot built around your business.
-      </p>
+      </Typography>
 
       <div className={styles.mascot}>
-        <RizzieMascot key={`${mascotScenario}:${mascotResetKey}`} scenario={mascotScenario} onActivate={(trigger) => setActivation({ trigger })} actionOpen={actionOpen} />
+        <RizzieMascot key={`${mascotScenario}:${mascotResetKey}`} scenario={mascotScenario} onActivate={(trigger) => actionRef.current?.activate(trigger)} actionOpen={actionOpen} />
       </div>
 
       <div className={styles.integration}>
@@ -45,7 +46,7 @@ export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, them
       </div>
 
       <div className={styles.action}>
-        <HeroAction activation={activation} onOpenChange={setActionOpen} />
+        <HeroAction ref={actionRef} onOpenChange={setActionOpen} />
       </div>
     </main>
   );

@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
-import type { FormEvent, MouseEvent } from "react";
+import { useEffect, useId, useImperativeHandle, useRef, useState } from "react";
+import type { FormEvent, MouseEvent, Ref } from "react";
+import { Button } from "../../ui/Button";
 import styles from "./HeroAction.module.css";
 
 type Mode = "inline" | "drawer";
 type DomainResult = { domain: string; error?: never } | { domain?: never; error: string };
 
 const examples = ["yourstore.com", "shop.example.com", "https://yourstore.com"];
+export type HeroActionHandle = { activate: (trigger: HTMLAnchorElement) => void };
+
 type HeroActionProps = {
-  activation?: { trigger: HTMLAnchorElement } | null;
+  ref?: Ref<HeroActionHandle>;
   onOpenChange?: (open: boolean) => void;
 };
 
@@ -41,7 +44,7 @@ function normalizeStoreDomain(value: string): DomainResult {
   return { domain: host };
 }
 
-export default function HeroAction({ activation, onOpenChange }: HeroActionProps) {
+export default function HeroAction({ ref, onOpenChange }: HeroActionProps) {
   const [mode, setMode] = useState<Mode | null>(null);
   const [value, setValue] = useState("");
   const [focused, setFocused] = useState(false);
@@ -70,6 +73,13 @@ export default function HeroAction({ activation, onOpenChange }: HeroActionProps
     setMode(availableMode());
   }
 
+  useImperativeHandle(ref, () => ({
+    activate(trigger) {
+      returnFocusRef.current = trigger;
+      setMode(availableMode());
+    },
+  }));
+
   function cancelPending() {
     if (pendingRef.current !== null) window.clearTimeout(pendingRef.current);
     pendingRef.current = null;
@@ -92,14 +102,6 @@ export default function HeroAction({ activation, onOpenChange }: HeroActionProps
   useEffect(() => () => {
     if (pendingRef.current !== null) window.clearTimeout(pendingRef.current);
   }, []);
-
-  useEffect(() => {
-    if (!activation) return;
-    returnFocusRef.current = activation.trigger;
-    setMode(availableMode());
-    const frame = window.requestAnimationFrame(() => inputRef.current?.focus());
-    return () => window.cancelAnimationFrame(frame);
-  }, [activation]);
 
   useEffect(() => {
     onOpenChange?.(mode !== null);
@@ -200,7 +202,7 @@ export default function HeroAction({ activation, onOpenChange }: HeroActionProps
             </span>
           )}
         </div>
-        <button type="submit" className={styles.submit} disabled={stage === "thinking"}>{stage === "thinking" ? "Preparing…" : "Continue"}</button>
+        <Button type="submit" className={styles.submit} disabled={stage === "thinking"}>{stage === "thinking" ? "Preparing…" : "Continue"}</Button>
       </form>
       <p id={helpId} className={styles.help}>Demo only. No data is sent.</p>
       {error && <p id={errorId} role="alert" className={styles.feedback}>{error}</p>}
@@ -212,11 +214,11 @@ export default function HeroAction({ activation, onOpenChange }: HeroActionProps
           <p className={styles.resultEyebrow}>Demo response · no store analysis performed</p>
           <p role="status">For <strong>{accepted}</strong>, a Ryze workflow could explore paid ads, SEO, AI visibility and CRO.</p>
           <div className={styles.resultActions}>
-            <button type="button" onClick={previewExperience}>Preview experience</button>
-            <button type="button" onClick={() => {
+            <Button type="button" variant="secondary" size="compact" onClick={previewExperience}>Preview experience</Button>
+            <Button type="button" variant="secondary" size="compact" onClick={() => {
               setStage("editing");
               inputRef.current?.focus();
-            }}>Edit domain</button>
+            }}>Edit domain</Button>
           </div>
         </section>
       )}
