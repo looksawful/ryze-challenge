@@ -42,7 +42,7 @@ server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
 threading.Thread(target=server.serve_forever, daemon=True).start()
 failures = []
 try:
-    with tempfile.TemporaryDirectory(prefix="hero-disclosure-browser-") as profile:
+    with tempfile.TemporaryDirectory(prefix="hero-disclosure-browser-", ignore_cleanup_errors=True) as profile:
         process = subprocess.Popen(
             [CHROME, "--headless=new", "--no-first-run", "--disable-extensions",
              "--disable-gpu", "--remote-allow-origins=*", "--remote-debugging-port=0",
