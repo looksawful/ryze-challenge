@@ -44,6 +44,9 @@ export default function HeroAction() {
   const [exampleIndex, setExampleIndex] = useState(0);
   const [error, setError] = useState("");
   const [accepted, setAccepted] = useState("");
+  const [stage, setStage] = useState<"editing" | "thinking" | "result">("editing");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const pendingRef = useRef<number | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,14 +64,26 @@ export default function HeroAction() {
     setMode(availableMode());
   }
 
+  function cancelPending() {
+    if (pendingRef.current !== null) window.clearTimeout(pendingRef.current);
+    pendingRef.current = null;
+  }
+
   function close() {
+    cancelPending();
     dialogRef.current?.close();
     setMode(null);
     setFocused(false);
     setError("");
     setAccepted("");
+    setStage("editing");
+    setPreviewOpen(false);
     window.requestAnimationFrame(() => triggerRef.current?.focus());
   }
+
+  useEffect(() => () => {
+    if (pendingRef.current !== null) window.clearTimeout(pendingRef.current);
+  }, []);
 
   useEffect(() => {
     if (!mode) return;
@@ -96,9 +111,20 @@ export default function HeroAction() {
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    cancelPending();
+    setPreviewOpen(false);
     const result = normalizeStoreDomain(value);
     setError(result.error ?? "");
     setAccepted(result.domain ?? "");
+    if (!result.domain) {
+      setStage("editing");
+      return;
+    }
+    setStage("thinking");
+    pendingRef.current = window.setTimeout(() => {
+      pendingRef.current = null;
+      setStage("result");
+    }, 900);
   }
 
   const form = (
@@ -122,9 +148,12 @@ export default function HeroAction() {
             spellCheck={false}
             value={value}
             onChange={(event) => {
+              cancelPending();
               setValue(event.target.value);
               setError("");
               setAccepted("");
+              setStage("editing");
+              setPreviewOpen(false);
             }}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
@@ -138,19 +167,39 @@ export default function HeroAction() {
             </span>
           )}
         </div>
-        <button type="submit" className={styles.submit}>Continue</button>
+        <button type="submit" className={styles.submit}>{stage === "thinking" ? "Preparing…" : "Continue"}</button>
       </form>
       <p id={helpId} className={styles.help}>Demo only. No data is sent.</p>
-      {(error || accepted) && (
-        <p role={error ? "alert" : "status"} className={styles.feedback}>
-          {error || `Ready for demo: ${accepted}. You can edit the domain above.`}
-        </p>
+      {error && <p role="alert" className={styles.feedback}>{error}</p>}
+      {stage === "thinking" && (
+        <p role="status" className={styles.feedback}>Preparing an example response for {accepted}…</p>
       )}
+      {stage === "result" && (
+        <section className={styles.result} aria-label="Example response">
+          <p className={styles.resultEyebrow}>Demo response · no store analysis performed</p>
+          <p>For <strong>{accepted}</strong>, a Ryze workflow could explore paid ads, SEO, AI visibility and CRO.</p>
+          <div className={styles.resultActions}>
+            <button type="button" onClick={() => setPreviewOpen(true)}>Preview experience</button>
+            <button type="button" onClick={() => {
+              setStage("editing");
+              setPreviewOpen(false);
+              inputRef.current?.focus();
+            }}>Edit domain</button>
+          </div>
+          {previewOpen && (
+            <div className={styles.previewBubble} role="status">
+              <strong>Rizzie</strong>
+              <p>The live product would open an experience preview. This demonstration stays on the same page.</p>
+              <button type="button" onClick={() => setPreviewOpen(false)} aria-label="Dismiss preview explanation">×</button>
+            </div>
+          )}
+        </section>
+      )
     </>
   );
 
   return (
-    <div ref={rootRef} className={styles.root} data-mode={mode ?? "idle"}>
+    <div ref={rootRef} className={styles.root} data-mode={mode ?? "idle"} data-stage={stage}>
       <details hidden={mode !== null} className={styles.fallback}>
         <summary ref={triggerRef} onClick={open}>Start For Free</summary>
         <p>Enable JavaScript to try the domain-entry demo.</p>
