@@ -62,6 +62,12 @@
     block-size: 100%;
   }
 
+  @media (min-width: 1024px) and (max-width: 1599px) {
+    .root { --integration-logo-size: 36px; --integration-gap: 8px; }
+    .staticList { gap: 2px; }
+    .caption { font-size: 14px; }
+  }
+
   @media (min-width: 1600px) {
     .root { --integration-logo-size: 32px; --integration-gap: 6px; }
     .staticList { gap: 3px; }
