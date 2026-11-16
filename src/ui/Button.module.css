@@ -1,0 +1,40 @@
+@layer components {
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .regular {
+    min-inline-size: 100px;
+    min-block-size: 50px;
+    padding-inline: 14px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .compact {
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  .primary {
+    border: 0;
+    background: #080808;
+    color: #fff;
+  }
+  .primary:hover:not(:disabled) { background: #292929; }
+
+  .secondary {
+    border: 1px solid #777;
+    background: #35353b;
+    color: #fff;
+  }
+  .secondary:hover:not(:disabled) { background: #45454b; }
+
+  .button:disabled { cursor: not-allowed; }
+}

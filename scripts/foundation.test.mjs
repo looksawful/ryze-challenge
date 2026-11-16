@@ -27,7 +27,7 @@ test("server-rendered page has accessible static content in dusk", () => {
   assert.match(page(), /<Hero/);
   assert.match(layout(), /<body data-theme="dusk"/);
   assert.match(hero(), /data-theme=\{theme\}/);
-  assert.match(hero(), /<h1\b/);
+  assert.match(hero(), /<h1\b|<Typography\s+as="h1"\s+variant="heading"/);
   assert.doesNotMatch(page(), /"use client"/);
 });
 
