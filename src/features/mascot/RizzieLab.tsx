@@ -22,6 +22,7 @@ const animations: { id: Playback; label: string }[] = [
 ];
 
 const modes: { id: RizzieScenario; label: string }[] = [
+  { id: "auto", label: "Auto (simulated width)" },
   { id: "full", label: "Full motion" },
   { id: "touch", label: "Touch input" },
   { id: "reduced-motion", label: "Reduced motion" },
@@ -32,7 +33,7 @@ const modes: { id: RizzieScenario; label: string }[] = [
 
 export default function RizzieLab({ theme }: Props) {
   const [playback, setPlayback] = useState<Playback>("natural");
-  const [scenario, setScenario] = useState<RizzieScenario>("full");
+  const [scenario, setScenario] = useState<RizzieScenario>("auto");
   const [replayKey, setReplayKey] = useState(0);
   const [resetKey, setResetKey] = useState(0);
   const [stageWidth, setStageWidth] = useState(940);
@@ -44,7 +45,7 @@ export default function RizzieLab({ theme }: Props) {
     window.dispatchEvent(new CustomEvent("rizzie:message", { detail: { text: message } }));
   }
 
-  const interactive = scenario === "full" || scenario === "touch";
+  const interactive = scenario === "full" || scenario === "touch" || scenario === "auto";
   const hidden = scenario === "no-js";
 
   return (
@@ -72,8 +73,10 @@ export default function RizzieLab({ theme }: Props) {
               <div className={styles.guidance} aria-live="polite">
                 <span className={styles.stageLabel}>
                   {hidden ? "Rizzie is absent without JavaScript" :
-                    interactive ? "Drag with cursor to move · Reset to return" :
-                      "Static fallback · Movement disabled"}
+                    scenario === "touch" ? "Touch mode: drag with a finger · Reset to return" :
+                      scenario === "auto" ? "Auto capability mode · Drag when interactive" :
+                        interactive ? "Drag with mouse · Reset to return" :
+                        "Static fallback · Movement disabled"}
                 </span>
               </div>
               <RizzieMascot
@@ -82,12 +85,13 @@ export default function RizzieLab({ theme }: Props) {
                 actionOpen={false}
                 previewAnimation={playback}
                 previewReplayKey={replayKey}
+                previewViewportWidth={stageWidth}
                 onActivate={showMessage}
               />
             </div>
           </div>
           <div className={styles.previewFoot}>
-            <label htmlFor="rizzie-lab-width">Preview width</label>
+            <label htmlFor="rizzie-lab-width">Simulated width</label>
             <input
               id="rizzie-lab-width"
               type="range"
@@ -99,6 +103,9 @@ export default function RizzieLab({ theme }: Props) {
             />
             <span>320–1440 px</span>
           </div>
+          <p className={styles.note} style={{ padding: "0 18px 14px" }}>
+            Simulates capability width, not browser media queries. Resize the Storybook viewport to test actual responsive CSS.
+          </p>
         </div>
 
         <div className={styles.controls}>
