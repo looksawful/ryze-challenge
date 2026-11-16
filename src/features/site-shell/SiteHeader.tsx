@@ -14,12 +14,14 @@ import styles from "./SiteHeader.module.css";
 type SiteHeaderProps = {
   brand?: ReactNode;
   previewMode?: boolean;
+  variant?: "ryze" | "hero";
   onPreviewDestination?: (destination: SiteDestination) => void;
 };
 
 export function SiteHeader({
   brand,
   previewMode = true,
+  variant = "ryze",
   onPreviewDestination,
 }: SiteHeaderProps) {
   const [desktopGroup, setDesktopGroup] = useState<string | null>(null);
@@ -130,7 +132,7 @@ export function SiteHeader({
   const activeMobile = navigationGroups.find((group) => group.id === mobileGroup);
 
   return (
-    <header className={styles.header} data-theme="dusk" data-variant="ryze">
+    <header className={styles.header} data-theme="dusk" data-variant={variant}>
       <div className={styles.inner}>
         <a
           href="https://www.get-ryze.ai/"
