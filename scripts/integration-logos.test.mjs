@@ -9,7 +9,7 @@ const css = read("../src/features/integrations/IntegrationLogos.module.css");
 const stories = read("../src/features/integrations/IntegrationLogos.stories.tsx");
 
 test("Hero renders the complete integrations component, including its caption", () => {
-  assert.match(hero, /<IntegrationLogos\s*\/>/);
+  assert.match(hero, /<IntegrationLogos(?:\s+[^>]+)?\s*\/>/);
   assert.doesNotMatch(hero, /Plugs into/);
   assert.match(component, /Plugs into/);
   assert.match(component, /any platform/);

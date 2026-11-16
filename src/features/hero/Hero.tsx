@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import styles from "./Hero.module.css";
-import IntegrationLogos from "../integrations/IntegrationLogos";
+import IntegrationLogos, { type IntegrationLayout, type IntegrationCaption, type IntegrationPreviewMode } from "../integrations/IntegrationLogos";
 import HeroAction from "./HeroAction";
 import RizzieMascot from "../mascot/RizzieMascot";
 import type { RizzieScenario } from "../mascot/mascot-model";
@@ -14,13 +14,23 @@ type HeroProps = {
   mascotScenario?: RizzieScenario;
   mascotResetKey?: number;
   theme?: "dawn" | "dusk";
+  integrationLayout?: IntegrationLayout;
+  integrationCaption?: IntegrationCaption;
+  integrationPreviewMode?: IntegrationPreviewMode;
 };
 
-export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, theme = "dusk" }: HeroProps) {
+export default function Hero({
+  mascotScenario = "auto",
+  mascotResetKey = 0,
+  theme = "dusk",
+  integrationLayout,
+  integrationCaption,
+  integrationPreviewMode,
+}: HeroProps) {
   const [activation, setActivation] = useState<{ trigger: HTMLAnchorElement } | null>(null);
   const [actionOpen, setActionOpen] = useState(false);
   return (
-    <main className={styles.hero} data-theme={theme} id="main">
+    <main className={styles.hero} data-theme={theme} data-integration-prototype={integrationLayout ? "" : undefined} data-integration-layout={integrationLayout} data-integration-caption={integrationCaption} id="main">
       <div className={styles.brand}>
         <Image className={styles.brandMark} src={`${basePath}/brand-mark.svg`} alt="" width={40} height={40} unoptimized loading="eager" />
         <span>Ryze</span>
@@ -41,7 +51,7 @@ export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, them
       </div>
 
       <div className={styles.integration}>
-        <IntegrationLogos />
+        <IntegrationLogos layout={integrationLayout} captionPlacement={integrationCaption} previewMode={integrationPreviewMode} prototype={Boolean(integrationLayout)} />
       </div>
 
       <div className={styles.action}>

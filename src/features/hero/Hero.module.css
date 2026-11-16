@@ -298,3 +298,51 @@
   }
 
 }
+
+@layer components {
+  /* The original landscape grid has only ~79px for the integrations block. */
+  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) {
+    .hero[data-integration-prototype] .integration {
+      grid-area: auto;
+      grid-column: 2;
+      grid-row: 5;
+      justify-self: end;
+      align-self: end;
+      inline-size: min(100%, 358px);
+      margin: 0;
+    }
+  }
+}
+
+@layer components {
+  /* Two-row mobile logos must leave the primary CTA clear of the fixed dock. */
+  @media (max-width: 699px) {
+    .hero[data-integration-prototype] .action {
+      margin-block-start: clamp(20px, 5svh, 40px);
+    }
+  }
+}
+
+@layer components {
+  @media (max-width: 699px) {
+    .hero[data-integration-prototype][data-integration-layout="wrap"][data-integration-caption="below"] .action {
+      margin-block-start: 8px;
+    }
+  }
+
+  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) {
+    .hero[data-integration-prototype] .action {
+      grid-row: 5;
+      align-self: end;
+      margin-block-end: 4px;
+    }
+  }
+}
+
+@layer components {
+  @media (max-width: 699px) {
+    .hero[data-integration-prototype][data-integration-layout="wrap"][data-integration-caption="below"] {
+      padding-block-end: max(96px, 13svh, calc(env(safe-area-inset-bottom) + 64px));
+    }
+  }
+}

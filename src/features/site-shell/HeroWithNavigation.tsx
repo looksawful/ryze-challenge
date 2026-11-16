@@ -1,11 +1,20 @@
 "use client";
 
 import Hero from "../hero/Hero";
+import type { IntegrationLayout, IntegrationCaption, IntegrationPreviewMode } from "../integrations/IntegrationLogos";
 import { SiteHeader } from "./SiteHeader";
 import { previewNotice } from "./link-model";
 import styles from "./HeroWithNavigation.module.css";
 
-export function HeroWithNavigation() {
+export function HeroWithNavigation({
+  integrationLayout,
+  integrationCaption,
+  integrationPreviewMode,
+}: {
+  integrationLayout?: IntegrationLayout;
+  integrationCaption?: IntegrationCaption;
+  integrationPreviewMode?: IntegrationPreviewMode;
+} = {}) {
   return (
     <div className={styles.stage} data-ryze-dark-end>
       <div className={styles.navigation}>
@@ -19,7 +28,7 @@ export function HeroWithNavigation() {
           }}
         />
       </div>
-      <Hero />
+      <Hero integrationLayout={integrationLayout} integrationCaption={integrationCaption} integrationPreviewMode={integrationPreviewMode} />
     </div>
   );
 }

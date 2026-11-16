@@ -18,7 +18,20 @@ const CYCLE = MORPH_DURATIONS.reduce((sum, duration) => sum + duration + SETTLE_
 export type IntegrationPreviewMode = "auto" | "static" | "webgl";
 
 /** Storybook can preview the static state; the app uses automatic progressive enhancement. */
-export default function IntegrationLogos({ previewMode = "auto" }: { previewMode?: IntegrationPreviewMode }) {
+export type IntegrationLayout = "single" | "wrap";
+export type IntegrationCaption = "right" | "below";
+
+export default function IntegrationLogos({
+  previewMode = "auto",
+  layout = "single",
+  captionPlacement = "right",
+  prototype = false,
+}: {
+  previewMode?: IntegrationPreviewMode;
+  layout?: IntegrationLayout;
+  captionPlacement?: IntegrationCaption;
+  prototype?: boolean;
+}) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -164,9 +177,9 @@ export default function IntegrationLogos({ previewMode = "auto" }: { previewMode
   }, [previewMode]);
 
   return (
-    <div className={styles.root}>
+    <div className={styles.root} data-layout={layout} data-caption={captionPlacement} data-prototype={prototype ? "" : undefined}>
       <div ref={hostRef} className={styles.visual} data-mode="static">
-        <ul className={styles.staticList} aria-label="Platforms shown">
+        <ul className={styles.staticList} data-layout={layout} aria-label="Platforms shown">
           {LOGOS.map(({ name, src }) => (
             <li key={name} className={styles.staticItem}>
               <Image className={styles.logo} src={src} alt={name} width={52} height={52} loading="eager" unoptimized />
@@ -175,7 +188,7 @@ export default function IntegrationLogos({ previewMode = "auto" }: { previewMode
         </ul>
         <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
       </div>
-      <span className={styles.caption}>Plugs into<br />any platform</span>
+      <span className={styles.caption}>Plugs into<br />{" "}any platform</span>
     </div>
   );
 }
