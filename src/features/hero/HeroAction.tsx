@@ -159,6 +159,29 @@ export default function HeroAction({ notice, onDismissNotice, onPreviewExperienc
     }, 900);
   }
 
+  const bubble = activeNotice && (
+    <div
+      className={styles.previewBubble}
+      role="status"
+      onMouseEnter={() => setNoticeHovered(true)}
+      onMouseLeave={() => setNoticeHovered(false)}
+      onFocusCapture={() => setNoticeFocused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setNoticeFocused(false);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          dismissNotice();
+        }
+      }}
+    >
+      <strong>Rizzie</strong>
+      <p>{activeNotice.text}</p>
+      <button type="button" onClick={dismissNotice} aria-label="Dismiss preview explanation">×</button>
+    </div>
+  );
+
   const form = (
     <>
       <form className={styles.form} onSubmit={submit} noValidate>
@@ -220,29 +243,6 @@ export default function HeroAction({ notice, onDismissNotice, onPreviewExperienc
         </section>
       )}
     </>
-  );
-
-  const bubble = activeNotice && (
-    <div
-      className={styles.previewBubble}
-      role="status"
-      onMouseEnter={() => setNoticeHovered(true)}
-      onMouseLeave={() => setNoticeHovered(false)}
-      onFocusCapture={() => setNoticeFocused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setNoticeFocused(false);
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Escape") {
-          event.stopPropagation();
-          dismissNotice();
-        }
-      }}
-    >
-      <strong>Rizzie</strong>
-      <p>{activeNotice.text}</p>
-      <button type="button" onClick={dismissNotice} aria-label="Dismiss preview explanation">×</button>
-    </div>
   );
 
   return (
