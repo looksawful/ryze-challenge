@@ -74,7 +74,8 @@ export default function RizzieLab({ theme }: Props) {
                 <span className={styles.stageLabel}>
                   {hidden ? "Rizzie is absent without JavaScript" :
                     scenario === "touch" ? "Touch mode: drag with a finger · Reset to return" :
-                      interactive ? "Drag with mouse · Reset to return" :
+                      scenario === "auto" ? "Auto capability mode · Drag when interactive" :
+                        interactive ? "Drag with mouse · Reset to return" :
                         "Static fallback · Movement disabled"}
                 </span>
               </div>
