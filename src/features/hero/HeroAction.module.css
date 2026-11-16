@@ -140,6 +140,19 @@
   }
   .resultActions button:first-child { background: #d9d9d9; color: #050505; }
   .previewBubble {
+  .root > .previewBubble {
+    position: absolute;
+    z-index: 30;
+    inset-block-end: calc(100% + 12px);
+    inset-inline-start: 0;
+    inline-size: min(340px, calc(100vw - 40px));
+    max-inline-size: none;
+    margin: 0;
+    box-shadow: 0 12px 36px #0009;
+  }
+  @media (min-width: 1600px) {
+    .root > .previewBubble { inset-inline-start: auto; inset-inline-end: 0; }
+  }
     position: relative;
     margin-block-start: 12px;
     padding: 10px 36px 10px 12px;
