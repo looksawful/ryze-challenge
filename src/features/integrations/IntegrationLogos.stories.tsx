@@ -11,7 +11,7 @@ const meta = {
   parameters: { layout: "fullscreen" },
   args: { mode: "auto", theme: "dusk" },
   argTypes: {
-    mode: { name: "Mode", control: "select", options: ["auto", "static", "webgl"] },
+    mode: { name: "Mode", control: "select", options: ["auto", "static"] },
     theme: { name: "Theme", control: "radio", options: ["dawn", "dusk"] },
   },
   render: ({ mode, theme }) => (

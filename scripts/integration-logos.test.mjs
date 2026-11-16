@@ -42,7 +42,8 @@ test("intrinsic logo grid and proportional caption are inside the component", ()
 
 test("Storybook has one complete component preview with Mode and Theme controls", () => {
   assert.deepEqual([...stories.matchAll(/export const (\w+): Story/g)].map(([, name]) => name), ["Preview"]);
-  for (const name of ["auto", "static", "webgl", "dawn", "dusk"]) assert.ok(stories.includes(`"${name}"`), name);
+  for (const name of ["auto", "static", "dawn", "dusk"]) assert.ok(stories.includes(`"${name}"`), name);
+  assert.doesNotMatch(stories, /"auto", "static", "webgl"/);
   assert.match(stories, /argTypes:/);
   assert.match(stories, /<IntegrationLogos/);
 });

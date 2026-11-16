@@ -78,10 +78,6 @@
   .mascot:empty { display: none; }
 
   .integration {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 16px;
     inline-size: min(100%, 358px);
     margin-block-start: auto;
   }
