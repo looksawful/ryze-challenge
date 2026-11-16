@@ -8,6 +8,15 @@ type Mode = "inline" | "drawer";
 type DomainResult = { domain: string; error?: never } | { domain?: never; error: string };
 
 const examples = ["yourstore.com", "shop.example.com", "https://yourstore.com"];
+const localPreviewMessage = {
+  text: "On the live site, this would open a Ryze experience preview. This demonstration stays on the same page.",
+};
+
+type HeroActionProps = {
+  notice?: { text: string } | null;
+  onDismissNotice?: () => void;
+  onPreviewExperience?: (domain: string) => void;
+};
 
 // Accept domains and HTTP(S) URLs without guessing spellings or destination pages.
 function normalizeStoreDomain(value: string): DomainResult {
@@ -37,7 +46,7 @@ function normalizeStoreDomain(value: string): DomainResult {
   return { domain: host };
 }
 
-export default function HeroAction() {
+export default function HeroAction({ notice, onDismissNotice, onPreviewExperience }: HeroActionProps) {
   const [mode, setMode] = useState<Mode | null>(null);
   const [value, setValue] = useState("");
   const [focused, setFocused] = useState(false);
@@ -46,6 +55,9 @@ export default function HeroAction() {
   const [accepted, setAccepted] = useState("");
   const [stage, setStage] = useState<"editing" | "thinking" | "result">("editing");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [noticeHovered, setNoticeHovered] = useState(false);
+  const [noticeFocused, setNoticeFocused] = useState(false);
+  const activeNotice = notice ?? (previewOpen ? localPreviewMessage : null);
   const pendingRef = useRef<number | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement>(null);
@@ -63,6 +75,13 @@ export default function HeroAction() {
   function open(event: MouseEvent<HTMLElement>) {
     event.preventDefault();
     setMode(availableMode());
+  }
+
+  function dismissNotice() {
+    setPreviewOpen(false);
+    setNoticeHovered(false);
+    setNoticeFocused(false);
+    onDismissNotice?.();
   }
 
   function cancelPending() {
@@ -85,6 +104,15 @@ export default function HeroAction() {
   useEffect(() => () => {
     if (pendingRef.current !== null) window.clearTimeout(pendingRef.current);
   }, []);
+
+  useEffect(() => {
+    if (!activeNotice || noticeHovered || noticeFocused) return;
+    const timer = window.setTimeout(() => {
+      setPreviewOpen(false);
+      onDismissNotice?.();
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [activeNotice, noticeHovered, noticeFocused, onDismissNotice]);
 
   useEffect(() => {
     if (!mode) return;
@@ -178,23 +206,43 @@ export default function HeroAction() {
           <p className={styles.resultEyebrow}>Demo response · no store analysis performed</p>
           <p role="status">For <strong>{accepted}</strong>, a Ryze workflow could explore paid ads, SEO, AI visibility and CRO.</p>
           <div className={styles.resultActions}>
-            <button type="button" onClick={() => setPreviewOpen(true)}>Preview experience</button>
+            <button type="button" onClick={() => {
+              if (onPreviewExperience) onPreviewExperience(accepted);
+              else setPreviewOpen(true);
+            }}>Preview experience</button>
             <button type="button" onClick={() => {
               setStage("editing");
               setPreviewOpen(false);
               inputRef.current?.focus();
             }}>Edit domain</button>
           </div>
-          {previewOpen && (
-            <div className={styles.previewBubble} role="status">
-              <strong>Rizzie</strong>
-              <p>The live product would open an experience preview. This demonstration stays on the same page.</p>
-              <button type="button" onClick={() => setPreviewOpen(false)} aria-label="Dismiss preview explanation">×</button>
-            </div>
-          )}
+          {bubble}
         </section>
       )}
     </>
+  );
+
+  const bubble = activeNotice && (
+    <div
+      className={styles.previewBubble}
+      role="status"
+      onMouseEnter={() => setNoticeHovered(true)}
+      onMouseLeave={() => setNoticeHovered(false)}
+      onFocusCapture={() => setNoticeFocused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setNoticeFocused(false);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          dismissNotice();
+        }
+      }}
+    >
+      <strong>Rizzie</strong>
+      <p>{activeNotice.text}</p>
+      <button type="button" onClick={dismissNotice} aria-label="Dismiss preview explanation">×</button>
+    </div>
   );
 
   return (
@@ -203,6 +251,7 @@ export default function HeroAction() {
         <summary ref={triggerRef} onClick={open}>Start For Free</summary>
         <p>Enable JavaScript to try the domain-entry demo.</p>
       </details>
+      {stage !== "result" && mode !== "drawer" && bubble}
       {mode === "inline" && (
         <div className={styles.inline} onKeyDown={(event) => {
           if (event.key === "Escape") {
@@ -233,6 +282,7 @@ export default function HeroAction() {
               <button type="button" onClick={close} className={styles.close} aria-label="Close domain entry">×</button>
             </div>
             {form}
+            {stage !== "result" && bubble}
           </div>
         )}
       </dialog>
