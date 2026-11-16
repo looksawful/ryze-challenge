@@ -117,13 +117,18 @@ try:
                   return {open:details.open,note:rect(note),visible:Math.max(0,Math.min(innerHeight,noteRect.bottom)-
                     Math.max(0,noteRect.top)),action:rect(details),
                     integration:rect(document.querySelector('main [class*=integration]')),
-                    collisions,docWidth:document.documentElement.scrollWidth}
+                    collisions,docWidth:document.documentElement.scrollWidth,
+                    scrollRoom:Math.max(0,Math.max(document.documentElement.scrollHeight,
+                      document.body.scrollHeight)-scrollY-innerHeight)}
                 })())"""))
                 issues = []
                 if not actual["open"]:
                     issues.append("native summary did not open")
                 if actual["visible"] + 1 < actual["note"]["h"]:
-                    issues.append(f"note clipped ({actual['visible']:.1f}/{actual['note']['h']:.1f} px)")
+                    # Expanded content can scroll naturally on short viewports.
+                    scroll_needed = max(0, actual["note"]["y"] + actual["note"]["h"] - height)
+                    if actual["note"]["y"] < -1 or scroll_needed > actual["scrollRoom"] + 1:
+                        issues.append("note clipped and not reachable by scrolling")
                 for name in ("action", "integration"):
                     if any(abs(actual[name][key] - before[name][key]) > .5 for key in ("x", "y", "w", "h")):
                         issues.append(name + " moved")
