@@ -1,4 +1,4 @@
-﻿import test from "node:test";
+import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 const read = (path) => readFileSync(new URL("../src/" + path, import.meta.url), "utf8");
@@ -15,4 +15,10 @@ test("Hero story title has no corrupted status label", () => {
   const source = read("features/hero/Hero.stories.tsx");
   assert.match(source, /title: "Design System\/Screens\/Hero"/);
   assert.doesNotMatch(source, /\uFFFD/);
+});
+
+test('Hero story follows global theme instead of its dusk default', () => {
+  const source = read('features/hero/Hero.stories.tsx');
+  assert.match(source, /context\.globals\.theme/);
+  assert.match(source, /<Hero/);
 });
