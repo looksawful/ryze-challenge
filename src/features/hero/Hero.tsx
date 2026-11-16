@@ -6,14 +6,21 @@ import styles from "./Hero.module.css";
 import IntegrationLogos from "../integrations/IntegrationLogos";
 import HeroAction from "./HeroAction";
 import RizzieMascot from "../mascot/RizzieMascot";
+import type { RizzieScenario } from "../mascot/mascot-model";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-export default function Hero() {
+type HeroProps = {
+  mascotScenario?: RizzieScenario;
+  mascotResetKey?: number;
+  theme?: "dawn" | "dusk";
+};
+
+export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, theme = "dusk" }: HeroProps) {
   const [activation, setActivation] = useState<{ trigger: HTMLAnchorElement } | null>(null);
   const [actionOpen, setActionOpen] = useState(false);
   return (
-    <main className={styles.hero} data-theme="dusk" id="main">
+    <main className={styles.hero} data-theme={theme} id="main">
       <div className={styles.brand}>
         <Image className={styles.brandMark} src={`${basePath}/brand-mark.svg`} alt="" width={40} height={40} unoptimized loading="eager" />
         <span>Ryze</span>
@@ -30,7 +37,7 @@ export default function Hero() {
       </p>
 
       <div className={styles.mascot}>
-        <RizzieMascot onActivate={(trigger) => setActivation({ trigger })} actionOpen={actionOpen} />
+        <RizzieMascot key={`${mascotScenario}:${mascotResetKey}`} scenario={mascotScenario} onActivate={(trigger) => setActivation({ trigger })} actionOpen={actionOpen} />
       </div>
 
       <div className={styles.integration}>
