@@ -193,7 +193,7 @@ export default function HeroAction() {
             </div>
           )}
         </section>
-      )
+      )}
     </>
   );
 
@@ -213,7 +213,7 @@ export default function HeroAction() {
           <button type="button" className={styles.inlineClose} onClick={close} aria-label="Close domain entry">×</button>
           {form}
         </div>
-      )
+      )}
       <dialog
         ref={dialogRef}
         className={styles.drawer}
