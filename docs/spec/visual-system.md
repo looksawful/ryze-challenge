@@ -27,7 +27,7 @@ Declare layers first, in this exact order:
 
 ## Typography
 - Primary stack: `"Segoe UI", system-ui, sans-serif`.
-- Do not load Satoshi at this stage; preserve it as a candidate for later comparison.
+- The approved navigation uses locally hosted Satoshi; the general Hero and body typography retain their existing stacks. Do not impose navigation typography globally.
 - Fluid text sizes are selective: major headings, some leads and special compositions only. Regular body copy, controls, validation and fallback text use stable readable sizes unless justified.
 - Text contrast, wrapping and measured line lengths matter more than decorative scaling.
 
@@ -39,7 +39,7 @@ Declare layers first, in this exact order:
 - Theme variations exist only where actually used, not automatically for every component.
 
 ## Validation
-- Automated lint, TypeScript, static build, functional browser tests, visual comparisons and accessibility checks.
+- On each PR, CI runs only `build` and `typecheck`; lint and focused logic tests run locally when relevant. One Chrome smoke and the full visual, accessibility and real-device matrix belong to release acceptance (#16).
 - User performs manual sign-off on iPhone, Mac and desktop; these checks remain pending until actually completed.
 - Inspect static HTML output with client-side JavaScript disabled; meaningful content and basic actions must survive.
 - Optional WebGL/GSAP enhancements may fail or be disabled without leaving blank essential content.

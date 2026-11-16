@@ -1,5 +1,7 @@
 # Issue #15 · QA трёх режимов логотипов
 
+> Historical QA/release snapshot. Current behavior: source code; open work and acceptance: GitHub Issues. Dates and branch status below refer only to this checkpoint.
+
 Дата: 2026-11-16. Ветка: `feat/issue-15-three-logo-modes`. PR: https://github.com/looksawful/ryze-challenge/pull/26.
 
 ## Реализованные режимы

@@ -1,6 +1,6 @@
 # ADR 0001: Local-first workflow and static publication
 
-Status: Accepted
+Status: Historical setup decision. Branch and release approval rules remain applicable; its initial no-hosted-CI and no-Pages statements are superseded by the actual `.github/workflows/ci.yml` and release PR history.
 
 ## Context
 The interface is a static frontend preview. Build and verification run locally. Release requires human approval, and public artifacts must be reviewed independently of code functionality.

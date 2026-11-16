@@ -1,5 +1,7 @@
 # Cookies P0 debug — 2026-11-16
 
+> Historical QA/release snapshot. Current behavior: source code; open work and acceptance: GitHub Issues. Dates and branch status below refer only to this checkpoint.
+
 Scope: only two audited P0 defects in Ryze Challenge. No navigation, hero, consent persistence, or visual redesign changes.
 
 ## Reproduction and root causes

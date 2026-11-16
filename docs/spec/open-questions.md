@@ -1,17 +1,12 @@
 # Open design decisions
 
-The architectural interview is complete. These are per-component implementation details, not a request to restart the interview.
+Implementation does not imply visual acceptance. GitHub Issues are the only task/status tracker; keep the unresolved questions with their owning issue.
 
-1. Final visual design and animation timeline for Hero, MegaMenu and HeroAction.
-2. Exact copy, focus behavior, aria-live treatment and mobile position for the mascot's speech bubble.
-3. Domain and URL normalization: IDNs, transliteration, ambiguous input, secure handling and invalid/error cases.
-4. Cookie notice visual/device acceptance and short-viewport behavior (basic collapse/reopen is implemented; #14).
-5. Exact names and shapes for navigation product cards, plus integration animation/design acceptance (static logo fallback is implemented; #15).
-6. Final product palettes, including Muse, and individual component-specific theme exceptions. Current Hero accent is fixed at #FF5AF1.
-7. Asset rights, approved images, source files and final content; validate before migration.
-8. Real menu destination URLs and the precise simulated preview destination.
-9. Optional motion/WebGL budgets, fallback visuals and reduced-motion behavior.
-10. Deployment verification, production branch rules and release audit for subsequent releases (the static Hero is already published; #2, #16).
+1. Final visual and motion acceptance for responsive Hero, navigation, CTA and Rizzie (#11, #16).
+2. Domain/URL normalization edge cases and accessible input/error/redo interactions (#12, #13, #16).
+3. Approved asset rights, copy and imagery, including mascot and fonts (#11, #16).
+4. Brand intro integration, particle performance and fallback acceptance (#15, #16).
+5. iPhone/Safari, Mac, desktop, text zoom, keyboard, reduced motion and intermediate-width review (#16).
+6. Publication and production approval for subsequent releases (#2, #16).
 
-## Already settled
-See `docs/spec/visual-system.md`, `docs/spec/hero.md` and `docs/spec/component-inventory.md` for the agreed scope, CSS layer ordering, dusk/dawn, typography, responsive philosophy, Storybook sequencing and test expectations. Do not reopen those decisions without a concrete conflict.
+Already implemented: domain mock workflow, real navigation, animated Rizzie, integration fallback and Homework cookie preferences. Refer to source for current behavior; the existence of a feature is not final sign-off.

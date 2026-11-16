@@ -1,5 +1,7 @@
 # Homework Cookies integration · 2026-11-16
 
+> Historical QA/release snapshot. Current behavior: source code; open work and acceptance: GitHub Issues. Dates and branch status below refer only to this checkpoint.
+
 Scope: replace rendered CookieConsent with the approved Homework Cookie notice in Ryze Challenge, without changing Hero components.
 
 - JS-only rendering, no cookies UI when JavaScript is absent.
