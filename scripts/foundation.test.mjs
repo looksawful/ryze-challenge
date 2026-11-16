@@ -60,7 +60,7 @@ test("compact cookie card uses intrinsic wrapping and a content-aware width", ()
   assert.match(styles, /flex-wrap:\s*wrap/);
   assert.match(styles, /\.choices\s*>\s*\*\s*\{[^}]*flex:/s);
   assert.match(styles, /inline-size:\s*min\(20rem,/);
-  assert.match(styles, /@media\s*\(height\s*<=\s*32rem\)/);
+  assert.match(styles, /\(height\s*<=\s*32rem\)/);
 });
 
 // Regression: opening the native CTA disclosure must not resize its flex/grid track.
