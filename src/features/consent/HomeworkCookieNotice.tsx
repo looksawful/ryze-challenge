@@ -15,6 +15,24 @@ function subscribeToMount() { return () => {}; }
 function getClientMounted() { return true; }
 function getServerMounted() { return false; }
 
+// Match text to the background actually sampled under the floating notice.
+// A light section may sit inside a dark theme, so inherited text tokens alone
+// cannot guarantee contrast.
+function foregroundForBackground(background: string): string {
+  const rgb = background.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (!rgb) return "var(--color-foreground)";
+
+  const linear = (value: number) => {
+    const channel = value / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance = 0.2126 * linear(Number(rgb[1])) + 0.7152 * linear(Number(rgb[2])) + 0.0722 * linear(Number(rgb[3]));
+  const darkContrast = (luminance + 0.05) / (0.0056 + 0.05);
+  const lightContrast = (0.9301 + 0.05) / (luminance + 0.05);
+  if (darkContrast >= lightContrast) return darkContrast >= 4.5 ? "#111" : "#000";
+  return lightContrast >= 4.5 ? "#f7f7f7" : "#fff";
+}
+
 function readChoice() {
   try {
     const value = localStorage.getItem(storageKey);
@@ -80,12 +98,11 @@ export function HomeworkCookieNotice({ onSave, rememberChoice = true }: RyzeCook
       let underlay = document.elementsFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
         .find(element => !dock.contains(element) && !element.closest(".site-panel, [data-ryze-menu]"));
       if (!underlay) return;
-      const foreground = getComputedStyle(underlay).getPropertyValue("--color-foreground");
       while (underlay) {
         const background = getComputedStyle(underlay).backgroundColor;
         if (background !== "transparent" && !/rgba\([^)]*,\s*0\s*\)/.test(background)) {
           dock.style.setProperty("--cookie-background", background);
-          dock.style.setProperty("--cookie-foreground", foreground);
+          dock.style.setProperty("--cookie-foreground", foregroundForBackground(background));
           break;
         }
         underlay = underlay.parentElement ?? undefined;
