@@ -130,12 +130,7 @@ export default function HeroAction() {
 
   const form = (
     <>
-      <form className={styles.form} onSubmit={submit} noValidate onKeyDown={(event) => {
-        if (mode === "inline" && event.key === "Escape") {
-          event.preventDefault();
-          close();
-        }
-      }}>
+      <form className={styles.form} onSubmit={submit} noValidate>
         <label className={styles.visuallyHidden} htmlFor={inputId}>Store domain or URL</label>
         <div className={styles.fieldWrap}>
           <input
@@ -206,7 +201,12 @@ export default function HeroAction() {
         <p>Enable JavaScript to try the domain-entry demo.</p>
       </details>
       {mode === "inline" && (
-        <div className={styles.inline}>
+        <div className={styles.inline} onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            close();
+          }
+        }}>
           <button type="button" className={styles.inlineClose} onClick={close} aria-label="Close domain entry">×</button>
           {form}
         </div>
