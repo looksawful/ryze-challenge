@@ -1,4 +1,4 @@
-﻿import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 const swatches = [
   ["Accent", "--accent-current", "Brand emphasis, primary actions"],

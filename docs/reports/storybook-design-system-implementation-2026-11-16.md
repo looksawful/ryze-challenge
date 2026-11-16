@@ -1,4 +1,4 @@
-﻿# RYZE Storybook · implementation log
+# RYZE Storybook · implementation log
 
 Date: 2026-11-16
 Asana: https://app.asana.com/1/1204689852093979/project/1220599646494671
