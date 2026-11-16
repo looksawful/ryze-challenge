@@ -4,14 +4,18 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const hero = read("../src/features/hero/Hero.tsx");
+const component = read("../src/features/integrations/IntegrationLogos.tsx");
+const css = read("../src/features/integrations/IntegrationLogos.module.css");
+const stories = read("../src/features/integrations/IntegrationLogos.stories.tsx");
 
-test("Hero uses the actual integration logo component, not a placeholder graphic", () => {
+test("Hero renders the complete integrations component, including its caption", () => {
   assert.match(hero, /<IntegrationLogos\s*\/>/);
-  assert.doesNotMatch(hero, /integration-mark\.png/);
+  assert.doesNotMatch(hero, /Plugs into/);
+  assert.match(component, /Plugs into/);
+  assert.match(component, /any platform/);
 });
 
-test("all five approved platform marks are rendered as semantic static HTML", () => {
-  const component = read("../src/features/integrations/IntegrationLogos.tsx");
+test("five approved logos remain in semantic static HTML", () => {
   for (const name of ["Shopify", "Google Ads", "Meta Ads", "TikTok", "Google Analytics"]) {
     assert.ok(component.includes(name), name);
   }
@@ -19,35 +23,26 @@ test("all five approved platform marks are rendered as semantic static HTML", ()
   assert.match(component, /<li/);
 });
 
-test("a WebGL failure uses marquee and reduced motion uses static logos", () => {
-  const component = read("../src/features/integrations/IntegrationLogos.tsx");
+test("static is the only fallback for reduced motion, WebGL loss and slow frames", () => {
   assert.match(component, /prefers-reduced-motion: reduce/);
-  assert.match(component, /"marquee"/);
-  assert.match(component, /"webgl"/);
-  assert.match(component, /"static"/);
   assert.match(component, /webglcontextlost/);
-  const css = read("../src/features/integrations/IntegrationLogos.module.css");
-  assert.match(css, /flex-wrap: wrap/);
-  assert.match(css, /@media \(prefers-reduced-motion: no-preference\)/);
-  assert.match(css, /@keyframes/);
-});
-
-test("slow WebGL frame delivery falls back to lightweight marquee", () => {
-  const component = read("../src/features/integrations/IntegrationLogos.tsx");
   assert.match(component, /slowFrames >= 3/);
-  assert.match(component, /if \(slowFrames >= 3\) \{\s*fallback\(\)/);
+  assert.match(component, /host\.dataset\.mode = "static"/);
+  assert.doesNotMatch(component + css + stories, /marquee|logo-scroll|logo-scroll/);
+  assert.match(css, /prefers-reduced-motion: no-preference/);
 });
 
-test("Storybook keeps one integrations story with Mode and Theme controls", () => {
-  const component = read("../src/features/integrations/IntegrationLogos.tsx");
-  const stories = read("../src/features/integrations/IntegrationLogos.stories.tsx");
-  assert.match(component, /previewMode\??:/);
-  assert.match(component, /previewMode = "auto"/);
+test("intrinsic logo grid and proportional caption are inside the component", () => {
+  assert.match(css, /repeat\(auto-fit, minmax\(/);
+  assert.match(css, /--integration-logo-size: clamp\(/);
+  assert.match(css, /\.caption/);
+  assert.match(css, /font-size: clamp\(/);
+  assert.match(component, /className=\{styles\.caption\}/);
+});
+
+test("Storybook has one complete component preview with Mode and Theme controls", () => {
   assert.deepEqual([...stories.matchAll(/export const (\w+): Story/g)].map(([, name]) => name), ["Preview"]);
-  for (const name of ["auto", "static", "marquee", "webgl", "dawn", "dusk"]) {
-    assert.ok(stories.includes(`"${name}"`), name);
-  }
+  for (const name of ["auto", "static", "webgl", "dawn", "dusk"]) assert.ok(stories.includes(`"${name}"`), name);
   assert.match(stories, /argTypes:/);
   assert.match(stories, /<IntegrationLogos/);
-  assert.doesNotMatch(stories, /RuntimeLab|ThemeComparison|RuntimeSwitching|styles\.information/);
 });
