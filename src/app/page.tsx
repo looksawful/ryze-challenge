@@ -4,8 +4,8 @@ import { HeroWithNavigation } from "@/features/site-shell/HeroWithNavigation";
 export default function Page() {
   return (
     <>
-      <HeroWithNavigation />
       <CookieConsent />
+      <HeroWithNavigation />
     </>
   );
 }

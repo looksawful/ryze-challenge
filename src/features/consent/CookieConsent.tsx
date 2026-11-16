@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import styles from "./CookieConsent.module.css";
 
 type ConsentView = "notice" | "settings" | "collapsed";
@@ -11,6 +11,7 @@ export default function CookieConsent() {
   const [preferences, setPreferences] = useState<Preferences>({ analytics: false, marketing: false });
   const [announcement, setAnnouncement] = useState("");
   const headingId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const customizeRef = useRef<HTMLButtonElement>(null);
@@ -32,6 +33,62 @@ export default function CookieConsent() {
     collapse("Cookie preferences updated for this preview");
   }
 
+  // Progressive enhancement: only float when no Hero content can be obscured.
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    const panel = panelRef.current;
+    const hero = document.querySelector("main");
+    if (!root || !panel || !hero) return;
+
+    function place() {
+      if (!root || !panel || !hero) return;
+      if (view === "collapsed") {
+        root.dataset.floating = "true";
+        return;
+      }
+      if (window.innerWidth < 1024) {
+        delete root.dataset.floating;
+        return;
+      }
+
+      root.style.setProperty("--cookie-x", "16px");
+      root.style.setProperty("--cookie-y", "16px");
+      root.dataset.floating = "true";
+
+      const { width, height } = panel.getBoundingClientRect();
+      const blocks = Array.from(hero.children, (element) => element.getBoundingClientRect());
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const maxX = viewportWidth - width - 16;
+      const maxY = viewportHeight - height - 16;
+      const gap = 8;
+      let best: { x: number; y: number; score: number } | null = null;
+
+      for (let y = maxY; y >= 16; y -= 12) {
+        for (let x = maxX; x >= 16; x -= 12) {
+          const touchesContent = blocks.some((rect) =>
+            x < rect.right + gap && x + width > rect.left - gap &&
+            y < rect.bottom + gap && y + height > rect.top - gap
+          );
+          if (touchesContent) continue;
+          const score = (maxX - x) + 1.2 * (maxY - y);
+          if (!best || score < best.score) best = { x, y, score };
+        }
+      }
+
+      if (best) {
+        root.style.setProperty("--cookie-x", best.x + "px");
+        root.style.setProperty("--cookie-y", best.y + "px");
+      } else {
+        delete root.dataset.floating;
+      }
+    }
+
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [view]);
+
   useEffect(() => {
     if (view !== "notice") return;
     function minimizeOnWheel(event: WheelEvent) {
@@ -46,7 +103,7 @@ export default function CookieConsent() {
   }, [view]);
 
   return (
-    <div className={styles.root} data-cookie-consent data-view={view}>
+    <div ref={rootRef} className={styles.root} data-cookie-consent data-view={view}>
       <aside
         ref={panelRef}
         className={styles.notice}
