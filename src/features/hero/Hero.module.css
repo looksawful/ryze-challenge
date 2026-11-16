@@ -96,6 +96,10 @@
 
   .action summary::-webkit-details-marker { display: none; }
   .action p {
+    /* Keep the native no-JS message below the CTA without shifting siblings. */
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline: 0;
     margin-block-start: 12px;
     color: var(--color-foreground);
     font-size: 15px;
@@ -130,13 +134,6 @@
     .description { grid-area: description; max-inline-size: 390px; margin: 0; font-size: 18px; text-align: left; }
     .action { grid-area: action; inline-size: 190px; margin: 0; align-self: end; }
     .action summary { min-block-size: 52px; font-size: 16px; }
-    /* The native no-JS message appears below the button without shifting the Grid. */
-    .action p {
-      position: absolute;
-      inset-block-start: 100%;
-      inset-inline: 0;
-      margin-block-start: 12px;
-    }
     .integration { grid-area: integration; inline-size: auto; margin: 0 0 0 45px; justify-self: start; align-self: end; font-size: 15px; }
   }
 
