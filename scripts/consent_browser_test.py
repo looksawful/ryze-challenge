@@ -45,7 +45,7 @@ server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
 threading.Thread(target=server.serve_forever, daemon=True).start()
 failures = 0
 try:
-    with tempfile.TemporaryDirectory(prefix="ryze-cookie-test-") as profile:
+    with tempfile.TemporaryDirectory(prefix="ryze-cookie-test-", ignore_cleanup_errors=True) as profile:
         proc = subprocess.Popen(
             [CHROME, "--headless=new", "--no-first-run", "--disable-extensions",
              "--disable-gpu", "--remote-allow-origins=*", "--remote-debugging-port=0",
