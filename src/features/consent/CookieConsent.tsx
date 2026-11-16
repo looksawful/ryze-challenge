@@ -84,9 +84,21 @@ export default function CookieConsent() {
       }
     }
 
+    let frame = 0;
+    const onResize = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        place();
+      });
+    };
+
     place();
-    window.addEventListener("resize", place);
-    return () => window.removeEventListener("resize", place);
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.cancelAnimationFrame(frame);
+    };
   }, [view]);
 
   useEffect(() => {
