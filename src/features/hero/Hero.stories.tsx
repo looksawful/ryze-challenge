@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import Hero from "./Hero";
 
 const meta = {
-  title: "RYZE/Hero (review)",
+  title: "Design System/Screens/Hero · review",
   component: Hero,
   tags: ["autodocs"],
   parameters: {

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { HeroWithNavigation } from "./HeroWithNavigation";
 
 const meta = {
-  title: "Site shell/First screen with navigation",
+  title: "Design System/Screens/First screen with navigation",
   component: HeroWithNavigation,
   parameters: {
     layout: "fullscreen",

@@ -7,7 +7,7 @@ type Controls = {
 };
 
 const meta = {
-  title: "RYZE/Integrations",
+  title: "Design System/Components/Integrations",
   parameters: { layout: "fullscreen" },
   args: { mode: "auto", theme: "dusk" },
   argTypes: {

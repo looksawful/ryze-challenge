@@ -6,7 +6,7 @@ import { HomeworkCookieNotice, HomeworkCookieSettingsButton } from "./HomeworkCo
 type CookieState = "notice" | "settings" | "closed";
 type CookieStoryArgs = { state: CookieState; rememberChoice: boolean };
 const meta = {
-  title: "RYZE/Cookies",
+  title: "Design System/Components/Cookies",
   args: { state: "notice", rememberChoice: true },
   argTypes: {
     state: { control: "select", options: ["notice", "settings", "closed"] },

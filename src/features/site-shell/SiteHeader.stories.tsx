@@ -41,7 +41,7 @@ function NavigationCanvas({ enhancement = "full", theme = "dusk" }: NavigationAr
 }
 
 const meta = {
-  title: "Navigation",
+  title: "Design System/Components/Navigation",
   component: SiteHeader,
   parameters: {
     layout: "fullscreen",

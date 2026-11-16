@@ -34,7 +34,7 @@ function RizziePlayground({ scenario, theme = "dusk" }: Props) {
 }
 
 const meta = {
-  title: "RYZE/Rizzie",
+  title: "Design System/Components/Rizzie",
   component: RizziePlayground,
   parameters: {
     layout: "fullscreen",
