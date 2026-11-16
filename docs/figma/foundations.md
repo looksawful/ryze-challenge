@@ -1,6 +1,6 @@
 # Figma foundations, naming and safe authoring
 
-Status: **Partly implemented**, based on the actual desktop Figma GUI on Titan, 2026-11-16. This is a factual working inventory and change log, not a design sign-off. The approved implementation contracts remain [visual-system](../spec/visual-system.md), [Hero](../spec/hero.md) and [component-inventory](../spec/component-inventory.md).
+Status: **Partly implemented**, based on direct inspection of the project design file, 2026-11-16. This is a factual working inventory and change log, not a design sign-off. The approved implementation contracts remain [visual-system](../spec/visual-system.md), [Hero](../spec/hero.md) and [component-inventory](../spec/component-inventory.md).
 
 Figma document: https://www.figma.com/design/HJMPgVAbPMvpMECkXbBXaG/Ryze-challenge
 
@@ -9,7 +9,7 @@ Figma document: https://www.figma.com/design/HJMPgVAbPMvpMECkXbBXaG/Ryze-challen
 - **Never edit, rename, regroup, resize, detach, or restyle any existing Hero / Header / reference screen** as part of foundations work. Approved visual appearance and frame history must survive unchanged.
 - Create reusable primitives, styles, and newly isolated components **outside existing screen frames** on `DESIGN SYSTEM` only. Do not rebind screen layers to styles without separate approval and visual checks.
 - Old or experimental frames must not be deleted until explicitly approved. A frame's dimensions do not automatically define a CSS breakpoint.
-- Work directly through desktop Figma GUI (Local Commander / Remote Desktop Commander / MA Commander), not the Figma connector. Evidence screenshots are saved locally; they are not automatically published.
+- Verify changes directly in the authorized Figma interface, preserving source frames. Evidence screenshots are saved locally; they are not automatically published.
 - This file records verified outcomes, flags plans as plans, and keeps screenshots out of the repo.
 
 ## Implemented Figma variables
@@ -81,6 +81,6 @@ Do not automatically create 9 CSS media queries from the 9 Figma sizes. Audit in
 
 ## Work log
 
-2026-11-16: Audit performed by remote GUI tools on Titan. Created Figma `Primitives` collection and verified the 7 variables listed above. Existing screen frames untouched. Collected evidence under `F:\\Temp\\ryze_figma_audit_2026-11-16\\`, notably `primitives-seven-verified.png`, `variable-brand-after-type.png` and the earlier frame/asset inventories. No issue comments or Asana updates were made; document creation is the requested durable handoff.
+2026-11-16: Verified the Primitives collection and seven foundation variables in the project design file. Existing screen frames were not changed. Reference screenshots are retained outside the repository; this document records verified results and outstanding acceptance tasks.
 
 **Change authority:** this document is a log of performed foundations work, not approval to alter existing Figma frames.
