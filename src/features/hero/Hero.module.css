@@ -346,3 +346,22 @@
     }
   }
 }
+
+@layer components {
+  /* Keep integrations visible above the fixed mobile dock, even when the mascot hydrates late. */
+  @media (max-width: 699px) {
+    .hero[data-integration-prototype] .integration {
+      order: 0;
+      margin-block-start: 12px;
+      padding-block-start: 0;
+    }
+    .hero[data-integration-prototype] .mascot {
+      order: 2;
+      margin-block-start: 10px;
+    }
+    .hero[data-integration-prototype] .action {
+      order: 1;
+      margin-block-start: 10px;
+    }
+  }
+}
