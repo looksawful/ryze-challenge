@@ -50,6 +50,17 @@ test("Homework Cookies are JS-only and retain a choice until changed", () => {
   }
 });
 
+test("Cookie foreground follows sampled background rather than stale theme text", () => {
+  const source = readFileSync("src/features/consent/HomeworkCookieNotice.tsx", "utf8");
+  assert.match(source, /function foregroundForBackground\(/);
+  assert.match(source, /setProperty\("--cookie-foreground", foregroundForBackground\(background\)\)/);
+});
+
+test("Cookie Storybook args hook lives directly in its render function", () => {
+  const source = readFileSync("src/features/consent/HomeworkCookieNotice.stories.tsx", "utf8");
+  assert.match(source, /render:\s*function CookieStoryRender\(args\) \{\s*const \[, updateArgs\] = useArgs/);
+});
+
 test("Homework cookie visual matches the borderless, intrinsically sized reference", () => {
   const styles = readFileSync("src/features/consent/HomeworkCookieNotice.module.css", "utf8");
   assert.match(styles, /border:\s*0;/);

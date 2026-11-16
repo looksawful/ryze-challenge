@@ -66,11 +66,9 @@ function Preview({ state, rememberChoice, onReset }: CookieStoryArgs & { onReset
   );
 }
 
-function InteractiveStory(props: Partial<CookieStoryArgs>) {
-  const [, updateArgs] = useArgs<CookieStoryArgs>();
-  return <Preview state={props.state ?? "notice"} rememberChoice={props.rememberChoice ?? true} onReset={() => updateArgs({ state: "notice" })} />;
-}
-
 export const Interactive: Story = {
-  render: (args) => <InteractiveStory {...args} />,
+  render: function CookieStoryRender(args) {
+    const [, updateArgs] = useArgs<CookieStoryArgs>();
+    return <Preview state={args.state ?? "notice"} rememberChoice={args.rememberChoice ?? true} onReset={() => updateArgs({ state: "notice" })} />;
+  },
 };
