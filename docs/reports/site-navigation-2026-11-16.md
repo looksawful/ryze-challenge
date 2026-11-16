@@ -1,5 +1,7 @@
 # First-screen site navigation release checkpoint
 
+> Historical QA/release snapshot. Current behavior: source code; open work and acceptance: GitHub Issues. Dates and branch status below refer only to this checkpoint.
+
 Date: 2026-11-16. Scope: issue #11.
 
 ## Implemented

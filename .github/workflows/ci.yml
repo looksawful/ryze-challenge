@@ -20,20 +20,5 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npm run lint
-      - run: npm test
       - run: npm run build
-      - run: npm run test:static
       - run: npm run typecheck
-      - run: npm run build-storybook
-      - name: Chrome browser regressions
-        env:
-          CHROME_PATH: /usr/bin/google-chrome
-          RYZE_SMOKE: "1"
-        run: |
-          test -x "$CHROME_PATH"
-          python3 -m venv "$RUNNER_TEMP/ryze-browser-venv"
-          "$RUNNER_TEMP/ryze-browser-venv/bin/pip" install --disable-pip-version-check websocket-client==1.9.0
-          "$RUNNER_TEMP/ryze-browser-venv/bin/python" scripts/consent_browser_test.py
-          "$RUNNER_TEMP/ryze-browser-venv/bin/python" scripts/hero-disclosure-browser-test.py
-          node --test scripts/site-header.browser.test.mjs

@@ -22,4 +22,4 @@ Install dependencies with `npm install`, then run `npm run dev`. Project verific
 - `docs/adr/` — architectural decisions.
 - `AGENTS.md` — contributor and agent rules.
 
-Components and Storybook stories will be introduced as interaction designs are approved. Static publication is not configured yet.
+`dev` contains the implementation; `prod` holds approved releases and `gh-pages` serves static output. For current status use GitHub Issues, for behavior use `docs/spec/`, and for actual implementation/checks use source code, `package.json` and `.github/workflows/ci.yml`. Dated reports are historical.

@@ -1,5 +1,7 @@
 # BrandMark particle intro · QA and release record
 
+> Historical QA/release snapshot. Current behavior: source code; open work and acceptance: GitHub Issues. Dates and branch status below refer only to this checkpoint.
+
 Date: 2026-11-16
 Scope: [Issue #15](https://github.com/looksawful/ryze-challenge/issues/15), brand entrance only.
 

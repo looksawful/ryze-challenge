@@ -1,6 +1,6 @@
 # Hero interaction specification
 
-Status: Confirmed behavior; detailed visual and timing decisions pending.
+Status: Agreed behavior contract. `dev` already includes the shared Hero, responsive domain flow, animated Rizzie and Homework Cookie Notice. The code describes what is implemented; visual and device acceptance remains in #16.
 
 ## Scope
 Implement one responsive Hero for a product landing page. Do not implement other pages, an exhaustive product catalog, authentication, server-side backend or a live AI integration.
@@ -23,9 +23,8 @@ Implement one responsive Hero for a product landing page. Do not implement other
 - Existing button and transformation design are not final.
 
 ## Consent
-- The existing consent component is the reference for options and actions.
-- It must appear on each fresh page load; deliberately do not persist its selection across reloads.
-- Its dismissal animates into a compact settings affordance and supports reopening.
+- `HomeworkCookieNotice` presents local demo preferences; saved choices persist in localStorage until changed, without enabling tracking.
+- A settings action allows preferences to be reopened; the notice appears if no saved choice exists. It does not render a misleading server-side cookie notice without JavaScript.
 
 ## Brand, integrations and effects
 - Distinguish symbol, wordmark and combined lockup; distinguish customer marks from integration marks.
@@ -38,5 +37,5 @@ Implement one responsive Hero for a product landing page. Do not implement other
 - Menu and CTA do not perform unexpected external navigation.
 - A valid domain reaches a deterministic result; invalid input gives usable feedback.
 - Repeating the CTA scenario works without reloading.
-- Consent reappears after reload and can collapse and reopen.
+- Consent choices persist across reloads; the settings action reopens them.
 - Slow or unsupported WebGL never blocks essential content.
