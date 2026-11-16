@@ -1,5 +1,6 @@
 import Image from "next/image";
 import styles from "./Hero.module.css";
+import IntegrationLogos from "../integrations/IntegrationLogos";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -22,7 +23,7 @@ export default function Hero() {
       </p>
 
       <div className={styles.integration}>
-        <Image className={styles.integrationMark} src={`${basePath}/integration-mark.png`} alt="" width={54} height={55} unoptimized loading="eager" />
+        <IntegrationLogos />
         <span>Plugs into<br />{" "}any platform</span>
       </div>
 

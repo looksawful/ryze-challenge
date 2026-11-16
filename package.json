@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6007",
     "build-storybook": "storybook build",
-    "test": "node --test scripts/foundation.test.mjs",
+    "test": "node --test scripts/foundation.test.mjs scripts/integration-logos.test.mjs",
     "test:static": "node --test scripts/static-html.test.mjs"
   },
   "dependencies": {

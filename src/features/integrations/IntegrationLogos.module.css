@@ -1,0 +1,96 @@
+@layer components {
+  .root {
+    position: relative;
+    display: block;
+    flex: none;
+    inline-size: 88px;
+    block-size: 64px;
+    overflow: hidden;
+  }
+
+  .staticList,
+  .marqueeList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .staticList {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    gap: 4px;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  .staticItem {
+    flex: 0 0 26px;
+    inline-size: 26px;
+    block-size: 26px;
+  }
+
+  .logo {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+  }
+
+  .marquee,
+  .canvas {
+    display: none;
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .root[data-mode="webgl"] .canvas,
+    .root[data-mode="marquee"] .marquee {
+      display: block;
+    }
+
+    .root[data-mode="webgl"] .staticList,
+    .root[data-mode="marquee"] .staticList {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      overflow: hidden;
+      white-space: nowrap;
+      clip-path: inset(50%);
+    }
+
+    .marquee {
+      overflow: hidden;
+      mask-image: linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
+    }
+
+    .track {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      block-size: 100%;
+      inline-size: max-content;
+      animation: logo-scroll 12s linear infinite;
+    }
+
+    .marqueeList {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .marqueeItem {
+      flex: 0 0 42px;
+      inline-size: 42px;
+      block-size: 42px;
+    }
+
+    @keyframes logo-scroll {
+      to { transform: translateX(calc(-50% - 6px)); }
+    }
+  }
+}
