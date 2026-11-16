@@ -36,3 +36,29 @@ test("Hero preserves reflow rather than clipping oversized text", () => {
   assert.doesNotMatch(heroStyles(), /white-space:\s*nowrap/);
   assert.doesNotMatch(heroStyles(), /overflow:\s*clip/);
 });
+
+test("CookieConsent renders on each visit without persistent consent", () => {
+  const consent = readFileSync("src/features/consent/CookieConsent.tsx", "utf8");
+  assert.match(page(), /<CookieConsent\s*\/>/);
+  assert.match(consent, /useState<ConsentView>\("notice"\)/);
+  assert.doesNotMatch(consent, /localStorage|sessionStorage|document\.cookie/);
+});
+
+test("CookieConsent supports wheel/minus collapse, reopen and accessible settings", () => {
+  const consent = readFileSync("src/features/consent/CookieConsent.tsx", "utf8");
+  assert.match(consent, /wheel/);
+  assert.match(consent, /Minimize cookie settings/);
+  assert.match(consent, /Open cookie settings/);
+  assert.match(consent, /Accept all cookies/);
+  assert.match(consent, /Reject all cookies/);
+  assert.match(consent, /Customize cookie settings/);
+  assert.match(consent, /Save preferences/);
+});
+
+test("compact cookie card uses intrinsic wrapping and a content-aware width", () => {
+  const styles = readFileSync("src/features/consent/CookieConsent.module.css", "utf8");
+  assert.match(styles, /flex-wrap:\s*wrap/);
+  assert.match(styles, /\.choices\s*>\s*\*\s*\{[^}]*flex:/s);
+  assert.match(styles, /inline-size:\s*min\(20rem,/);
+  assert.match(styles, /@media\s*\(height\s*<=\s*32rem\)/);
+});
