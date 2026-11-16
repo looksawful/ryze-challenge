@@ -11,7 +11,7 @@ A static-exportable, responsive interface preview demonstrating the first screen
 - Customer logos indicate customers. Integration logos indicate connected or planned services; these are distinct.
 - Two separate particle effects serve brand entrance and integration logo transitions. Shared technology does not imply shared component behavior.
 - `Mascot` gives contextual explanations of simulated navigation.
-- `CookieConsent` is demonstrative UI whose selection is deliberately not retained across reloads.
+- `HomeworkCookieNotice` records local demo preferences until changed; it does not enable tracking.
 
 ## Technical boundaries
 React, TypeScript and Next.js with static export. Feature-based structure, locally scoped CSS Modules and global design tokens. GSAP for interface motion; WebGL/GLSL for particle/shader effects; Three.js only when an actual 3D scene is required. Static first; optional enhancements are non-blocking. Storybook must import the same components as the application.
