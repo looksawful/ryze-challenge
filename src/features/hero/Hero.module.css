@@ -1,5 +1,6 @@
 @layer components {
   .hero {
+    position: relative;
     inline-size: 100%;
     min-block-size: 100svh;
     display: flex;
@@ -58,6 +59,20 @@
     font-size: 22px;
     line-height: 1.38;
     text-align: center;
+  }
+
+  .mascot {
+    inline-size: min(100%, 600px);
+    block-size: clamp(156px, 23svh, 208px);
+    flex: 0 0 auto;
+    margin-block-start: 12px;
+    position: relative;
+    pointer-events: none;
+  }
+  .mascot > section {
+    inline-size: 100%;
+    block-size: 100%;
+    margin: 0;
   }
 
   .integration {
@@ -159,6 +174,14 @@
     .lead { grid-area: lead; margin: 0; font-size: 19px; text-align: left; }
     .lead br { display: none; }
     .description { grid-area: description; max-inline-size: 390px; margin: 0; font-size: 18px; text-align: left; }
+    .mascot {
+      position: absolute;
+      inline-size: 190px;
+      block-size: 110px;
+      inset-inline-start: 0;
+      inset-block-end: 84px;
+      margin: 0;
+    }
     .action { grid-area: action; inline-size: 190px; margin: 0; align-self: end; }
     .action summary { min-block-size: 52px; font-size: 16px; }
     .integration { grid-area: integration; inline-size: auto; margin: 0 0 0 45px; justify-self: start; align-self: end; font-size: 15px; }
@@ -181,6 +204,15 @@
     .headline { grid-column: 1 / -1; grid-row: 2; inline-size: min(620px, 100%); justify-self: center; margin: 0; font-size: clamp(52px, 4.4vw, 62px); }
     .lead { grid-column: 1 / -1; grid-row: 3; justify-self: center; margin: 0; font-size: 24px; }
     .description { grid-column: 1 / -1; grid-row: 4; justify-self: center; max-inline-size: 390px; margin: 0; font-size: 24px; }
+    .mascot {
+      grid-column: 1;
+      grid-row: 4;
+      inline-size: 100%;
+      block-size: 180px;
+      justify-self: start;
+      align-self: end;
+      margin: 0;
+    }
     .action { grid-column: 1; grid-row: 5; inline-size: min(308px, 100%); margin: 0; }
     .action summary { min-block-size: 90px; }
     .integration { grid-column: 2; grid-row: 5; justify-self: end; inline-size: auto; margin: 20px 0 0; }
@@ -198,6 +230,7 @@
     .lead { grid-column: 2 / 5; grid-row: 3; justify-self: start; align-self: start; text-align: left; }
     .lead br { display: none; }
     .description { grid-column: 2 / 5; grid-row: 3; justify-self: start; align-self: start; margin-block-start: 54px; text-align: left; }
+    .mascot { grid-column: 6 / 9; grid-row: 3; inline-size: 100%; align-self: start; }
     .action { grid-column: 9 / 11; grid-row: 3; inline-size: min(308px, 100%); margin: 20px 0 0 -36px; }
     .integration { grid-column: 11 / 13; grid-row: 3; justify-self: start; margin: 38px 0 0 -12px; }
   }
@@ -213,6 +246,7 @@
     .headline { grid-column: 1 / 10; grid-row: 2 / 4; inline-size: calc(100% - 60px); font-size: clamp(100px, 5.7vw, 160px); }
     .lead { grid-column: 10 / 13; grid-row: 3; align-self: start; margin-block-start: 0; font-size: 19px; }
     .description { grid-column: 10 / 13; grid-row: 3; margin-block-start: 40px; font-size: 19px; }
+    .mascot { grid-column: 8 / 10; grid-row: 4; inline-size: 100%; margin: 0; }
     .action { grid-column: 10 / 12; grid-row: 4; margin: 0; }
     .integration { grid-column: 12 / 13; grid-row: 4; inline-size: 190px; margin: 20px 0 0 20px; }
   }

@@ -1,17 +1,17 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import styles from "./Hero.module.css";
 import IntegrationLogos from "../integrations/IntegrationLogos";
 import HeroAction from "./HeroAction";
+import RizzieMascot from "../mascot/RizzieMascot";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-type HeroProps = {
-  notice?: { text: string } | null;
-  onDismissNotice?: () => void;
-  onPreviewExperience?: (domain: string) => void;
-};
-
-export default function Hero({ notice, onDismissNotice, onPreviewExperience }: HeroProps) {
+export default function Hero() {
+  const [activation, setActivation] = useState<{ trigger: HTMLAnchorElement } | null>(null);
+  const [actionOpen, setActionOpen] = useState(false);
   return (
     <main className={styles.hero} data-theme="dusk" id="main">
       <div className={styles.brand}>
@@ -29,13 +29,17 @@ export default function Hero({ notice, onDismissNotice, onPreviewExperience }: H
         Paid ads, SEO, AI visibility &amp; CRO. One AI autopilot built around your business.
       </p>
 
+      <div className={styles.mascot}>
+        <RizzieMascot onActivate={(trigger) => setActivation({ trigger })} actionOpen={actionOpen} />
+      </div>
+
       <div className={styles.integration}>
         <IntegrationLogos />
         <span>Plugs into<br />{" "}any platform</span>
       </div>
 
       <div className={styles.action}>
-        <HeroAction notice={notice} onDismissNotice={onDismissNotice} onPreviewExperience={onPreviewExperience} />
+        <HeroAction activation={activation} onOpenChange={setActionOpen} />
       </div>
     </main>
   );
