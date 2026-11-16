@@ -140,6 +140,13 @@
   }
   .resultActions button:first-child { background: #d9d9d9; color: #050505; }
   .previewBubble {
+    position: relative;
+    margin-block-start: 12px;
+    padding: 10px 36px 10px 12px;
+    border: 1px solid #5c4c60;
+    border-radius: 14px;
+    background: #342637;
+  }
   .root > .previewBubble {
     position: absolute;
     z-index: 30;
@@ -152,13 +159,6 @@
   }
   @media (min-width: 1600px) {
     .root > .previewBubble { inset-inline-start: auto; inset-inline-end: 0; }
-  }
-    position: relative;
-    margin-block-start: 12px;
-    padding: 10px 36px 10px 12px;
-    border: 1px solid #5c4c60;
-    border-radius: 14px;
-    background: #342637;
   }
   .previewBubble strong { color: #ff9af7; }
   .previewBubble p { margin-block-start: 4px; }
