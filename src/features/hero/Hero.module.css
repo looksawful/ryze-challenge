@@ -96,10 +96,41 @@
 
   .action summary::-webkit-details-marker { display: none; }
   .action p {
+    /* Keep the native no-JS message below the CTA without shifting siblings. */
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline: 0;
     margin-block-start: 12px;
     color: var(--color-foreground);
     font-size: 15px;
     text-align: center;
+  }
+
+  /* In short desktop windows, show the no-JS explanation above the CTA. */
+  @media (min-width: 1024px) and (max-height: 700px) {
+    .action p {
+      inset-block-start: auto;
+      inset-block-end: 100%;
+      margin-block: 0 12px;
+    }
+  }
+
+  /* Very short landscape has no spare track for a separate explanation. */
+  @media (min-width: 700px) and (max-width: 1023px) and (max-height: 350px) {
+    .action[open] p {
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 3px 10px;
+      margin: 0;
+      border-radius: 999px;
+      background: #d9d9d9;
+      color: #050505;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.15;
+      pointer-events: none;
+    }
   }
 
   @media (max-width: 359px) {
@@ -130,13 +161,6 @@
     .description { grid-area: description; max-inline-size: 390px; margin: 0; font-size: 18px; text-align: left; }
     .action { grid-area: action; inline-size: 190px; margin: 0; align-self: end; }
     .action summary { min-block-size: 52px; font-size: 16px; }
-    /* The native no-JS message appears below the button without shifting the Grid. */
-    .action p {
-      position: absolute;
-      inset-block-start: 100%;
-      inset-inline: 0;
-      margin-block-start: 12px;
-    }
     .integration { grid-area: integration; inline-size: auto; margin: 0 0 0 45px; justify-self: start; align-self: end; font-size: 15px; }
   }
 
