@@ -1,18 +1,17 @@
-# Open decisions
+# Open design decisions
 
-Status: Not approved for implementation. Resolve through the next design interview before deciding on behavior.
+The architectural interview is complete. These are per-component implementation details, not a request to restart the interview.
 
-1. Colors, color palettes, theme semantics and which elements actually have theme variations. Do not infer a global dark/light pair.
-2. Complete naming map for visible Hero entities, menu product shelf/cards and Storybook story hierarchy.
-3. MegaMenu motion details: geometry, easing, speed, pointer transitions, desktop/mobile UX and accessibility. Review existing behavior before refactoring; it is not final.
-4. Speech-bubble visual design, responsive placement near the mascot, language, exact copy and accessibility announcement behavior.
-5. HeroAction transition choreography, input focus timing, placeholder timing, error states, cancellation and repeat states.
-6. Domain and full-URL normalization, transliteration/IDN decisions, avoiding accidental changes to the entered destination.
-7. Consent collapse/reopen animation, mobile positioning and keyboard behavior.
-8. Exact feature folders, component state boundaries, motion token names, CSS naming and use of Storybook controls.
-9. Asset inventory and licensing; reference material selection. No wholesale migration from earlier code.
-10. Local build/static Pages publication procedure, Storybook path under the deployed site, branch protection when permitted and pre-publication audit checklist.
-11. Final acceptance criteria for accessibility, responsive layout, performance and failure fallbacks.
-12. The actual content, design assets and Figma link have not yet been supplied/approved in this repository.
+1. Final visual design and animation timeline for Hero, MegaMenu and HeroAction.
+2. Exact copy, focus behavior, aria-live treatment and mobile position for the mascot's speech bubble.
+3. Domain and URL normalization: IDNs, transliteration, ambiguous input, secure handling and invalid/error cases.
+4. Cookie notice collapse/reopen choreography and responsive constraints.
+5. Exact names and shapes for navigation product cards and integration display.
+6. Final product palettes, including Muse, and individual component-specific theme exceptions. Current Hero accent is fixed at #FF5AF1.
+7. Asset rights, approved images, source files and final content; validate before migration.
+8. Real menu destination URLs and the precise simulated preview destination.
+9. Optional motion/WebGL budgets, fallback visuals and reduced-motion behavior.
+10. Deployment base paths, production branch rules and release audit before publishing.
 
-Next interview sequence: palette/theme → component inventory and state machines → verification and release readiness. Keep unresolved points out of implementation tickets.
+## Already settled
+See `docs/spec/visual-system.md`, `docs/spec/hero.md` and `docs/spec/component-inventory.md` for the agreed scope, CSS layer ordering, dusk/dawn, typography, responsive philosophy, Storybook sequencing and test expectations. Do not reopen those decisions without a concrete conflict.

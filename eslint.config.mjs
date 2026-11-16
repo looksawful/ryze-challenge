@@ -10,7 +10,9 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
+    "storybook-static/**",
     "build/**",
+    "storybook-static/**",
     "next-env.d.ts",
   ]),
 ]);

@@ -22,4 +22,4 @@ Use the five canonical roles. See `docs/agents/triage-labels.md`.
 One `CONTEXT.md` and root `docs/adr/`. See `docs/agents/domain.md`.
 
 ### Current scope
-Read `docs/spec/hero.md` before implementing visible UI. Unresolved decisions are in `docs/spec/open-questions.md`; do not choose them implicitly.
+Read `docs/spec/hero.md`, `docs/spec/visual-system.md` and `docs/spec/component-inventory.md` before implementing visible UI. Unresolved component details are in `docs/spec/open-questions.md`. For public product vocabulary, use `docs/agents/business-context.md` and verify claims against its linked sources; do not copy unsupported claims.
