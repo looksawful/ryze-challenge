@@ -23,3 +23,9 @@ Scope: Restore the existing ESLint gate without weakening rules, touching CI con
 - GitHub PR CI remains the final integration gate for Chrome/browser workflows.
 
 No new dependencies or changes to static/JS-disabled behavior. The worktree is separate from ongoing contributors' local dev files.
+
+## Prod-only release follow-up
+- Prod still used `HeroAction.activation` in an effect, unlike the updated dev imperative-ref flow. Move only its existing mode update into one cancellable animation frame; the existing mode effect retains input focus after opening.
+- On prod with this additional minimal fix: complete ESLint and TypeScript pass, 28/28 unit tests, 4/4 static tests, Next build and Storybook build pass.
+- Independent Chrome smoke: Rizzie opens the drawer and focuses the input at 402 × 874; it opens inline and focuses the input at 1440 × 1024; Reduced Motion retains a static mascot.
+- Chrome's local test HTTP server logged benign connection resets on shutdown; assertions all passed.
