@@ -116,21 +116,7 @@
     max-block-size: calc(100svh - 2rem);
     overflow-y: auto;
   }
-  @media (width >= 1024px) {
-    .root {
-      grid-column: 1 / -1;
-      grid-row: 6;
-      justify-self: center;
-    }
-  }
-  @media (width >= 700px) and (width <= 1023px) and (orientation: landscape) {
-    .root {
-      grid-column: 1 / -1;
-      grid-row: 5;
-      justify-self: center;
-      align-self: start;
-    }
-  }
+  /* Fallback stays before Hero in document flow on constrained screens. */
   @media (prefers-reduced-motion: no-preference) {
     .notice, .reopen {
       transition: transform 240ms cubic-bezier(.2,.8,.2,1), opacity 180ms ease,

@@ -37,7 +37,7 @@ export default function CookieConsent() {
   useLayoutEffect(() => {
     const root = rootRef.current;
     const panel = panelRef.current;
-    const hero = root?.closest("main");
+    const hero = document.querySelector("main");
     if (!root || !panel || !hero) return;
 
     function place() {
@@ -56,9 +56,7 @@ export default function CookieConsent() {
       root.dataset.floating = "true";
 
       const { width, height } = panel.getBoundingClientRect();
-      const blocks = Array.from(hero.children)
-        .filter((element) => element !== root)
-        .map((element) => element.getBoundingClientRect());
+      const blocks = Array.from(hero.children, (element) => element.getBoundingClientRect());
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       const maxX = viewportWidth - width - 16;

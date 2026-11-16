@@ -14,9 +14,12 @@ import websocket
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / "out"
 SIZES = [
-    (320, 640), (360, 780), (402, 874), (680, 700), (874, 402),
-    (1024, 768), (1200, 800), (1366, 768), (1440, 1024),
-    (1600, 900), (1897, 1024), (2399, 1024), (2400, 1024), (2803, 1024),
+    (320, 568), (320, 640), (360, 780), (402, 600), (402, 874),
+    (680, 700), (700, 320), (874, 300), (874, 402),
+    (1024, 500), (1024, 768), (1200, 800), (1280, 600), (1366, 500),
+    (1366, 768), (1440, 600), (1440, 1024), (1600, 600), (1600, 900),
+    (1897, 600), (1897, 1024), (2399, 1024), (2400, 700),
+    (2400, 1024), (2803, 1024),
 ]
 CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
@@ -124,6 +127,71 @@ try:
                         "FAIL" if errors else "PASS", width, height, view,
                         data["panel"]["width"], data["panel"]["height"],
                         "; ".join(errors) if errors else ""), flush=True)
+            # Exercise the actual client interactions after layout assertions.
+            cdp("Emulation.setDeviceMetricsOverride", {
+                "width": 402, "height": 874, "deviceScaleFactor": 1, "mobile": False
+            })
+            cdp("Page.navigate", {"url": url})
+            time.sleep(0.8)
+
+            def expect_view(label, expected):
+                for _ in range(20):
+                    actual = evaluate("""document.querySelector('[data-cookie-consent]').dataset.view""")
+                    if actual == expected:
+                        print("PASS interaction " + label, flush=True)
+                        return
+                    time.sleep(0.05)
+                raise AssertionError(label + ": expected " + expected + ", got " + str(actual))
+
+            def click(selector):
+                evaluate("document.querySelector(" + json.dumps(selector) + ").click()")
+
+            def expect_focus(label):
+                for _ in range(20):
+                    if evaluate("document.activeElement.getAttribute('aria-label')") == label:
+                        print("PASS focus " + label, flush=True)
+                        return
+                    time.sleep(0.05)
+                raise AssertionError("Focus did not reach " + label)
+
+            expect_view("initial", "notice")
+            click('[aria-label="Minimize cookie settings"]')
+            expect_view("minus collapses", "collapsed")
+            expect_focus("Open cookie settings")
+
+            click('[aria-label="Open cookie settings"]')
+            expect_view("reopen notice", "notice")
+            for _ in range(20):
+                if evaluate("document.activeElement.tagName") == "H2":
+                    break
+                time.sleep(0.05)
+            assert evaluate("document.activeElement.tagName") == "H2"
+
+            click('[data-cookie-consent] button:not([aria-label])')
+            expect_view("customize", "settings")
+            assert evaluate("""(() => { const input = document.querySelector('input[role="switch"]');
+                input.click(); return input.checked; })()""") is True
+            evaluate("""[...document.querySelectorAll('[data-cookie-consent] button')]
+              .find(button => button.textContent.trim() === 'Save preferences').click()""")
+            expect_view("save preferences", "collapsed")
+            click('[aria-label="Open cookie settings"]')
+            expect_view("reopen after saving", "notice")
+            time.sleep(0.3)
+            cdp("Input.dispatchMouseEvent", {
+                "type": "mouseWheel", "x": 25, "y": 550, "deltaX": 0, "deltaY": 180
+            })
+            expect_view("wheel collapses", "collapsed")
+
+            cdp("Page.navigate", {"url": url})
+            time.sleep(0.7)
+            expect_view("reload resets choice", "notice")
+            cdp("Emulation.setEmulatedMedia", {
+                "features": [{"name": "prefers-reduced-motion", "value": "reduce"}]
+            })
+            assert evaluate("""getComputedStyle(
+                document.querySelector('[data-cookie-consent] aside')
+            ).transitionDuration""") in ("0s", "0s, 0s")
+            print("PASS interaction reduced motion", flush=True)
             ws.close()
         finally:
             proc.terminate()

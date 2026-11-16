@@ -1,11 +1,10 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
 import styles from "./Hero.module.css";
 import IntegrationLogos from "../integrations/IntegrationLogos";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-export default function Hero({ children }: { children?: ReactNode }) {
+export default function Hero() {
   return (
     <main className={styles.hero} data-theme="dusk" id="main">
       <div className={styles.brand}>
@@ -22,8 +21,6 @@ export default function Hero({ children }: { children?: ReactNode }) {
       <p className={styles.description}>
         Paid ads, SEO, AI visibility &amp; CRO. One AI autopilot built around your business.
       </p>
-
-      {children}
 
       <div className={styles.integration}>
         <IntegrationLogos />
