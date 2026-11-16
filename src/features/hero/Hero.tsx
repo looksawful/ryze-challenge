@@ -5,7 +5,13 @@ import HeroAction from "./HeroAction";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-export default function Hero() {
+type HeroProps = {
+  notice?: { text: string } | null;
+  onDismissNotice?: () => void;
+  onPreviewExperience?: (domain: string) => void;
+};
+
+export default function Hero({ notice, onDismissNotice, onPreviewExperience }: HeroProps) {
   return (
     <main className={styles.hero} data-theme="dusk" id="main">
       <div className={styles.brand}>
@@ -29,7 +35,7 @@ export default function Hero() {
       </div>
 
       <div className={styles.action}>
-        <HeroAction />
+        <HeroAction notice={notice} onDismissNotice={onDismissNotice} onPreviewExperience={onPreviewExperience} />
       </div>
     </main>
   );
