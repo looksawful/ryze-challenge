@@ -12,9 +12,12 @@ export function HeroWithNavigation() {
         <SiteHeader
           variant="dock"
           enhancement="auto"
+          previewMode={false}
           onPreviewDestination={(destination) => {
             window.dispatchEvent(new CustomEvent("rizzie:message", {
-              detail: { text: previewNotice(destination) },
+              detail: { text: destination.id.startsWith("shopify-")
+                ? destination.label + " section is not available in this preview yet."
+                : previewNotice(destination) },
             }));
           }}
         />

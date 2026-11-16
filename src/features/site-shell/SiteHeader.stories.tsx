@@ -1,5 +1,3 @@
-import { useState } from "react";
-import Image from "next/image";
 import type { ComponentProps } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { SiteHeader } from "./SiteHeader";
@@ -8,8 +6,6 @@ import styles from "./NavigationShowcase.module.css";
 type NavigationArgs = Pick<ComponentProps<typeof SiteHeader>, "enhancement" | "theme">;
 
 function NavigationCanvas({ enhancement = "full", theme = "dusk" }: NavigationArgs) {
-  const [docked, setDocked] = useState(false);
-
   return (
     <div className={styles.canvas} data-theme={theme}>
       <SiteHeader
@@ -18,21 +14,9 @@ function NavigationCanvas({ enhancement = "full", theme = "dusk" }: NavigationAr
         theme={theme}
         enhancement={enhancement}
         previewMode
-        onDockChange={setDocked}
       />
       <main>
         <section className={styles.dark} data-ryze-dark-end>
-          {!docked && (
-            <Image
-              className={styles.brand}
-              src="/ryze-lockup-white.svg"
-              alt="Ryze"
-              width={126}
-              height={40}
-              priority
-              unoptimized
-            />
-          )}
         </section>
         <section className={styles.light} id="selected-works" />
       </main>
@@ -48,7 +32,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Original Homework/Lovable navigation. Choose the progressive enhancement mode and theme in Controls; use Storybook Viewport for desktop, tablet or mobile. Scroll to see the dock move between dark and light sections. All JavaScript-enabled preview links stay on this page and show a toast. The no-JavaScript control is a simulation because Storybook itself requires JavaScript.",
+          "Original Homework/Lovable navigation. Choose the progressive enhancement mode and theme in Controls; use Storybook Viewport for desktop, tablet or mobile. On phones, the global Ryze menu is at the top and the Shopify Dock stays at the bottom. Pricing and Start use their verified destinations; Storybook intercepts global links for safe preview. The no-JavaScript control is a simulation because Storybook itself requires JavaScript.",
       },
     },
   },

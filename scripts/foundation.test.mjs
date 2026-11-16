@@ -61,12 +61,12 @@ test("Cookie Storybook args hook lives directly in its render function", () => {
   assert.match(source, /render:\s*function CookieStoryRender\(args\) \{\s*const \[, updateArgs\] = useArgs/);
 });
 
-test("Cookie placement reads the real bottom-docked navigation", () => {
+test("Cookie placement tracks the visible Shopify Dock rather than desktop header state", () => {
   const source = readFileSync("src/features/consent/HomeworkCookieNotice.tsx", "utf8");
-  assert.match(source, /header\[data-variant="dock"\]/);
-  assert.match(source, /matches\('\[data-docked="false"\]'\)/);
+  assert.match(source, /\[data-preview-part="mobile-dock"\]/);
+  assert.match(source, /navigation\?\.getBoundingClientRect\(\)/);
   assert.match(source, /navigationRect\.top/);
-  assert.doesNotMatch(source, /data-ryze-mobile-dock/);
+  assert.doesNotMatch(source, /matches\('\[data-docked="false"\]'\)/);
 });
 
 test("Storybook Closed and Notice controls never modify stored consent", () => {

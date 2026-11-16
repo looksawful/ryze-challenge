@@ -89,13 +89,13 @@ export function HomeworkCookieNotice({ onSave, rememberChoice = true, initialVie
   useEffect(() => {
     if (!visible || !mounted) return;
     let frame = 0;
-    const navigation = document.querySelector<HTMLElement>('header[data-variant="dock"]');
+    const navigation = document.querySelector<HTMLElement>('[data-preview-part="mobile-dock"]');
     function matchBackground() {
       const dock = noticeRef.current;
       if (!dock) return;
-      const navigationRect = navigation?.matches('[data-docked="false"]') ? navigation.getBoundingClientRect() : null;
-      const clearance = navigationRect && navigationRect.height > 0 && navigationRect.bottom >= window.innerHeight - 1
-        ? Math.max(16, Math.ceil(window.innerHeight - navigationRect.top + 8))
+      const navigationRect = navigation?.getBoundingClientRect();
+      const clearance = navigationRect && navigationRect.height > 0
+        ? Math.max(16, Math.ceil(window.innerHeight - navigationRect.top + 12))
         : 16;
       dock.style.setProperty("--cookie-bottom", `${clearance}px`);
       const rect = dock.getBoundingClientRect();

@@ -6,6 +6,10 @@ import {
   footerGroups,
   bookingLink,
   previewNotice,
+  mobileSiteSections,
+  shopifyDockSections,
+  shopifyPricingHref,
+  shopifyStartHref,
 } from "../src/features/site-shell/link-model.ts";
 
 test("header groups and direct actions use only verified Ryze destinations", () => {
@@ -49,4 +53,21 @@ test("preview copy identifies the real target without pretending to navigate", (
   const message = previewNotice(item);
   assert.match(message, /this preview stays on the same page/i);
   assert.ok(message.includes(item.label));
+});
+
+test("Shopify mobile navigation exposes global Muse and the five approved dock actions", () => {
+  assert.deepEqual(shopifyDockSections.map((link) => link.label), [
+    "Ads", "SEO / AI", "CRO",
+  ]);
+  assert.deepEqual(mobileSiteSections.map((group) => group.label), [
+    "Products", "Explore", "Resources", "Company",
+  ]);
+  assert.equal(mobileSiteSections[0].links.find((link) => link.label === "Muse")?.href,
+    "https://www.get-ryze.ai/muse");
+  assert.equal(shopifyPricingHref, "https://www.get-ryze.ai/pricing");
+  assert.equal(shopifyStartHref, "https://reports.get-ryze.ai/o/all");
+  for (const section of shopifyDockSections) {
+    assert.ok(section.targetId.startsWith("shopify-"));
+    assert.equal(new URL(section.href).hostname, "www.get-ryze.ai");
+  }
 });
