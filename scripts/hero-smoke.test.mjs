@@ -90,7 +90,7 @@ test("release smoke against the real exported Hero", { timeout: 160000 }, async 
   await cdp("Runtime.enable");
 
   await t.test("responsive HTML and no-JS navigation", async () => {
-    for (const [width, height] of [[320, 568], [874, 402], [1440, 1024], [2803, 1024]]) {
+    for (const [width, height] of [[320, 568], [402, 874], [874, 402], [1440, 1024], [1897, 1024], [2803, 1024]]) {
       await load(width, height);
       const overflow = await js("document.documentElement.scrollWidth - innerWidth");
       assert.ok(overflow <= 1, "Horizontal overflow at " + width + "x" + height + ": " + overflow);
@@ -133,6 +133,8 @@ test("release smoke against the real exported Hero", { timeout: 160000 }, async 
     await load(1440, 1024);
     await js("document.querySelector('#hero-action details summary').click()");
     await eventually(() => js("!!document.querySelector('#hero-action input[inputmode=\"url\"]')"), "domain input");
+    await js("document.querySelector('#hero-action form').requestSubmit()");
+    await eventually(() => js("!!document.querySelector('#hero-action [role=\"alert\"]')"), "empty-domain validation");
     await js("(() => {const el=document.querySelector('#hero-action input');const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(el,'shop.example.com');el.dispatchEvent(new Event('input',{bubbles:true}));})()");
     await js("document.querySelector('#hero-action form').requestSubmit()");
     await eventually(() => js("!!document.querySelector('#hero-action [aria-label=\"Example response\"]')"), "mock response");
@@ -140,6 +142,8 @@ test("release smoke against the real exported Hero", { timeout: 160000 }, async 
     await js("Array.from(document.querySelectorAll('#hero-action button')).find(b=>b.textContent==='Preview experience').click()");
     await eventually(() => js("!!document.querySelector('[data-rizzie-bubble]')"), "Rizzie preview");
     assert.equal(await js("location.href"), before);
+    await js("Array.from(document.querySelectorAll('#hero-action button')).find(b=>b.textContent==='Edit domain').click()");
+    await eventually(() => js("document.querySelector('#hero-action')?.dataset.stage === 'editing' && document.activeElement === document.querySelector('#hero-action input')"), "domain retry focus");
   });
 
   await t.test("cookie choice persists and settings reopen", async () => {
