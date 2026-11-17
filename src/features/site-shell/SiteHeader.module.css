@@ -797,6 +797,69 @@
       outline: 2px solid var(--nav-foreground);
       outline-offset: -3px;
     }
+    /* Native <details> keeps the global navigation usable without JavaScript. */
+    .header[data-variant="dock"] .nativeMenu {
+      pointer-events: auto;
+      position: fixed;
+      inset: max(10px, env(safe-area-inset-top)) 16px auto auto;
+      z-index: 80;
+      color: var(--nav-foreground);
+    }
+    .header[data-variant="dock"] .nativeMenu > summary {
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 49px;
+      list-style: none;
+      cursor: pointer;
+      border: 1px solid var(--nav-line);
+      border-radius: 15px;
+      background: var(--nav-surface);
+    }
+    .header[data-variant="dock"] .nativeMenu > summary::-webkit-details-marker { display: none; }
+    .header[data-variant="dock"] .nativeMenu > summary:focus-visible {
+      outline: 2px solid var(--nav-foreground);
+      outline-offset: 3px;
+    }
+    .header[data-variant="dock"] .nativeMenu > nav {
+      box-sizing: border-box;
+      position: fixed;
+      inset: max(70px, calc(env(safe-area-inset-top) + 60px)) 12px auto auto;
+      width: min(400px, calc(100vw - 24px));
+      max-height: calc(100dvh - 160px - env(safe-area-inset-bottom));
+      overflow-y: auto;
+      padding: 12px;
+      border: 1px solid var(--nav-line);
+      border-radius: 16px;
+      background: var(--nav-panel);
+      box-shadow: 0 12px 32px rgb(0 0 0 / 20%);
+    }
+    .header[data-variant="dock"] .nativeMenu:not([open]) > nav { display: none; }
+    .header[data-variant="dock"] .nativeMenu > .staticNavigation {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .header[data-variant="dock"] .nativeMenu .staticGroup > summary { width: 100%; }
+    .header[data-variant="dock"] .nativeMenu .staticPanel {
+      position: static;
+      width: auto;
+      max-height: none;
+      box-shadow: none;
+    }
+    .header[data-variant="dock"] .nativeMenu .staticPanel .megaGrid {
+      grid-template-columns: 1fr;
+    }
+    .header[data-variant="dock"] .nativeMenu > .noScriptLinks {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 8px;
+    }
+    .header[data-variant="dock"] .nativeMenu > .noScriptLinks a {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+    .header[data-variant="dock"]:has(.noScriptLinks) .inner { display: none; }
     .header[data-variant="dock"] .notice {
       inset-block-end: calc(100px + env(safe-area-inset-bottom));
     }
