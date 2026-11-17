@@ -30,7 +30,7 @@
   .primary:hover:not(:disabled) { background: #292929; }
 
   .secondary {
-    border: 1px solid #777;
+    border: 0;
     background: #35353b;
     color: #fff;
   }

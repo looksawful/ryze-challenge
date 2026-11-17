@@ -14,14 +14,12 @@
     --hero-description: #777a83;
     --hero-action-background: #d9d9d9;
     --hero-action-foreground: #050505;
-    --hero-action-border: #999ba4;
   }
   .hero[data-theme="dawn"] {
     --hero-muted: #53545c;
     --hero-description: #484952;
     --hero-action-background: #222228;
     --hero-action-foreground: #fff;
-    --hero-action-border: #404049;
   }
 
   .brand {
@@ -100,7 +98,7 @@
     display: grid;
     place-items: center;
     min-block-size: 76px;
-    border: 2px solid var(--hero-action-border);
+    border: 0;
     border-radius: 999px;
     background: var(--hero-action-background);
     color: var(--hero-action-foreground);

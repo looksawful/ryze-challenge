@@ -68,7 +68,7 @@
     width: 2.75rem;
     height: 2.75rem;
     place-items: center;
-    border: 1px solid var(--color-border);
+    border: 0;
     border-radius: 0.75rem;
     color: var(--color-foreground);
     background: transparent;
@@ -149,7 +149,7 @@
     min-height: 3.75rem;
     width: 100%;
     padding: var(--space-4) 0;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 0;
     text-decoration: none;
     text-align: left;
     color: inherit;
@@ -184,7 +184,7 @@
     gap: var(--space-4);
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: 0;
     border-radius: 1rem;
     color: var(--color-foreground);
     box-shadow: 0 0.75rem 2.5rem rgb(0 0 0 / 0.22);
@@ -248,7 +248,7 @@
       width: min(47rem, calc(100% - 2 * var(--gutter)));
       padding: var(--space-8);
       background: var(--color-surface);
-      border: 1px solid var(--color-border);
+      border: 0;
       border-radius: 0 0 1.5rem 1.5rem;
       box-shadow: 0 1.5rem 3rem rgb(0 0 0 / 0.3);
     }
@@ -309,9 +309,8 @@
 @layer components {
   .header {
     --nav-surface: #292929;
-    --nav-panel: #292929;
+    --nav-panel: #222222;
     --nav-inside: #242424;
-    --nav-line: rgb(255 255 255 / 12%);
     --nav-foreground: #fff;
     --nav-muted: #bfbfbf;
     font-family: var(--font-body);
@@ -320,7 +319,6 @@
     --nav-surface: #fff;
     --nav-panel: #f7f8fa;
     --nav-inside: #fff;
-    --nav-line: rgb(0 0 0 / 10%);
     --nav-foreground: #19191c;
     --nav-muted: #5c5c63;
   }
@@ -329,7 +327,7 @@
   .header[data-variant="ryze"] .brand { color: var(--nav-foreground); }
   .header[data-variant="ryze"] .inner {
     min-height: 4.75rem;
-    border-bottom: 1px solid var(--nav-line);
+    border-bottom: 0;
   }
 
   /* Fixed at the same top coordinate in every scroll state.
@@ -352,7 +350,7 @@
     margin-inline: auto;
     padding-inline: clamp(.75rem, 2vw, 1.5rem);
     justify-content: center;
-    border: 1px solid var(--nav-line);
+    border: 0;
     border-radius: 20px;
     background: var(--nav-surface);
     box-shadow: 0 9px 32px rgb(0 0 0 / 18%);
@@ -431,7 +429,7 @@
     max-height: min(75dvh, 48rem);
     padding: 0;
     overflow: auto;
-    border: 1px solid var(--nav-line);
+    border: 0;
     border-radius: 1.5rem;
     background: var(--nav-panel);
     color: var(--nav-foreground);
@@ -457,7 +455,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--nav-line);
+    border-bottom: 0;
   }
   .header .megaEyebrow {
     margin: 0;
@@ -578,7 +576,7 @@
     max-height: 75dvh;
     overflow: auto;
     padding: 1rem;
-    border: 1px solid var(--nav-line);
+    border: 0;
     border-radius: 1.5rem;
     background: var(--nav-panel);
     color: var(--nav-foreground);
@@ -603,7 +601,6 @@
     z-index: 130;
     color: var(--nav-foreground);
     background: var(--nav-panel);
-    border-color: var(--nav-line);
   }
 
   /* Text-only four-item Dock and right-edge product navigation. */
@@ -616,7 +613,6 @@
   .header .mobileDialog .mobileGroup,
   .header .mobileDialog .mobileLink {
     color: var(--nav-foreground);
-    border-color: var(--nav-line);
   }
   .header .mobileDialog .mobileGroup:hover,
   .header .mobileDialog .mobileLink:hover {
@@ -661,7 +657,7 @@
       justify-content: center;
       background: var(--nav-surface);
       color: var(--nav-foreground);
-      border: 1px solid var(--nav-line);
+      border: 0;
       border-radius: 15px;
       box-shadow: 0 5px 20px rgb(0 0 0 / 13%);
     }
@@ -703,7 +699,7 @@
       padding: 5px;
       color: var(--nav-foreground);
       background: var(--nav-surface);
-      border: 1px solid var(--nav-line);
+      border: 0;
       border-radius: 21px;
       box-shadow: 0 16px 38px rgb(0 0 0 / 20%), inset 0 1px rgb(255 255 255 / 6%);
       pointer-events: auto;
@@ -753,13 +749,13 @@
     }
     .header[data-variant="dock"] .mobileBar {
       min-height: 5rem;
-      border-bottom: 1px solid var(--nav-line);
+      border-bottom: 0;
     }
     .header[data-variant="dock"] .mobileList { padding-bottom: 2rem; }
     .header[data-variant="dock"] .mobileSiteSection { display: grid; }
     .header[data-variant="dock"] .mobileSiteSection + .mobileSiteSection {
       margin-top: 1rem;
-      border-top: 1px solid var(--nav-line);
+      border-top: 0;
     }
     .header[data-variant="dock"] .mobileSiteSection .mobileSectionTitle {
       padding-block: 1.1rem .6rem;
@@ -787,7 +783,7 @@
       height: 49px;
       list-style: none;
       cursor: pointer;
-      border: 1px solid var(--nav-line);
+      border: 0;
       border-radius: 15px;
       background: var(--nav-surface);
     }
@@ -804,7 +800,7 @@
       max-height: calc(100dvh - 160px - env(safe-area-inset-bottom));
       overflow-y: auto;
       padding: 12px;
-      border: 1px solid var(--nav-line);
+      border: 0;
       border-radius: 16px;
       background: var(--nav-panel);
       box-shadow: 0 12px 32px rgb(0 0 0 / 20%);
@@ -870,7 +866,7 @@
   }
   .header button.mobileLink {
     border: 0;
-    border-bottom: 1px solid var(--nav-line);
+    border-bottom: 0;
   }
   .header button.megaLink { border: 0; }
   /* Dense, scan-friendly global navigation without a second visual system. */
@@ -902,7 +898,7 @@
       min-width: 0;
       min-height: 78px;
       padding: 12px;
-      border: 1px solid var(--nav-line);
+      border: 0;
       border-radius: 14px;
       background: color-mix(in oklab, var(--nav-foreground) 4%, transparent);
       font-size: .9rem;
@@ -922,7 +918,7 @@
     }
     .header[data-variant="dock"] button.mobileLink {
       min-height: 44px;
-      border: 1px solid var(--nav-line);
+      border: 0;
       border-radius: 12px;
       padding: 10px 12px;
       background: transparent;
@@ -942,7 +938,7 @@
       height: 66px;
       min-height: 66px;
       border-radius: 0 20px 20px 0;
-      border-inline-start: 1px solid var(--nav-line);
+      border-inline-start: 0;
     }
     .header[data-variant="dock"] .mobileToggle {
       width: 56px;
@@ -984,7 +980,7 @@
       gap: .4rem;
       min-inline-size: 0;
       padding: 10px;
-      border: 1px solid var(--nav-line);
+      border: 0;
       border-radius: 14px;
       background: color-mix(in oklab, var(--nav-foreground) 4%, var(--nav-inside));
       color: var(--nav-foreground);
