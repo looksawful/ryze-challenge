@@ -12,6 +12,23 @@ const atlasSrc = `${basePath}/pets/rizzie/spritesheet.webp`;
 type Message = { id: number; text: string };
 type Animation = AnimationName | "gaze";
 
+function speechBubblePosition(zone: HTMLElement, pet: { left: number; top: number; width: number; height: number }, bubble: HTMLElement) {
+  const hero = zone.closest("main");
+  const avoid = hero ? Array.from(hero.children)
+    .filter((item) => item !== zone.parentElement && item instanceof HTMLElement)
+    .map((item) => item.getBoundingClientRect())
+    .filter((rect) => rect.width > 0 && rect.height > 0) : [];
+  const rect = bubble.getBoundingClientRect();
+  const placed = placeRizzieMessage({
+    viewportWidth: window.innerWidth, viewportHeight: window.innerHeight,
+    petLeft: pet.left, petTop: pet.top, petWidth: pet.width, petHeight: pet.height,
+    bubbleWidth: rect.width, bubbleHeight: rect.height,
+    avoid,
+  });
+  const tailX = Math.max(14, Math.min(rect.width - 25, pet.left + pet.width / 2 - placed.x - 5));
+  return { ...placed, tailX };
+}
+
 export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto", previewAnimation, previewReplayKey }: {
   onActivate: (trigger: HTMLAnchorElement) => void;
   actionOpen: boolean;
@@ -49,14 +66,15 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
   const [engaged, setEngaged] = useState(false);
   const [compact, setCompact] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
-  const [bubbleStyle, setBubbleStyle] = useState<CSSProperties>({});
+  const [bubbleStyle, setBubbleStyle] = useState<CSSProperties>({ position: "fixed", visibility: "hidden" });
   const [bubbleSide, setBubbleSide] = useState<"right" | "left" | "top">("right");
   const dismissMessage = useCallback(() => setMessage(null), []);
   const mode = resolveRizzieMode({
     hydrated, scenario, motionAllowed: motion, supported, coarsePointer, touchPoints,
     viewportWidth,
   });
-  const canDrag = mode.kind === "interactive";
+  const canDrag = (mode.kind === "interactive" && mode.input === "pointer") ||
+    (desktop && supported && hydrated && mode.kind === "static" && mode.reason === "reduced-motion");
 
   const freezeWalk = useCallback(() => {
     const zone = zoneRef.current;
@@ -83,35 +101,43 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
     const small = shouldCompact({ width: zone.clientWidth, height: zone.clientHeight });
     setCompact(small);
     x.current = clampWanderDestination({
-      zoneWidth: zone.clientWidth, petWidth: small ? 80 : 150,
+      zoneWidth: zone.clientWidth, petWidth: pet.offsetWidth,
       currentX: x.current, deltaX: 0,
     });
     pet.style.setProperty("--walk-x", `${x.current}px`);
+    if (pet.dataset.detached === "true" && !drag.current) {
+      const rect = pet.getBoundingClientRect();
+      const left = Math.max(0, Math.min(window.innerWidth - rect.width, rect.left));
+      const top = Math.max(0, Math.min(window.innerHeight - rect.height, rect.top));
+      pet.style.setProperty("--drag-x", `${left}px`);
+      pet.style.setProperty("--drag-y", `${top}px`);
+    }
     const bubble = zone.querySelector<HTMLElement>("[data-rizzie-bubble]");
     if (!bubble || !message) return;
-    const bounds = bubble.getBoundingClientRect();
     const petBounds = pet.getBoundingClientRect();
-    const placed = placeRizzieMessage({
-      viewportWidth: window.innerWidth, viewportHeight: window.innerHeight,
-      petLeft: petBounds.left, petTop: petBounds.top,
-      petWidth: petBounds.width, petHeight: petBounds.height,
-      bubbleWidth: bounds.width, bubbleHeight: bounds.height,
-    });
-    setBubbleStyle({ position: "fixed", left: placed.x, top: placed.y });
+    const placed = speechBubblePosition(zone, petBounds, bubble);
+    setBubbleStyle({
+      position: "fixed", left: placed.x, top: placed.y, visibility: "visible",
+      "--rizzie-tail-x": `${placed.tailX}px`,
+    } as CSSProperties);
     setBubbleSide(placed.side);
   }, [message]);
 
   useEffect(() => {
     const zone = zoneRef.current;
     if (!zone) return;
+    window.addEventListener("resize", measure);
     if (typeof ResizeObserver === "undefined") {
       measure();
-      return;
+      return () => window.removeEventListener("resize", measure);
     }
     const resize = new ResizeObserver(measure);
     resize.observe(zone);
     measure();
-    return () => resize.disconnect();
+    return () => {
+      resize.disconnect();
+      window.removeEventListener("resize", measure);
+    };
   }, [measure, hydrated]);
 
   useEffect(() => {
@@ -119,9 +145,13 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
     const frame = requestAnimationFrame(measure);
     const onScroll = () => measure();
     window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onScroll);
+    window.visualViewport?.addEventListener("resize", onScroll);
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onScroll);
+      window.visualViewport?.removeEventListener("resize", onScroll);
     };
   }, [message, measure]);
 
@@ -196,6 +226,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
       if (typeof value === "string" && value.trim()) {
         freezeWalk();
         animation.current = "idle";
+        setBubbleStyle({ position: "fixed", visibility: "hidden" });
         setMessage({ id: ++counter.current, text: value.trim().slice(0, 240) });
       }
     };
@@ -300,7 +331,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
   // Adapted from the existing floating pointer-capture behavior in awful-mascots.
   // Eight pixels separate an ordinary CTA click from deliberate drag.
   function pointerDown(event: PointerEvent<HTMLAnchorElement>) {
-    if (!canDrag || event.button !== 0) return;
+    if (!canDrag || event.button !== 0 || event.pointerType === "touch") return;
     freezeWalk();
     const bounds = event.currentTarget.getBoundingClientRect();
     drag.current = {
@@ -332,14 +363,15 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
 
     const bubble = zoneRef.current?.querySelector<HTMLElement>("[data-rizzie-bubble]");
     if (bubble) {
-      const placed = placeRizzieMessage({
-        viewportWidth: window.innerWidth, viewportHeight: window.innerHeight,
-        petLeft: left, petTop: top, petWidth: d.width, petHeight: d.height,
-        bubbleWidth: bubble.offsetWidth, bubbleHeight: bubble.offsetHeight,
-      });
+      const zone = zoneRef.current;
+      if (!zone) return;
+      const placed = speechBubblePosition(zone, {
+        left, top, width: d.width, height: d.height,
+      }, bubble);
       bubble.style.position = "fixed";
       bubble.style.left = `${placed.x}px`;
       bubble.style.top = `${placed.y}px`;
+      bubble.style.setProperty("--rizzie-tail-x", `${placed.tailX}px`);
       if (placed.side !== bubble.dataset.side) {
         bubble.dataset.side = placed.side;
         setBubbleSide(placed.side);
@@ -359,7 +391,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
     if (d.moved) {
       suppressClick.current = true;
       // Click generated from this pointerup is suppressed, later clicks work.
-      window.setTimeout(() => { suppressClick.current = false; }, 0);
+      window.setTimeout(() => { suppressClick.current = false; }, 250);
       measure();
     }
   }
@@ -406,9 +438,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
         <span className={styles.fallbackLabel}>Start For Free</span>
       </a>
       {message && <RizzieMessage key={message.id} text={message.text}
-        onClose={dismissMessage} side={bubbleSide}
-        variant={mode.kind === "static" ? "toast" : "bubble"}
-        style={mode.kind === "static" ? undefined : bubbleStyle} />}
+        onClose={dismissMessage} side={bubbleSide} style={bubbleStyle} />}
     </section>
   );
 }

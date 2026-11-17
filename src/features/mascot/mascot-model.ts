@@ -90,7 +90,7 @@ export type RizzieScenario =
 
 export type RizzieMode =
   | { kind: "hidden" }
-  | { kind: "static"; reason: "reduced-motion" | "unsupported-browser" | "touch-unavailable"; message: "toast" }
+  | { kind: "static"; reason: "reduced-motion" | "unsupported-browser" | "touch-unavailable"; message: "bubble" }
   | { kind: "interactive"; input: "touch" | "pointer"; message: "bubble" };
 
 export function resolveRizzieMode(input: {
@@ -105,37 +105,50 @@ export function resolveRizzieMode(input: {
   const { hydrated, scenario } = input;
   if (!hydrated || scenario === "no-js") return { kind: "hidden" };
   if (scenario === "reduced-motion" || (scenario === "auto" && !input.motionAllowed))
-    return { kind: "static", reason: "reduced-motion", message: "toast" };
+    return { kind: "static", reason: "reduced-motion", message: "bubble" };
   if (scenario === "unsupported-browser" || (scenario === "auto" && !input.supported))
-    return { kind: "static", reason: "unsupported-browser", message: "toast" };
+    return { kind: "static", reason: "unsupported-browser", message: "bubble" };
   if (scenario === "touch-unavailable" || (scenario === "auto" && input.viewportWidth < 700 && !input.touchPoints))
-    return { kind: "static", reason: "touch-unavailable", message: "toast" };
+    return { kind: "static", reason: "touch-unavailable", message: "bubble" };
   if (scenario === "touch" || (scenario === "auto" && input.coarsePointer))
     return { kind: "interactive", input: "touch", message: "bubble" };
   return { kind: "interactive", input: "pointer", message: "bubble" };
 }
 
-/** Put the live dialogue beside the character, without clipping it to the small sprite stage. */
+/** Keep the reply near Rizzie and inside the viewport, avoiding the Hero copy/CTA. */
 export function placeRizzieMessage(input: {
   viewportWidth: number; viewportHeight: number;
   petLeft: number; petTop: number; petWidth: number; petHeight: number;
   bubbleWidth: number; bubbleHeight: number;
+  avoid?: readonly { left: number; top: number; width: number; height: number }[];
 }): { x: number; y: number; side: "right" | "left" | "top" } {
-  const margin = 10;
+  const gap = 12, margin = 10;
   const finite = (n: number) => Number.isFinite(n) ? Math.max(0, n) : 0;
   const vw = finite(input.viewportWidth), vh = finite(input.viewportHeight);
   const px = finite(input.petLeft), py = finite(input.petTop);
-  const pw = finite(input.petWidth), bw = finite(input.bubbleWidth);
-  const bh = finite(input.bubbleHeight);
-  const cx = Math.max(margin, Math.min(vw - bw - margin, px + (pw - bw) / 2));
-  const cy = Math.max(margin, Math.min(vh - bh - margin, py));
-  const above = py - bh - 12;
-  const right = px + pw + 12;
-  const left = px - bw - 12;
-  if (vw >= 1900 && left >= margin) return { x: left, y: cy, side: "left" };
-  if (vw >= 700 && above >= margin) return { x: cx, y: above, side: "top" };
-  if (right + bw <= vw - margin) return { x: right, y: cy, side: "right" };
-  if (above >= margin) return { x: cx, y: above, side: "top" };
-  if (left >= margin) return { x: left, y: cy, side: "left" };
-  return { x: cx, y: margin, side: "top" };
+  const pw = finite(input.petWidth), ph = finite(input.petHeight);
+  const bw = finite(input.bubbleWidth), bh = finite(input.bubbleHeight);
+  const maxX = Math.max(margin, vw - bw - margin);
+  const maxY = Math.max(margin, vh - bh - margin);
+  const clampX = (n: number) => Math.max(margin, Math.min(maxX, n));
+  const clampY = (n: number) => Math.max(margin, Math.min(maxY, n));
+  const nearY = py + Math.min(36, ph * .25);
+  const centerX = px + (pw - bw) / 2;
+  const candidates = [
+    { x: px + pw + gap, y: nearY, side: "right" as const },
+    { x: px - bw - gap, y: nearY, side: "left" as const },
+    { x: centerX, y: py - bh - gap, side: "top" as const },
+  ];
+  const overlap = (x: number, y: number) => (input.avoid ?? []).reduce((sum, r) =>
+    sum + Math.max(0, Math.min(x + bw, r.left + r.width) - Math.max(x, r.left)) *
+      Math.max(0, Math.min(y + bh, r.top + r.height) - Math.max(y, r.top)), 0);
+  const scored = candidates.map((candidate, order) => {
+    const x = clampX(candidate.x), y = clampY(candidate.y);
+    const displacement = Math.abs(x - candidate.x) + Math.abs(y - candidate.y);
+    return { x, y, side: candidate.side,
+      score: overlap(x, y) + displacement * 60 + order * 16 };
+  });
+  scored.sort((a, b) => a.score - b.score);
+  const { x, y, side } = scored[0];
+  return { x, y, side };
 }
