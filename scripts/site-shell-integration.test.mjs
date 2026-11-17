@@ -31,11 +31,13 @@ test("Storybook previews the very same assembled first-screen component", async 
 });
 
 
-test("top mobile quick navigation reserves space for Hero without overlapping its heading", async () => {
+test("top mobile navigation floats above the Hero's own safe inset", async () => {
   const css = await read("src/features/site-shell/SiteHeader.module.css");
   const stage = await read("src/features/site-shell/HeroWithNavigation.module.css");
+  const hero = await read("src/features/hero/Hero.module.css");
   assert.match(css, /\.header\[data-variant="dock"\] \.mobileDock\s*\{[^}]*inset-block-start:/s);
-  assert.match(stage, /@media\s*\(width < 64rem\)[^}]*\.navigation\s*\{[^}]*min-block-size:/s);
+  assert.match(stage, /@media\s*\(width < 64rem\)[^}]*\.navigation\s*\{[^}]*position:\s*absolute/s);
+  assert.match(hero, /padding-block-start:\s*max\(96px,\s*calc\(84px\s*\+/s);
 });
 
 test("top mobile navigation hides on downward scroll and returns on upward scroll", async () => {
