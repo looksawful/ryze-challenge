@@ -59,3 +59,12 @@ test("primary Hero action is about five percent smaller while retaining 44px tar
   assert.match(css, /min-block-size:\s*76px/);
   assert.match(css, /min-block-size:\s*44px/);
 });
+
+test("desktop Cookies use an independent bottom-right overlay layer", async () => {
+  const css = await read("src/app/page.module.css");
+  assert.match(css, /\.desktopCookies\s*\{[^}]*position:\s*fixed;[^}]*z-index:\s*\d+;[^}]*pointer-events:\s*none/s);
+  assert.match(css, /\.desktopCookies\s+:global\(aside\)\s*\{[^}]*inset-block-start:\s*auto;[^}]*inset-block-end:/s);
+  assert.match(css, /inset-inline-end:\s*16px/);
+  assert.match(css, /pointer-events:\s*auto/);
+  assert.doesNotMatch(css, /50svh|translateX\(-50%\)|translateY\(-50%\)|left:\s*50%/);
+});

@@ -75,3 +75,5 @@ Source branch: fix/approved-hero-nav-contracts-20261117, base origin/dev at ec11
 - QA: npm run build PASS; npm test PASS 46/46; git diff --check PASS; Chromium 19/19 viewports PASS; mobile shelf browser interaction PASS.
 - Limits: default closed UI geometry only; not full physical Safari, zoom/200%, animation or all expanded states. More manual acceptance needed.
 - OPEN: exact Dock labels/links; tablet nav layout; relationship between old AI Marketer/MCP/Muse/SEO product shelf and current Paid Ads/SEO/CRO/Reporting; rounds 4–8. No speculative change of unapproved details.
+
+- Cookie overlay correction: desktop prototype notice is now a separate fixed full-screen pointer-transparent layer (z-index 110), with interactive notice bottom-right (16px from right/bottom + safe area). Removed the former viewport-centred and bottom-centred rules. Integrations on affected desktop layouts use a separate row so they remain uncovered. Browser geometry PASS 19/19 viewports and source tests PASS 47/47. Mobile/tablet prototype still hides Cookie notice.

@@ -551,6 +551,36 @@
     .integration { margin-block-start: 0; }
   }
 
+  /* In the desktop prototype, bottom-right Cookies occupy their own layer.
+     Give the integration marks a separate right-side row above that overlay. */
+  @media (min-width: 1200px) and (max-width: 1599px) {
+    .integration {
+      position: absolute;
+      grid-area: auto;
+      inset: auto 16px 200px auto;
+      inline-size: min(100%, 380px);
+      margin: 0;
+    }
+  }
+  @media (min-width: 1600px) and (max-width: 2399px) and (max-height: 800px) {
+    .integration {
+      position: absolute;
+      grid-area: auto;
+      inset: auto 16px 200px auto;
+      inline-size: min(100%, 316px);
+      margin: 0;
+    }
+  }
+  @media (min-width: 2400px) {
+    .integration {
+      position: absolute;
+      grid-area: auto;
+      inset: auto 16px 200px auto;
+      inline-size: min(100%, 320px);
+      margin: 0;
+    }
+  }
+
   /* Very small CSS viewports may result from 200% zoom or text enlargement:
      permit document scrolling, never an inner scrolling Hero or hidden content. */
   @media (max-height: 350px) {
