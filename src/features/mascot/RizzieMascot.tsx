@@ -12,7 +12,7 @@ const atlasSrc = `${basePath}/pets/rizzie/spritesheet.webp`;
 type Message = { id: number; text: string };
 type Animation = AnimationName | "gaze";
 
-export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto", previewAnimation, previewReplayKey, previewViewportWidth }: {
+export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto", previewAnimation, previewReplayKey }: {
   onActivate: (trigger: HTMLAnchorElement) => void;
   actionOpen: boolean;
   /** Storybook capability override; production always uses automatic detection. */
@@ -20,8 +20,6 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
   /** Storybook only: replay a real sprite animation without altering production behavior. */
   previewAnimation?: AnimationName | "natural";
   previewReplayKey?: number;
-  /** Storybook only: simulate viewport-dependent capability decisions. */
-  previewViewportWidth?: number;
 }) {
   const zoneRef = useRef<HTMLElement>(null);
   const petRef = useRef<HTMLAnchorElement>(null);
@@ -56,7 +54,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
   const dismissMessage = useCallback(() => setMessage(null), []);
   const mode = resolveRizzieMode({
     hydrated, scenario, motionAllowed: motion, supported, coarsePointer, touchPoints,
-    viewportWidth: previewViewportWidth ?? viewportWidth,
+    viewportWidth,
   });
   const canDrag = mode.kind === "interactive";
 
@@ -251,7 +249,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
   }, [actionOpen, compact, freezeWalk]);
 
   const wander = shouldWander({
-    desktop: previewViewportWidth === undefined ? desktop : desktop && previewViewportWidth >= 820,
+    desktop,
     motionAllowed: motion && ready && canDrag && !wasDragged && !detached &&
       (previewAnimation === undefined || previewAnimation === "natural"),
     visible, actionOpen, messageOpen: Boolean(message), compact,
