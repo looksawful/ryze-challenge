@@ -342,6 +342,13 @@
     .action { margin-block-start: clamp(4px, 1.5svh, 12px); }
   }
 
+  /* Duo Closed / other short wide phones: keep the full composition in one viewport. */
+  @media (min-width: 420px) and (max-width: 699px) and (max-height: 720px) {
+    .hero { row-gap: 2px; padding-block-end: 10px; }
+    .headline { margin-block-start: 4px; }
+    .action { margin-block-start: 2px; }
+  }
+
   /* Near-square landscape: the larger character intentionally bleeds left of the CTA. */
   @media (min-width: 900px) and (max-width: 1023px) and (orientation: landscape) and (max-aspect-ratio: 4/3) {
     .mascot { inset-inline-start: -320px; }
@@ -426,6 +433,121 @@
       grid-template-rows: 60px minmax(260px, 1fr) minmax(170px, max-content);
       padding-block: 18px 80px;
     }
+  }
+
+  /* Tall responsive landscape: keep the approved centred title below the top Dock.
+     Unlike short landscape, this view has space for the full-width composition. */
+  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape)
+    and (min-height: 760px) and (max-aspect-ratio: 13/10) {
+    .hero {
+      inline-size: min(100%, 918px);
+      min-block-size: 100svh;
+      margin-inline: auto;
+      padding: 96px 24px 22px;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: 64px 185px 75px minmax(0, 1fr) 95px;
+      grid-template-areas: "brand" "headline" "lead" "description" "action";
+    }
+    .brand { grid-area: brand; justify-self: end; align-self: center; font-size: 54px; }
+    .brandMark { inline-size: 52px; block-size: 52px; }
+    .headline {
+      grid-area: headline;
+      justify-self: center;
+      align-self: center;
+      inline-size: min(100%, 720px);
+      --type-heading-size: clamp(48px, 6.4vw, 62px);
+    }
+    .lead { grid-area: lead; justify-self: center; margin: 0; text-align: center; }
+    .description { grid-area: description; justify-self: center; margin: 0; text-align: center; }
+    .mascot {
+      grid-area: auto;
+      position: absolute;
+      inset: auto auto 0 16px;
+      inline-size: 215px;
+      block-size: 235px;
+      margin: 0;
+    }
+    .action {
+      grid-area: action;
+      justify-self: start;
+      align-self: center;
+      inline-size: min(310px, 40%);
+      margin: 0 0 0 clamp(180px, 24vw, 250px);
+    }
+    .integration {
+      grid-area: auto;
+      position: absolute;
+      inset: auto clamp(22px, 5vw, 60px) 62px auto;
+      inline-size: 210px;
+      margin: 0;
+    }
+  }
+
+  /* Duo Open: retain its deliberate asymmetry with the headline upper left.
+     Navigation stays fixed above; it is not part of the reference artwork. */
+  @media (min-width: 900px) and (max-width: 1023px)
+    and (min-height: 600px) and (min-aspect-ratio: 4/3) {
+    .hero {
+      display: block;
+      inline-size: min(100%, 951px);
+      min-block-size: 100svh;
+      margin-inline: auto;
+      padding: 0;
+    }
+    .headline {
+      position: absolute;
+      inset: max(96px, 14svh) auto auto clamp(24px, 4vw, 52px);
+      inline-size: min(50%, 485px);
+      margin: 0;
+      --type-heading-size: clamp(39px, 5vw, 52px);
+    }
+    .brand {
+      position: absolute;
+      inset: 62% auto auto 63%;
+      margin: 0;
+      font-size: clamp(38px, 5vw, 54px);
+    }
+    .brandMark { inline-size: 50px; block-size: 50px; }
+    .lead {
+      position: absolute;
+      inset: auto auto 15px clamp(24px, 4vw, 52px);
+      inline-size: min(44%, 410px);
+      margin: 0;
+      --type-lead-size: 19px;
+      text-align: left;
+    }
+    .lead br { display: none; }
+    .description {
+      position: absolute;
+      inset: 43% clamp(25px, 8vw, 100px) auto auto;
+      max-inline-size: min(41%, 390px);
+      margin: 0;
+      --type-paragraph-size: 20px;
+      text-align: right;
+    }
+    .mascot {
+      position: absolute;
+      grid-area: auto;
+      inset: auto auto 54px 24px;
+      inline-size: 230px;
+      block-size: 245px;
+      margin: 0;
+    }
+    .integration {
+      position: absolute;
+      grid-area: auto;
+      inset: 100px 28px auto auto;
+      inline-size: min(25%, 225px);
+      margin: 0;
+    }
+    .action {
+      position: absolute;
+      grid-area: auto;
+      inset: auto clamp(24px, 7vw, 80px) 18px auto;
+      inline-size: min(40%, 380px);
+      margin: 0;
+    }
+    .action summary { min-block-size: 72px; }
   }
 
 }
