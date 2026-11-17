@@ -41,12 +41,12 @@ export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, them
         <RizzieMascot key={`${mascotScenario}:${mascotResetKey}`} scenario={mascotScenario} onActivate={(trigger) => actionRef.current?.activate(trigger)} actionOpen={actionOpen} />
       </div>
 
-      <div className={styles.integration}>
-        <IntegrationLogos />
-      </div>
-
       <div className={styles.action}>
         <HeroAction ref={actionRef} onOpenChange={setActionOpen} />
+      </div>
+
+      <div className={styles.integration}>
+        <IntegrationLogos />
       </div>
     </main>
   );

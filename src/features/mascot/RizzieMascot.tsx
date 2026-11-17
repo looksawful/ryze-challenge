@@ -7,7 +7,7 @@ import RizzieMessage from "./RizzieMessage";
 import styles from "./Rizzie.module.css";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
-const posterSrc = `${basePath}/pets/rizzie/poster.png`;
+const posterSrc = `${basePath}/pets/rizzie/seated.png`;
 const atlasSrc = `${basePath}/pets/rizzie/spritesheet.webp`;
 type Message = { id: number; text: string };
 type Animation = AnimationName | "gaze";
@@ -195,6 +195,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
       const value = (event as CustomEvent<{ text?: unknown }>).detail?.text;
       if (typeof value === "string" && value.trim()) {
         freezeWalk();
+        animation.current = "idle";
         setMessage({ id: ++counter.current, text: value.trim().slice(0, 240) });
       }
     };
@@ -210,11 +211,13 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
       if (queueGaze.current && animation.current === "waving" &&
           resolveSpriteFrame("waving", now - animationAt.current).completed) {
         queueGaze.current = false;
-        animation.current = "gaze";
+        animation.current = actionOpen || message ? "idle" : "gaze";
         gazeUntil.current = now + 1250;
       }
       let cell;
-      if (animation.current === "gaze") {
+      if (animation.current === "idle") {
+        cell = resolveSpriteFrame("working", 0);
+      } else if (animation.current === "gaze") {
         const target = document.querySelector("#hero-action input, #hero-action summary")?.getBoundingClientRect();
         const pet = petRef.current?.getBoundingClientRect();
         cell = target && pet
@@ -242,7 +245,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
     tick();
     const timer = window.setInterval(tick, 90);
     return () => window.clearInterval(timer);
-  }, [ready, motion, visible]);
+  }, [ready, motion, visible, actionOpen, message]);
 
   useEffect(() => {
     if (previewAnimation === undefined || !ready || !motion || mode.kind !== "interactive") return;
@@ -255,6 +258,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
 
   useEffect(() => {
     if (actionOpen || compact) freezeWalk();
+    if (actionOpen && animation.current !== "waving") animation.current = "idle";
   }, [actionOpen, compact, freezeWalk]);
 
   const wander = shouldWander({

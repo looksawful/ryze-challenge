@@ -900,6 +900,95 @@
       overflow: auto;
     }
   }
+  .header button.mobileLink,
+  .header button.megaLink {
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-align: start;
+  }
+  .header button.mobileLink {
+    border: 0;
+    border-bottom: 1px solid var(--nav-line);
+  }
+  .header button.megaLink { border: 0; }
+  /* Dense, scan-friendly global navigation without a second visual system. */
+  @media (width < 64rem) {
+    .header[data-variant="dock"] .mobileDialog {
+      padding-inline: clamp(14px, 4vw, 24px);
+    }
+    .header[data-variant="dock"] .mobileBar {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 1;
+      background: var(--nav-inside);
+    }
+    .header[data-variant="dock"] .mobileHeading {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .header[data-variant="dock"] .mobileSiteSection {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .header[data-variant="dock"] .mobileSiteSection .mobileSectionTitle {
+      grid-column: 1 / -1;
+      padding-block: 12px 4px;
+    }
+    .header[data-variant="dock"] .mobileSiteSection .mobileLink {
+      min-width: 0;
+      min-height: 78px;
+      padding: 12px;
+      border: 1px solid var(--nav-line);
+      border-radius: 14px;
+      background: color-mix(in oklab, var(--nav-foreground) 4%, transparent);
+      font-size: .9rem;
+      font-weight: 600;
+      line-height: 1.25;
+      justify-content: flex-start;
+    }
+    .header[data-variant="dock"] .mobileSiteSection .mobileLink:hover,
+    .header[data-variant="dock"] .mobileSiteSection .mobileLink:focus-visible {
+      background: color-mix(in oklab, var(--nav-foreground) 10%, transparent);
+    }
+    .header[data-variant="dock"] .mobileSiteSection .description {
+      margin-top: 5px;
+      font-size: .74rem;
+      font-weight: 400;
+      line-height: 1.35;
+    }
+    .header[data-variant="dock"] button.mobileLink {
+      min-height: 44px;
+      border: 1px solid var(--nav-line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: transparent;
+      font-size: .85rem;
+    }
+  }
+  @media (max-width: 699px) {
+    .header[data-variant="dock"] .mobileDock {
+      width: min(480px, calc(100% - 84px));
+      border-radius: 20px 0 0 20px;
+      border-inline-end: 0;
+    }
+    .header[data-variant="dock"] .inner,
+    .header[data-variant="dock"][data-docked="true"] .inner {
+      inset-inline-end: 12px;
+      width: 60px;
+      height: 66px;
+      min-height: 66px;
+      border-radius: 0 20px 20px 0;
+      border-inline-start: 1px solid var(--nav-line);
+    }
+    .header[data-variant="dock"] .mobileToggle {
+      width: 56px;
+      height: 56px;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .header, .header *, .header *::before, .header *::after {
       transition: none;

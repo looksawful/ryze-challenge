@@ -83,10 +83,6 @@
     text-align: center;
   }
 
-  .zone[data-compact="true"] {
-    --rizzie-width: 80px;
-    --sprite-scale: .38;
-  }
   .zone[data-mode="static"] .pet { transition: none; }
 
   .pet:focus-visible, .closeBubble:focus-visible {
@@ -169,28 +165,21 @@
     cursor: pointer;
   }
 
-  @media (max-width: 699px) and (max-height: 850px) {
-    .zone { --rizzie-width: 134px; --sprite-scale: .66; }
+  /* Compact mode restricts roaming, but never changes the artwork's scale. */
+  @media (max-width: 699px) {
+    .zone { --rizzie-width: 142px; --sprite-scale: .9; }
   }
-  @media (min-width: 700px) and (max-width: 1023px) {
-    .zone { --rizzie-width: 150px; --sprite-scale: .74; }
+  @media (min-width: 700px) and (max-width: 899px) {
+    .zone { --rizzie-width: 142px; --sprite-scale: .9; }
   }
-  /* Keep the actual interactive hit area clear of the notice on short phones. */
-  @media (min-width: 360px) and (max-width: 699px) and (min-height: 568px) and (max-height: 760px) {
-    .zone[data-compact="true"] { --rizzie-width: 68px; --sprite-scale: .33; }
+  @media (min-width: 900px) and (max-width: 1599px) {
+    .zone { --rizzie-width: 231px; --sprite-scale: 1.42; }
   }
-  /* Narrow landscape puts the pet in the free track to the left of the CTA. */
-  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) {
-    .zone[data-compact="true"] { --rizzie-width: 72px; --sprite-scale: .35; }
-  }
-  @media (min-width: 1024px) and (max-width: 1599px) {
-    .zone { --rizzie-width: 180px; --sprite-scale: .88; }
-  }
-  @media (min-width: 1600px) {
-    .zone { --rizzie-width: 200px; --sprite-scale: .98; }
+  @media (min-width: 1600px) and (max-width: 2399px) {
+    .zone { --rizzie-width: 280px; --sprite-scale: 1.7; }
   }
   @media (min-width: 2400px) {
-    .zone { --rizzie-width: 180px; --sprite-scale: .88; }
+    .zone { --rizzie-width: 231px; --sprite-scale: 1.42; }
   }
   @media (prefers-reduced-motion: no-preference) {
     .pet:not([data-detached="true"]) { transition: transform 1100ms linear; }
@@ -200,4 +189,5 @@
     from { opacity: 0; translate: 0 5px; }
     to { opacity: 1; translate: 0 0; }
   }
+
 }

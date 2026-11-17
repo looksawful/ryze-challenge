@@ -47,3 +47,16 @@ test("Storybook has one complete component preview with Mode and Theme controls"
   assert.match(stories, /argTypes:/);
   assert.match(stories, /<IntegrationLogos/);
 });
+
+
+test("logos respond to available component width rather than viewport size", () => {
+  assert.match(css, /container-type:\s*inline-size/);
+  assert.match(css, /@container[^\{]*\([^)]*(?:width|inline-size)/);
+  assert.match(css, /repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.doesNotMatch(css, /--integration-logo-size:\s*59px/);
+});
+
+test("integration caption can reflow without forcing five logos onto a narrow line", () => {
+  assert.match(css, /\.caption\s*\{[^}]*white-space:\s*normal/s);
+  assert.match(css, /\.visual\s*\{[^}]*min-inline-size:\s*0/s);
+});

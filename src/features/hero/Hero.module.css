@@ -172,7 +172,7 @@
     }
     .action { grid-area: action; inline-size: 190px; margin: 0; align-self: end; }
     .action summary { min-block-size: 52px; font-size: 16px; }
-    .integration { grid-area: integration; inline-size: auto; margin: 0 0 0 45px; justify-self: start; align-self: end; font-size: 15px; }
+    .integration { grid-area: integration; inline-size: min(100%, 290px); margin: 0 0 0 45px; justify-self: start; align-self: end; font-size: 15px; }
   }
 
   @media (min-width: 1024px) {
@@ -262,26 +262,6 @@
       padding-block: 20px 116px;
     }
   }
-  /* Reserve room for mobile browser controls without clipping accessible text. */
-  @media (max-width: 699px) {
-    .hero { padding-block-end: max(80px, 11svh, calc(env(safe-area-inset-bottom) + 48px)); }
-    .integration { padding-block-start: 16px; }
-  }
-
-  /* Redistribute spacing rather than exceeding the short visual viewport. */
-  @media (max-width: 699px) and (max-height: 820px) {
-    .hero { padding-block-start: clamp(24px, calc(12svh - 50.4px), 48px); }
-    .headline { margin-block-start: clamp(16px, calc(12svh - 55.4px), 43px); }
-    .lead { margin-block-start: clamp(20px, calc(24svh - 114.8px), 82px); }
-    .description { margin-block-start: clamp(16px, calc(6svh - 22.2px), 27px); }
-    .action { margin-block-start: clamp(20px, calc(24svh - 114.8px), 82px); }
-  }
-
-  @media (max-width: 699px) and (max-height: 720px) {
-    .lead, .action { margin-block-start: clamp(16px, calc(28svh - 147.6px), 82px); }
-    .description { margin-block-start: clamp(12px, calc(6svh - 26px), 23px); }
-  }
-
   /* Short landscape windows: keep the primary action above browser controls. */
   @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) and (max-height: 450px) {
     .hero {
@@ -291,20 +271,160 @@
     .action summary { min-block-size: 50px; }
   }
 
-  /* Short mobile: shrink the empty sprite stage, not the surrounding content. */
-  @media (max-width: 359px) and (min-height: 568px) and (max-height: 660px) {
-    .mascot { block-size: 100px; }
-  }
-  @media (min-width: 360px) and (max-width: 699px) and (min-height: 568px) and (max-height: 760px) {
-    .mascot { block-size: 72px; }
-  }
-
   /* Reserve the Dock's 76px plus 8px gap; keep Rizzie outside the CTA column. */
   @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) {
     .hero { min-block-size: calc(100svh - 84px); padding-block-end: 0; }
     .mascot {
-      inset-inline-start: -82px;
+      inset-inline-start: clamp(-190px, calc(690px - 100vw), -10px);
       inset-block-end: max(0px, calc(100% - 100svh + 84px));
+    }
+  }
+
+  /* Intrinsic spacing within art-directed phone compositions. */
+  @media (max-width: 899px) and (orientation: portrait), (max-width: 699px) {
+    .hero {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(4, auto) minmax(130px, max-content) auto;
+      grid-template-areas:
+        "brand brand"
+        "headline headline"
+        "lead lead"
+        "description description"
+        "mascot integration"
+        "action action";
+      align-content: start;
+      row-gap: clamp(6px, 1.2svh, 14px);
+      padding-block-start: max(96px, calc(84px + env(safe-area-inset-top)));
+      padding-block-end: max(32px, calc(16px + env(safe-area-inset-bottom)));
+    }
+    .brand { grid-area: brand; justify-self: center; }
+    .headline { grid-area: headline; margin-block-start: clamp(6px, 1.5svh, 16px); }
+    .lead { grid-area: lead; margin-block-start: clamp(8px, 2svh, 20px); }
+    .description { grid-area: description; margin-block-start: 0; }
+    .mascot {
+      grid-area: mascot;
+      inline-size: 100%;
+      block-size: clamp(150px, 18svh, 188px);
+      margin: 0;
+      align-self: end;
+    }
+    .integration {
+      grid-area: integration;
+      inline-size: 100%;
+      margin: 0;
+      padding: 0;
+      align-self: end;
+      min-inline-size: 0;
+    }
+    .action {
+      grid-area: action;
+      inline-size: min(100%, 358px);
+      margin-block-start: clamp(4px, 2svh, 18px);
+      justify-self: center;
+    }
+  }
+
+  /* Short phone / closed Duo: CTA precedes optional artwork. */
+  @media (max-width: 699px) and (max-height: 900px) {
+    .hero {
+      grid-template-rows: repeat(5, auto) minmax(100px, max-content);
+      grid-template-areas:
+        "brand brand"
+        "headline headline"
+        "lead lead"
+        "description description"
+        "action action"
+        "mascot integration";
+    }
+    .lead { margin-block-start: clamp(6px, 2svh, 14px); }
+    .mascot { block-size: clamp(152px, 20svh, 180px); }
+    .action { margin-block-start: clamp(4px, 1.5svh, 12px); }
+  }
+
+  /* Near-square landscape: the larger character intentionally bleeds left of the CTA. */
+  @media (min-width: 900px) and (max-width: 1023px) and (orientation: landscape) and (max-aspect-ratio: 4/3) {
+    .mascot { inset-inline-start: -320px; }
+  }
+
+  /* Unfolded Duo: two content columns and an independent upper-right shelf. */
+  @media (min-width: 900px) and (max-width: 1023px) and (min-height: 600px) and (min-aspect-ratio: 4/3) {
+    .hero {
+      inline-size: min(100% - 32px, 900px);
+      margin-inline: auto;
+      padding: 18px 18px 30px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: 90px minmax(130px, 1fr) 55px 80px 75px;
+      grid-template-areas:
+        "mascot brand"
+        "mascot headline"
+        "mascot lead"
+        "mascot description"
+        "mascot action";
+    }
+    .brand { justify-self: end; align-self: start; }
+    .headline { inline-size: min(100%, 450px); align-self: end; --type-heading-size: clamp(37px, 4.5vw, 44px); }
+    .mascot {
+      grid-area: mascot;
+      position: static;
+      inline-size: clamp(200px, 24vw, 231px);
+      block-size: 274px;
+      align-self: end;
+      justify-self: start;
+    }
+    .action { justify-self: start; }
+    .integration {
+      position: absolute;
+      grid-area: auto;
+      inset-block-start: 50px;
+      inset-inline-end: 18px;
+      inline-size: min(260px, 28vw);
+      margin: 0;
+    }
+  }
+
+  /* Tall iPad: integrations follow CTA instead of sharing its row. */
+  @media (min-width: 1024px) and (max-width: 1199px) and (min-height: 1100px) {
+    .hero {
+      min-block-size: calc(100svh - 74px);
+      grid-template-rows: 100px 235px 115px minmax(240px, 1fr) 120px 105px;
+      padding-block-end: 70px;
+    }
+    .action { grid-column: 2; grid-row: 5; justify-self: start; align-self: center; }
+    .integration {
+      grid-column: 2;
+      grid-row: 6;
+      justify-self: start;
+      align-self: start;
+      inline-size: min(100%, 320px);
+      margin: 0;
+    }
+    .mascot { grid-column: 1; grid-row: 5 / 7; align-self: end; inline-size: min(100%, 240px); block-size: 274px; }
+  }
+
+  /* A top navigation row must not obscure the headline in short landscape. */
+  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) and (max-height: 500px) {
+    .hero {
+      min-block-size: 100svh;
+      padding-block: 86px 8px;
+      grid-template-rows: 0 86px 28px 50px minmax(0, 1fr) 50px;
+    }
+    .brand {
+      position: absolute;
+      inset-block-start: 88px;
+      inset-inline-end: 0;
+      font-size: 24px;
+    }
+    .brandMark { inline-size: 23px; block-size: 23px; }
+    .headline { --type-heading-size: clamp(34px, 4.7vw, 43px); }
+    .action summary { min-block-size: 50px; }
+  }
+
+  /* Preserve the approved wide composition without pushing CTA below a short viewport. */
+  @media (min-width: 1600px) and (max-height: 900px) {
+    .hero {
+      grid-template-rows: 60px minmax(260px, 1fr) minmax(170px, max-content);
+      padding-block: 18px 80px;
     }
   }
 

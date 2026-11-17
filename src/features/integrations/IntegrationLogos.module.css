@@ -1,7 +1,6 @@
 @layer components {
   .root {
-    --integration-logo-size: clamp(50px, 3.2vw, 56px);
-    --integration-gap: clamp(8px, 0.8vw, 14px);
+    --integration-gap: clamp(6px, 1vw, 12px);
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(8ch, max-content);
     align-items: center;
@@ -14,17 +13,19 @@
     position: relative;
     inline-size: 100%;
     min-inline-size: 0;
-    min-block-size: clamp(70px, 6.5vw, 112px);
+    min-block-size: 70px;
+    container-type: inline-size;
     display: grid;
     place-items: center;
   }
 
   .staticList {
+    --integration-logo-size: clamp(24px, 14cqi, 36px);
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     align-content: center;
     justify-items: center;
-    gap: clamp(3px, 0.4vw, 8px);
+    gap: clamp(4px, 1.8cqi, 8px);
     inline-size: 100%;
     list-style: none;
     padding: 0;
@@ -46,13 +47,15 @@
   }
 
   .caption {
-    font-size: clamp(13px, 1vw, 18px);
+    font-size: clamp(12px, 1vw, 14px);
     line-height: 1.3;
     font-weight: 400;
-    color: #999ba4;
+    color: #c3c3c3;
     text-align: right;
-    white-space: nowrap;
+    white-space: normal;
   }
+
+  :global([data-theme="dawn"]) .root .caption { color: #4d4d4d; }
 
   .canvas {
     display: none;
@@ -62,16 +65,9 @@
     block-size: 100%;
   }
 
-  @media (min-width: 1024px) and (max-width: 1599px) {
-    .root { --integration-logo-size: 56px; --integration-gap: 8px; }
-    .staticList { gap: 2px; }
-    .caption { font-size: 14px; }
-  }
-
-  @media (min-width: 1600px) {
-    .root { --integration-logo-size: 42px; --integration-gap: 6px; }
-    .staticList { gap: 3px; }
-    .caption { font-size: 14px; }
+  /* The shelf wraps according to the space allocated by Hero, not the viewport. */
+  @container (width < 210px) {
+    .staticList { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
 
   @media (prefers-reduced-motion: no-preference) {
