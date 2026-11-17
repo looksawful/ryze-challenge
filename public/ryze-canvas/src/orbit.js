@@ -3,6 +3,8 @@ import {blenderPath} from './blenderPath.js';
 // Source camera faces nearly along world -X, so this is a side-on 3D arc,
 // not a spiral drawn around the camera optical axis.
 export const CAMERA_FOV = 60;
+// Temporary Hero-only switch: preserve all 12 card assets for easy restoration.
+export const SHOW_MEDIA_CARDS = false;
 export const CARD_COUNT = 12;
 export const CARD_ASPECT = 4/5;
 export const ORBIT_DURATION = 66/24;

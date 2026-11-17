@@ -1,5 +1,5 @@
 import * as THREE from '../vendor/three/three.module.js';
-import { orbitAt, perspectiveScale, CARD_COUNT, CARD_ASPECT, ORBIT_DURATION, CARD_STAGGER, CAMERA_FOV, CARD_WORLD_RATIO } from './orbit.js';
+import { orbitAt, perspectiveScale, SHOW_MEDIA_CARDS, CARD_COUNT, CARD_ASPECT, ORBIT_DURATION, CARD_STAGGER, CAMERA_FOV, CARD_WORLD_RATIO } from './orbit.js';
 import { cardMedia, coverUV } from './media.js';
 
 const frame = document.getElementById('frame');
@@ -379,7 +379,7 @@ if(renderer){
   // One smooth fade per card, synchronized with its own staggered orbit start.
   entry.mesh.material.opacity=THREE.MathUtils.smoothstep(entry.progress,0,.18);
  }
- for(let i=0;i<CARD_COUNT;i++){
+ if(SHOW_MEDIA_CARDS) for(let i=0;i<CARD_COUNT;i++){
   const material=materialFor(cardMedia[i],i);
   const mesh=new THREE.Mesh(plane,material);
   mesh.name='Ryze media card '+(i+1);
@@ -483,6 +483,12 @@ if(renderer){
  });
  function startOrbit(){
   if(reduce.matches)return;
+  // Card textures stay on disk; the logo introduction still completes.
+  if(!SHOW_MEDIA_CARDS){
+   orbitFinished=true;
+   announceIntroComplete();
+   return;
+  }
   timeline?.kill();
   orbitCycle++;
   videoElements.forEach(v=>v.play().catch(()=>{}));
