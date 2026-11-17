@@ -83,3 +83,37 @@ test("Homework cookie visual matches the borderless, intrinsically sized referen
   assert.match(styles, /flex-wrap:\s*wrap/);
   assert.match(styles, /max-block-size:\s*calc\(100svh/);
 });
+
+
+test("portrait hero retains mascot and integrations above CTA without giant spacer", () => {
+  assert.doesNotMatch(heroStyles(), /clamp\(145px/);
+  assert.match(heroStyles(), /grid-template-areas:\s*\n\s*"brand brand"/);
+  assert.match(heroStyles(), /"mascot integration"/);
+});
+
+test("Hero supports Duo open and tall tablet compositions independently", () => {
+  assert.match(heroStyles(), /min-width:\s*900px\)[^{]*max-width:\s*1023px/);
+  assert.match(heroStyles(), /min-height:\s*1100px/);
+});
+
+test("Rizzie rests in the existing seated laptop frame while preserving no-JS hiding", () => {
+  const source = readFileSync("src/features/mascot/RizzieMascot.tsx", "utf8");
+  assert.match(source, /\/pets\/rizzie\/seated\.png/);
+  assert.match(source, /resolveSpriteFrame\("working",\s*0\)/);
+  assert.match(source, /if \(mode\.kind === "hidden"\) return null/);
+});
+
+
+test("compact motion never shrinks the resting mascot artwork", () => {
+  const css = readFileSync("src/features/mascot/Rizzie.module.css", "utf8");
+  assert.doesNotMatch(css, /\.zone\[data-compact="true"\]\s*\{[^}]*--rizzie-width:/s);
+});
+
+test("portrait tablet in the 700-899 width interval has protected CTA layout", () => {
+  assert.match(heroStyles(), /@media \(max-width: 899px\) and \(orientation: portrait\)/);
+});
+
+
+test("Duo Open is a genuinely wide layout, not a near-square tablet", () => {
+  assert.match(heroStyles(), /min-aspect-ratio:\s*4\/3/);
+});
