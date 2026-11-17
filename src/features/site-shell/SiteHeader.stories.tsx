@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { SiteHeader } from "./SiteHeader";
 import styles from "./NavigationShowcase.module.css";
 
-type NavigationArgs = Pick<ComponentProps<typeof SiteHeader>, "enhancement" | "theme">;
+type NavigationArgs = Pick<ComponentProps<typeof SiteHeader>, "enhancement"> & { theme: "dawn" | "dusk" };
 
 function NavigationCanvas({ enhancement = "full", theme = "dusk" }: NavigationArgs) {
   return (
@@ -25,7 +25,7 @@ function NavigationCanvas({ enhancement = "full", theme = "dusk" }: NavigationAr
 }
 
 const meta = {
-  title: "Navigation",
+  title: "Design System/Components/Navigation",
   component: SiteHeader,
   parameters: {
     layout: "fullscreen",
@@ -38,7 +38,6 @@ const meta = {
   },
   args: {
     enhancement: "full",
-    theme: "dusk",
   },
   argTypes: {
     enhancement: {
@@ -55,11 +54,6 @@ const meta = {
       },
       options: ["static", "reduced", "no-webgl", "lightweight", "full"],
     },
-    theme: {
-      name: "Theme",
-      control: { type: "radio" },
-      options: ["dusk", "dawn"],
-    },
     variant: { table: { disable: true } },
     previewMode: { table: { disable: true } },
     brand: { table: { disable: true } },
@@ -72,5 +66,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Interactive: Story = {
-  render: (args) => <NavigationCanvas {...args} />,
+  render: (args, context) => <NavigationCanvas {...args} theme={context.globals.theme === "dawn" ? "dawn" : "dusk"} />,
 };

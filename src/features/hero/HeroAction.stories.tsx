@@ -5,7 +5,7 @@ import heroStyles from "./Hero.module.css";
 type Controls = { containerWidth: number };
 
 const meta = {
-  title: "RYZE/HeroAction",
+  title: "Design System/Components/HeroAction",
   args: { containerWidth: 940 },
   argTypes: {
     containerWidth: { control: { type: "range", min: 320, max: 1200, step: 20 } },

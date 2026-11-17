@@ -12,11 +12,14 @@ const atlasSrc = `${basePath}/pets/rizzie/spritesheet.webp`;
 type Message = { id: number; text: string };
 type Animation = AnimationName | "gaze";
 
-export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto" }: {
+export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto", previewAnimation, previewReplayKey }: {
   onActivate: (trigger: HTMLAnchorElement) => void;
   actionOpen: boolean;
   /** Storybook capability override; production always uses automatic detection. */
   scenario?: RizzieScenario;
+  /** Storybook only: replay a real sprite animation without altering production behavior. */
+  previewAnimation?: AnimationName | "natural";
+  previewReplayKey?: number;
 }) {
   const zoneRef = useRef<HTMLElement>(null);
   const petRef = useRef<HTMLAnchorElement>(null);
@@ -50,7 +53,8 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
   const [bubbleSide, setBubbleSide] = useState<"right" | "left" | "top">("right");
   const dismissMessage = useCallback(() => setMessage(null), []);
   const mode = resolveRizzieMode({
-    hydrated, scenario, motionAllowed: motion, supported, coarsePointer, touchPoints, viewportWidth,
+    hydrated, scenario, motionAllowed: motion, supported, coarsePointer, touchPoints,
+    viewportWidth,
   });
   const canDrag = mode.kind === "interactive";
 
@@ -241,11 +245,22 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
   }, [ready, motion, visible]);
 
   useEffect(() => {
+    if (previewAnimation === undefined || !ready || !motion || mode.kind !== "interactive") return;
+    freezeWalk();
+    animation.current = previewAnimation === "natural" ? "idle" : previewAnimation;
+    animationAt.current = performance.now();
+    if (previewAnimation.startsWith("running-")) walkUntil.current = Infinity;
+    queueGaze.current = false;
+  }, [previewAnimation, previewReplayKey, ready, motion, mode.kind, freezeWalk]);
+
+  useEffect(() => {
     if (actionOpen || compact) freezeWalk();
   }, [actionOpen, compact, freezeWalk]);
 
   const wander = shouldWander({
-    desktop, motionAllowed: motion && ready && canDrag && !wasDragged && !detached,
+    desktop,
+    motionAllowed: motion && ready && canDrag && !wasDragged && !detached &&
+      (previewAnimation === undefined || previewAnimation === "natural"),
     visible, actionOpen, messageOpen: Boolean(message), compact,
     interacting: engaged || dragging,
   });
