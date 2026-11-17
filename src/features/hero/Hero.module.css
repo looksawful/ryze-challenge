@@ -130,7 +130,7 @@
   }
 
   /* In short desktop windows, show the no-JS explanation above the CTA. */
-  @media (min-width: 1024px) and (max-height: 700px) {
+  @media (width >= 1024px) and (max-height: 700px) {
     .action details > p {
       inset-block-start: auto;
       inset-block-end: 100%;
@@ -139,7 +139,7 @@
   }
 
   /* Very short landscape has no spare track for a separate explanation. */
-  @media (min-width: 700px) and (max-width: 1023px) and (max-height: 350px) {
+  @media (width >= 700px) and (width < 1024px) and (max-height: 350px) {
     .action details[open] > p {
       inset: 0;
       display: grid;
@@ -156,14 +156,14 @@
     }
   }
 
-  @media (max-width: 359px) {
+  @media (width < 360px) {
     .hero { padding-inline: 16px; }
     .headline > span + span { text-align: left; }
     .lead { margin-block-start: 64px; }
     .description { --type-paragraph-size: 18px; }
   }
 
-  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) {
+  @media (width >= 700px) and (width < 1024px) and (orientation: landscape) {
     .hero {
       inline-size: min(580px, calc(100% - 32px));
       min-block-size: 100svh;
@@ -195,7 +195,7 @@
     .integration { grid-area: integration; inline-size: min(100%, 290px); margin: 0 0 0 45px; justify-self: start; align-self: end; font-size: 15px; }
   }
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     .hero {
       inline-size: min(920px, calc(100% - 48px));
       min-block-size: 0;
@@ -227,7 +227,7 @@
     .integration { grid-column: 2; grid-row: 5; justify-self: end; inline-size: min(100%, 380px); margin: 20px 0 0; }
   }
 
-  @media (min-width: 1600px) {
+  @media (width >= 2400px) {
     .hero {
       inline-size: min(100%, 1897px);
       grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -244,20 +244,8 @@
     .integration { grid-column: 11 / 13; grid-row: 3; justify-self: start; inline-size: min(100%, 320px); margin: 38px 0 0 -12px; }
   }
 
-  /* Short wide Figma composition: Rizzie to the right, clear of the CTA. */
-  @media (min-width: 1600px) and (max-width: 2399px) and (max-height: 800px) {
-    .mascot {
-      position: absolute;
-      grid-column: auto;
-      grid-row: auto;
-      inset-inline-end: clamp(26px, 4.5vw, 105px);
-      inset-block-start: clamp(300px, 46svh, 390px);
-      inline-size: 210px;
-      block-size: 225px;
-    }
-  }
 
-  @media (min-width: 2400px) {
+  @media (width >= 2400px) {
     .hero {
       inline-size: min(1947px, calc(100% - 560px));
       grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -273,18 +261,9 @@
     .integration { grid-column: 12 / 13; grid-row: 4; inline-size: clamp(290px, 13vw, 320px); margin: 20px 0 0 20px; }
   }
 
-  @media (min-width: 1024px) and (max-height: 900px) {
-    .hero { min-block-size: 0; block-size: 100svh; margin-block-start: 0; }
-  }
 
-  @media (min-width: 1024px) and (max-width: 1599px) and (max-height: 900px) {
-    .hero {
-      grid-template-rows: 80px 170px 90px minmax(150px, 1fr) 110px;
-      padding-block: max(104px, 12svh) 12px;
-    }
-  }
   /* Short landscape windows: keep the primary action above browser controls. */
-  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) and (max-height: 450px) {
+  @media (width >= 700px) and (width < 1024px) and (orientation: landscape) and (max-height: 450px) {
     .hero {
       padding-block: 14px max(60px, env(safe-area-inset-bottom));
       grid-template-rows: 38px 100px 26px 52px minmax(0, 1fr) minmax(55px, max-content);
@@ -293,7 +272,7 @@
   }
 
   /* Reserve the Dock's 76px plus 8px gap; keep Rizzie outside the CTA column. */
-  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) {
+  @media (width >= 700px) and (width < 1024px) and (orientation: landscape) {
     .hero { min-block-size: calc(100svh - 84px); padding-block-end: 0; }
     .mascot {
       inset-inline-start: clamp(-190px, calc(690px - 100vw), -10px);
@@ -302,7 +281,7 @@
   }
 
   /* Intrinsic spacing within art-directed phone compositions. */
-  @media (max-width: 899px) and (orientation: portrait), (max-width: 699px) {
+  @media (width < 900px) and (orientation: portrait), (width < 700px) {
     .hero {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -347,7 +326,8 @@
   }
 
   /* Short phone / closed Duo: CTA precedes optional artwork. */
-  @media (max-width: 699px) and (max-height: 900px) {
+  @media (width < 700px) and (max-height: 900px),
+    (width >= 700px) and (width < 900px) and (orientation: portrait) and (max-height: 900px) {
     .hero {
       grid-template-rows: repeat(5, auto) minmax(100px, max-content);
       grid-template-areas:
@@ -364,19 +344,15 @@
   }
 
   /* Duo Closed / other short wide phones: keep the full composition in one viewport. */
-  @media (min-width: 420px) and (max-width: 699px) and (max-height: 720px) {
+  @media (width >= 420px) and (width < 700px) and (max-height: 720px) {
     .hero { row-gap: 2px; padding-block-end: 10px; }
     .headline { margin-block-start: 4px; }
     .action { margin-block-start: 2px; }
   }
 
-  /* Near-square landscape: the larger character intentionally bleeds left of the CTA. */
-  @media (min-width: 900px) and (max-width: 1023px) and (orientation: landscape) and (max-aspect-ratio: 4/3) {
-    .mascot { inset-inline-start: -320px; }
-  }
 
   /* Unfolded Duo: two content columns and an independent upper-right shelf. */
-  @media (min-width: 900px) and (max-width: 1023px) and (min-height: 600px) and (min-aspect-ratio: 4/3) {
+  @media (width >= 900px) and (width < 1024px) and (min-height: 600px) and (min-aspect-ratio: 4/3) {
     .hero {
       inline-size: min(100% - 32px, 900px);
       margin-inline: auto;
@@ -412,7 +388,7 @@
   }
 
   /* Tall iPad: integrations follow CTA instead of sharing its row. */
-  @media (min-width: 1024px) and (max-width: 1199px) and (min-height: 1100px) {
+  @media (width >= 1024px) and (width < 1200px) and (min-height: 1100px) {
     .hero {
       min-block-size: calc(100svh - 74px);
       grid-template-rows: 100px 235px 115px minmax(240px, 1fr) 120px 105px;
@@ -431,7 +407,7 @@
   }
 
   /* A top navigation row must not obscure the headline in short landscape. */
-  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) and (max-height: 500px) {
+  @media (width >= 700px) and (width < 1024px) and (orientation: landscape) and (max-height: 500px) {
     .hero {
       min-block-size: 100svh;
       padding-block: 86px 8px;
@@ -448,65 +424,103 @@
     .action summary { min-block-size: 48px; }
   }
 
-  /* Preserve the approved wide composition without pushing CTA below a short viewport. */
-  @media (min-width: 1600px) and (max-height: 900px) {
-    .hero {
-      grid-template-rows: 88px minmax(260px, 1fr) minmax(170px, max-content);
-      padding-block: 18px 80px;
-    }
-  }
 
-  /* Tall responsive landscape: keep the approved centred title below the top Dock.
-     Unlike short landscape, this view has space for the full-width composition. */
-  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape)
+  /* Mid-width horizontal screens: same content sequence as notebook, smaller scale.
+     Duo Open at 951x669 keeps its own media rule above this block. */
+  @media (width >= 700px) and (width < 1024px) and (orientation: landscape)
     and (min-height: 760px) and (max-aspect-ratio: 13/10) {
     .hero {
-      inline-size: min(100%, 918px);
+      position: relative;
+      inline-size: min(calc(100% - 2 * var(--gutter)), 60rem);
       min-block-size: 100svh;
+      block-size: 100svh;
       margin-inline: auto;
-      padding: 96px 24px 22px;
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: 64px 185px 75px minmax(0, 1fr) 95px;
-      grid-template-areas: "brand" "headline" "lead" "description" "action";
+      padding: clamp(6rem, 12svh, 7rem) 1rem clamp(1.25rem, 3svh, 2rem);
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-areas: none;
+      grid-template-rows: auto auto auto auto auto;
+      column-gap: clamp(.5rem, 1vw, 1rem);
+      row-gap: clamp(.55rem, 1.3svh, .9rem);
+      align-content: center;
+      align-items: start;
     }
-    .brand { grid-area: brand; justify-self: end; align-self: center; font-size: 54px; }
-    .brandMark { inline-size: 52px; block-size: 52px; }
-    .headline {
-      grid-area: headline;
-      justify-self: center;
-      align-self: center;
-      inline-size: min(100%, 720px);
-      --type-heading-size: clamp(48px, 6.4vw, 62px);
-    }
-    .lead { grid-area: lead; justify-self: center; margin: 0; text-align: center; }
-    .description { grid-area: description; justify-self: center; margin: 0; text-align: center; }
-    .mascot {
-      grid-area: auto;
+    .brand {
       position: absolute;
-      inset: auto auto 0 16px;
-      inline-size: 215px;
-      block-size: 235px;
+      grid-area: auto;
+      inset: clamp(5.25rem, 12svh, 6.5rem) 1rem auto auto;
+      margin: 0;
+      font-size: clamp(2rem, 3.8vw, 2.75rem);
+    }
+    .brandMark { inline-size: .94em; block-size: .94em; }
+    .headline {
+      position: static;
+      grid-area: 1 / 1 / 2 / -1;
+      justify-self: center;
+      inline-size: min(100%, 17ch);
+      margin: 0;
+      --type-heading-size: clamp(2.7rem, 5vw, 3.5rem);
+      text-align: center;
+      text-wrap: balance;
+    }
+    .headline > span,
+    .headline > span + span { text-align: center; overflow-wrap: normal; }
+    .lead {
+      position: static;
+      grid-area: 2 / 1 / 3 / -1;
+      justify-self: center;
+      margin: 0;
+      --type-lead-size: clamp(1rem, 2vw, 1.25rem);
+      text-align: center;
+    }
+    .lead br { display: none; }
+    .description {
+      position: static;
+      grid-area: 3 / 1 / 4 / -1;
+      justify-self: center;
+      inline-size: min(100%, 48ch);
+      margin: 0;
+      --type-paragraph-size: clamp(.88rem, 1.65vw, 1.1rem);
+      line-height: 1.4;
+      text-align: center;
+    }
+    .mascot {
+      position: relative;
+      inset: auto;
+      grid-area: 4 / 2 / 5 / 4;
+      justify-self: start;
+      align-self: end;
+      inline-size: min(100%, 9rem);
+      block-size: clamp(8.5rem, 19svh, 10rem);
       margin: 0;
     }
+    .mascot :global([data-mode]) {
+      --rizzie-width: clamp(7rem, 12vw, 8.5rem);
+      --sprite-scale: .64;
+    }
     .action {
-      grid-area: action;
+      position: relative;
+      grid-area: 5 / 2 / 6 / 4;
+      justify-self: stretch;
+      align-self: center;
+      inline-size: 100%;
+      margin: 0;
+    }
+    .action summary { min-block-size: 3.5rem; }
+    .integration {
+      position: static;
+      inset: auto;
+      grid-area: 5 / 4 / 6 / 6;
       justify-self: start;
       align-self: center;
-      inline-size: min(295px, 40%);
-      margin: 0 0 0 clamp(180px, 24vw, 250px);
-    }
-    .integration {
-      grid-area: auto;
-      position: absolute;
-      inset: auto clamp(22px, 5vw, 60px) 62px auto;
-      inline-size: 210px;
+      inline-size: min(100%, 14rem);
       margin: 0;
     }
   }
 
   /* Dense phone canvases: preserve all seven Hero elements without clipping.
      The normal portrait composition remains unchanged on taller screens. */
-  @media (max-width: 699px) and (max-height: 650px) {
+  @media (width < 700px) and (max-height: 650px) {
     .hero {
       min-block-size: 0;
       block-size: 100svh;
@@ -532,8 +546,8 @@
     .action summary { min-block-size: 44px; font-size: 15px; }
   }
 
-  /* Short desktop layouts: reduce reserved tracks, not content visibility. */
-  @media (min-width: 1024px) and (max-height: 720px) {
+
+  @media (width >= 1024px) and (max-height: 607px) {
     .hero {
       min-block-size: 0;
       block-size: 100svh;
@@ -551,27 +565,8 @@
     .integration { margin-block-start: 0; }
   }
 
-  /* In the desktop prototype, bottom-right Cookies occupy their own layer.
-     Give the integration marks a separate right-side row above that overlay. */
-  @media (min-width: 1200px) and (max-width: 1599px) {
-    .integration {
-      position: absolute;
-      grid-area: auto;
-      inset: auto 16px 200px auto;
-      inline-size: min(100%, 380px);
-      margin: 0;
-    }
-  }
-  @media (min-width: 1600px) and (max-width: 2399px) and (max-height: 800px) {
-    .integration {
-      position: absolute;
-      grid-area: auto;
-      inset: auto 16px 200px auto;
-      inline-size: min(100%, 316px);
-      margin: 0;
-    }
-  }
-  @media (min-width: 2400px) {
+
+  @media (width >= 2400px) {
     .integration {
       position: absolute;
       grid-area: auto;
@@ -589,7 +584,7 @@
 
   /* Duo Open: retain its deliberate asymmetry with the headline upper left.
      Navigation stays fixed above; it is not part of the reference artwork. */
-  @media (min-width: 900px) and (max-width: 1023px)
+  @media (width >= 900px) and (width < 1024px)
     and (min-height: 600px) and (min-aspect-ratio: 4/3) {
     .hero {
       display: block;
@@ -657,52 +652,49 @@
 }
 
 
-/* Laptop: intrinsic sections, fluid height distribution and one shared CTA row.
-   This range never changes the established phone/Duo/tall-tablet art direction. */
+/* Single landscape workstation composition: notebook through wide desktop.
+   Aspect ratio selects this mode, while tall iPad, Duo and ultrawide keep their
+   separately approved layouts. Content determines row heights, not pixel tracks. */
 @layer components {
-  @media (min-width: 64rem) and (max-width: 124.9375rem)
-    and (min-height: 40rem) and (max-height: 62.5rem) {
+  @media (width >= 1024px) and (width < 2400px)
+    and (min-aspect-ratio: 5/4) and (min-height: 608px) {
     .hero {
-      --laptop-gap: clamp(.35rem, 1svh, .75rem);
+      --hero-gap: clamp(.75rem, 1.6svh, 1.125rem);
+      position: relative;
       inline-size: min(calc(100% - 2 * var(--gutter)), var(--content-width));
-      block-size: 100svh;
       min-block-size: 100svh;
+      block-size: 100svh;
       margin-inline: auto;
-      padding: clamp(4.25rem, 8svh, 5.75rem)
+      padding: clamp(5.25rem, 10svh, 7rem)
         clamp(.25rem, 1vw, 1.25rem)
-        clamp(1.5rem, 4.5svh, 3rem);
+        clamp(1.5rem, 4svh, 2.75rem);
       display: grid;
       grid-template-columns: repeat(12, minmax(0, 1fr));
-      grid-template-rows:
-        auto
-        minmax(0, .9fr)
-        auto
-        auto
-        minmax(0, .8fr)
-        auto;
-      column-gap: clamp(.5rem, 1vw, 1.15rem);
-      row-gap: var(--laptop-gap);
+      grid-template-rows: auto auto auto auto auto;
+      column-gap: clamp(.5rem, 1vw, 1.125rem);
+      row-gap: var(--hero-gap);
+      align-content: center;
       align-items: start;
       overflow: visible;
     }
     .brand {
-      position: static;
-      grid-area: 1 / 9 / 2 / 13;
+      position: absolute;
+      inset: clamp(4.25rem, 8svh, 6rem) 0 auto auto;
+      grid-area: auto;
       justify-self: end;
-      align-self: start;
       margin: 0;
-      font-size: clamp(2rem, 3vw, 3rem);
-      letter-spacing: -.04em;
+      font-size: clamp(2.15rem, 3vw, 3.15rem);
+      letter-spacing: -.045em;
     }
-    .brandMark { inline-size: .95em; block-size: .95em; }
+    .brandMark { inline-size: .94em; block-size: .94em; }
     .headline {
       position: static;
-      grid-area: 2 / 2 / 3 / 12;
+      grid-area: 1 / 2 / 2 / 12;
       justify-self: center;
       align-self: center;
-      inline-size: min(100%, 17ch);
+      inline-size: min(100%, 18ch);
       margin: 0;
-      --type-heading-size: clamp(3.05rem, 5vw, 5.2rem);
+      --type-heading-size: clamp(3.125rem, 5vw, 5.8rem);
       line-height: 1.04;
       letter-spacing: -.04em;
       text-align: center;
@@ -712,43 +704,44 @@
     .headline > span + span { text-align: center; overflow-wrap: normal; }
     .lead {
       position: static;
-      grid-area: 3 / 3 / 4 / 11;
+      grid-area: 2 / 3 / 3 / 11;
       justify-self: center;
       margin: 0;
       --type-lead-size: clamp(1.1rem, 1.55vw, 1.5rem);
-      line-height: 1.25;
+      line-height: 1.24;
       letter-spacing: -.01em;
       text-align: center;
     }
     .lead br { display: none; }
     .description {
       position: static;
-      grid-area: 4 / 3 / 5 / 11;
+      grid-area: 3 / 3 / 4 / 11;
       justify-self: center;
-      max-inline-size: 55ch;
+      max-inline-size: 53ch;
       margin: 0;
-      --type-paragraph-size: clamp(.95rem, 1.18vw, 1.14rem);
+      --type-paragraph-size: clamp(.975rem, 1.2vw, 1.15rem);
       line-height: 1.42;
       text-align: center;
     }
     .mascot {
       position: relative;
-      grid-area: 5 / 4 / 6 / 7;
+      inset: auto;
+      grid-area: 4 / 4 / 5 / 7;
       justify-self: start;
       align-self: end;
-      inline-size: min(100%, 10.25rem);
-      block-size: clamp(6.5rem, 14svh, 8.75rem);
+      inline-size: min(100%, 10.5rem);
+      block-size: clamp(9rem, 20svh, 11rem);
       margin: 0;
       pointer-events: none;
     }
-    .mascot > section { min-inline-size: 0; }
     .mascot :global([data-mode]) {
-      --rizzie-width: clamp(8rem, 11vw, 9.75rem);
-      --sprite-scale: .83;
+      --rizzie-width: clamp(7.5rem, 11vw, 9.5rem);
+      --sprite-scale: .68;
     }
     .action {
       position: relative;
-      grid-area: 6 / 4 / 7 / 7;
+      inset: auto;
+      grid-area: 5 / 4 / 6 / 7;
       justify-self: stretch;
       align-self: center;
       inline-size: 100%;
@@ -757,22 +750,23 @@
       z-index: 4;
     }
     .action summary {
-      min-block-size: clamp(3.25rem, 6.5svh, 4rem);
-      font-size: clamp(.96rem, 1.07vw, 1.08rem);
+      min-block-size: clamp(3.5rem, 7svh, 4.25rem);
+      font-size: clamp(.96rem, 1.1vw, 1.13rem);
     }
     .integration {
       position: static;
-      grid-area: 6 / 7 / 7 / 11;
+      inset: auto;
+      grid-area: 5 / 7 / 6 / 11;
       justify-self: start;
       align-self: center;
-      inline-size: min(100%, 17rem);
+      inline-size: min(100%, 18rem);
       min-inline-size: 0;
       margin: 0;
     }
     .hero[data-action-open="true"] .action {
-      grid-area: 5 / 2 / 7 / 12;
+      grid-area: 4 / 2 / 6 / 12;
       justify-self: stretch;
-      align-self: start;
+      align-self: center;
       inline-size: 100%;
       margin: 0;
     }

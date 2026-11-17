@@ -44,3 +44,27 @@ The earlier claim of a *fully* finished laptop composition was premature. Hero c
 - Verified on Titan Chrome with 1366×768, 1440×900, 1536×864 and 1920×960 closed and expanded states, and 1024×1366, 874×402, 2000×1050 as non-laptop references. Submitted `example.com` result at 1366×768 appears at y≈581–703, below form and outside Hero copy.
 - Updated Storybook visual content automatically via shared production Hero and Header components. No duplicate mock Hero component made.
 - **OPEN / incomplete:** place the specifically intended product mockup above the button once its asset is unambiguously selected. Preserve Rizzie, do not arbitrarily use a marketing screenshot as a product mockup. This is not part of this CSS correction.
+
+
+## P1 composition and adaptive-grid repair · 17.11.2026 (latest)
+
+**Scope:** user explicitly **deferred P0 mockup**; this change addresses only Hero optical composition and conflicting responsive rules. Work performed on Titan, existing private `main`, without a new worktree, CI, packages or changing Hero copy.
+
+**Implementation:**
+- Consolidated notebook/desktop landscape styling in `src/features/hero/Hero.module.css`: one fluid, intrinsic five-row Grid for width 1024–2399 CSS px, aspect ratio at least 5:4, minimum height 608 CSS px. Sizes use existing design tokens and `clamp()`, without hard-coded absolute placements for H1/CTA/Rizzie.
+- Replaced the overlapping legacy short-desktop and mid-wide overrides; media-block count reduced from the previous version, with separate accepted **Duo Open**, **tall iPad** and **ultrawide** layouts preserved. A tall horizontal 700–1023 composition now uses an intrinsic Grid rather than a fixed-size row matrix.
+- Converted min/max width queries to complementary CSS Media Queries Level 4 range syntax, avoiding fractional CSS pixel gaps around 699/700 and 1023/1024. Corrected leftover named Grid areas, which were accidentally shifting the mid-width Ryze logo.
+- Controlled Rizzie's **artwork scale inside its allotted stage** in both intermediate and laptop modes, so the painted sprite does not intrude into H1/description. Preserved the existing interactive mascot component and its drag/touch/bubble behavior.
+- Consolidated H1/lead/description group and CTA + morphing Integrations into a consistent optical hierarchy. CTA and Integrations remain side-by-side; Rizzie stays above CTA.
+- Aligned `src/features/hero/HeroAction.module.css` result-card positioning with the same aspect/width selection. Submitted-form result now stays below the form across the new responsive desktop regime rather than floating over Hero text.
+
+**Chrome visual audit on Titan (no Mac):**
+- Compared actual rendered viewport sizes 699×800, 700×800, 899×800, 900×800, 951×669, 1022×800, 1023×800, 1024×800, 1199×800, 1200×800, 1366×640, 1366×768, 1440×900, 1536×864, 1599×850, 1600×850, 1897×1024, 1920×960, 1999×960, 2000×960, 1024×1366 and 874×402. Also inspected 683×384 as a narrow/approximately-200%-zoom CSS viewport; document scrolling remains available.
+- **Before:** at requested 1023×800, CTA at y≈785, below an 800px viewport; after: y≈595, fully visible. At 699/700×800, CTA now begins at the same y≈463 on both sides. At 1599/1600×850 the Hero geometry is continuous. Previous 1897×1024 vs 1920×960 hard composition swap was removed for landscape desktops.
+- Form closed/open was captured at 14 widths/heights. Actual domain `example.com` submission produced a demo-result card at **1366×768** (result y≈546–668) and **1920×960** (result y≈679–801), outside the headline/lead and Cookies regions.
+- `npm run build` PASS, including Next's TypeScript step; `git diff --check` PASS. Full test suite, CI and Safari were **not** run under express-mode instruction. 1px width differences in some CDP emulated viewports are attributed to fractional CSS pixel rounding; no larger horizontal document overflow was observed.
+- Real Storybook Hero/Navigation/Form use the **same CSS modules** so these changes propagate to existing stories, but no separate full Storybook acceptance is claimed.
+
+**Private Titan evidence:** `http://100.110.158.49:3090/_qa/p1-1023x800.png`, `/_qa/p1-1024x800.png`, `/_qa/p1-1366x768.png`, `/_qa/p1-1920x960.png`, `/_qa/p1-result-1366x768.png`, `/_qa/p1-result-1920x960.png`. All paths are temporary preview copies in `out/_qa`, not committed binaries. The preview-only measurement Grid (G toggle) was restored after build.
+
+**Not claimed:** user-approved final optical design; automated Safari QA; completion of product mockup P0, explicitly postponed by the user.
