@@ -21,7 +21,7 @@ export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, them
   const actionRef = useRef<HeroActionHandle>(null);
   const [actionOpen, setActionOpen] = useState(false);
   return (
-    <main className={styles.hero} data-theme={theme} id="main">
+    <main className={styles.hero} data-theme={theme} data-action-open={actionOpen || undefined} id="main">
       <div className={styles.brand}>
         <Image className={styles.brandMark} src={`${basePath}/brand-mark.svg`} alt="" width={40} height={40} unoptimized loading="eager" />
         <span>Ryze</span>

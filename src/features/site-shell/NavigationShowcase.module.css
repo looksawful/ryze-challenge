@@ -2,7 +2,7 @@
   .canvas {
     min-height: 240svh;
     background: #030303;
-    font-family: "Ryze Satoshi", Arial, sans-serif;
+    font-family: var(--font-body);
   }
 
   .dark {

@@ -306,25 +306,6 @@
 
 /* HOMEWORK / Lovable-reference navigation. One set of content, themed surfaces,
    native mobile links and progressive motion; Hero positioning stays untouched. */
-@font-face {
-  font-family: "Ryze Satoshi";
-  src: url("./assets/Satoshi-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Ryze Satoshi";
-  src: url("./assets/Satoshi-Medium.woff2") format("woff2");
-  font-weight: 500;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Ryze Satoshi";
-  src: url("./assets/Satoshi-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-display: swap;
-}
-
 @layer components {
   .header {
     --nav-surface: #292929;
@@ -333,7 +314,7 @@
     --nav-line: rgb(255 255 255 / 12%);
     --nav-foreground: #fff;
     --nav-muted: #bfbfbf;
-    font-family: "Ryze Satoshi", Arial, sans-serif;
+    font-family: var(--font-body);
   }
   .header[data-theme="dawn"] {
     --nav-surface: #fff;
@@ -743,7 +724,7 @@
       border-radius: 16px;
       color: inherit;
       background: transparent;
-      font: 500 clamp(10px, 1.5vw, 13px)/1.2 "Ryze Satoshi", Arial, sans-serif;
+      font: 500 clamp(10px, 1.5vw, 13px)/1.2 var(--font-body);
       white-space: nowrap;
       text-decoration: none;
       cursor: pointer;
@@ -1125,5 +1106,33 @@
   .header[data-enhancement="static"] * {
     animation: none;
     transition: none;
+  }
+}
+
+
+/* Notebook header: same centred navigation, smaller vertical footprint. */
+@layer components {
+  @media (min-width: 75rem) and (max-width: 124.9375rem)
+    and (min-height: 40rem) and (max-height: 62.5rem) {
+    .header[data-variant="dock"],
+    .header[data-variant="dock"][data-docked="true"] {
+      inset: max(6px, env(safe-area-inset-top)) 0 auto;
+    }
+    .header[data-variant="dock"] .inner {
+      min-height: 3.5rem;
+      border-radius: 1rem;
+    }
+    .header[data-variant="dock"][data-docked="true"] .inner {
+      min-height: 3.125rem;
+      border-radius: .9rem;
+    }
+    .header[data-variant="dock"] .navTrigger,
+    .header[data-variant="dock"] .directLink {
+      min-height: 2.75rem;
+      padding-block: .3rem;
+    }
+    .header[data-variant="dock"] .megaPanel {
+      inset-block-start: calc(100% + 6px);
+    }
   }
 }

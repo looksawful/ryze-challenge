@@ -22,3 +22,20 @@ type Story = StoryObj<typeof meta>;
 export const Current: Story = {
   render: (_args, context) => <Hero theme={context.globals.theme === "dawn" ? "dawn" : "dusk"} />,
 };
+
+export const Notebook: Story = {
+  name: "Notebook composition",
+  parameters: {
+    viewport: {
+      defaultViewport: "ryzeLaptop",
+      options: {
+        ryzeLaptop: {
+          name: "Laptop 1366 × 768",
+          styles: { width: "1366px", height: "768px" },
+          type: "desktop",
+        },
+      },
+    },
+  },
+  render: (_args, context) => <Hero theme={context.globals.theme === "dawn" ? "dawn" : "dusk"} />,
+};

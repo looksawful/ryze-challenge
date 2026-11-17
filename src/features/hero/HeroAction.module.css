@@ -1,13 +1,12 @@
 @layer components {
   .root { position: relative; inline-size: 100%; }
-  .root[data-mode="inline"] { min-block-size: 90px; }
+  .root[data-mode="inline"] { min-block-size: 0; }
   .fallback { inline-size: 100%; }
 
   .inline {
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline-start: 0;
-    inline-size: min(410px, calc(100vw - 40px));
+    position: relative;
+    inset: auto;
+    inline-size: 100%;
     z-index: 4;
   }
 
@@ -197,6 +196,18 @@
     @keyframes sample-reveal {
       from { opacity: 0; }
       to { opacity: 1; }
+    }
+  }
+}
+/* Laptop result stays in the form flow, never over Hero copy. */
+@layer components {
+  @media (min-width: 64rem) and (max-width: 124.9375rem)
+    and (min-height: 40rem) and (max-height: 62.5rem) {
+    .inline .result {
+      position: static;
+      inset: auto;
+      inline-size: min(100%, 44rem);
+      margin-block-start: var(--space-3);
     }
   }
 }

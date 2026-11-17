@@ -12,11 +12,11 @@ const meta = {
   },
   parameters: {
     layout: "padded",
-    docs: { description: { component: "Real HeroAction. The width control switches between inline and drawer interaction. Click the action to open the form." } },
+    docs: { description: { component: "Real HeroAction. The real form fills its parent container when expanded. The width control switches between inline and drawer; check the full laptop layout in First screen with navigation." } },
   },
   render: ({ containerWidth }) => (
-    <main style={{ inlineSize: "100%", maxInlineSize: containerWidth, minBlockSize: 320 }}>
-      <div className={heroStyles.action} style={{ marginBlockStart: 40 }}>
+    <main style={{ inlineSize: "min(100%, var(--content-width))", maxInlineSize: containerWidth, minBlockSize: 320, marginInline: "auto", paddingInline: "var(--gutter)" }}>
+      <div className={heroStyles.action} style={{ marginBlockStart: 40, inlineSize: "100%" }}>
         <HeroAction key={containerWidth} />
       </div>
     </main>
