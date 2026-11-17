@@ -69,3 +69,14 @@
 @media (max-width: 699px) and (max-height: 567px) {
   .notice { position: static; max-block-size: none; margin-block: var(--space-4); }
 }
+
+/* The short landscape Hero places CTA and text in the same area as a floating
+   notice. Place consent after Hero and leave enough scroll room above the Dock. */
+@media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) {
+  .notice {
+    position: static;
+    max-block-size: none;
+    margin-block: 25svh calc(84px + var(--space-6));
+    margin-inline-start: auto;
+  }
+}
