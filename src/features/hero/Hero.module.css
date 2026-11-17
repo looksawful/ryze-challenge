@@ -657,55 +657,67 @@
 }
 
 
-/* Compact, height-aware laptop composition. The existing device art direction
-   remains responsible for phones, Duo, tall tablets and large desktops. */
+/* Laptop: intrinsic sections, fluid height distribution and one shared CTA row.
+   This range never changes the established phone/Duo/tall-tablet art direction. */
 @layer components {
   @media (min-width: 64rem) and (max-width: 124.9375rem)
     and (min-height: 40rem) and (max-height: 62.5rem) {
     .hero {
-      --laptop-gap: clamp(.5rem, 1.15svh, .9rem);
+      --laptop-gap: clamp(.35rem, 1svh, .75rem);
       inline-size: min(calc(100% - 2 * var(--gutter)), var(--content-width));
-      min-block-size: 100svh;
       block-size: 100svh;
+      min-block-size: 100svh;
       margin-inline: auto;
-      padding: clamp(4.5rem, 9svh, 6.5rem) clamp(.25rem, 1vw, 1.25rem)
-        clamp(2.5rem, 5svh, 3.25rem);
+      padding: clamp(4.25rem, 8svh, 5.75rem)
+        clamp(.25rem, 1vw, 1.25rem)
+        clamp(1.5rem, 4.5svh, 3rem);
       display: grid;
       grid-template-columns: repeat(12, minmax(0, 1fr));
-      grid-template-rows: minmax(3.5rem, .6fr) minmax(8rem, 1.25fr) auto auto
-        minmax(7rem, 1fr) auto;
-      column-gap: clamp(.5rem, 1.1vw, 1.25rem);
+      grid-template-rows:
+        auto
+        minmax(0, .9fr)
+        auto
+        auto
+        minmax(0, .8fr)
+        auto;
+      column-gap: clamp(.5rem, 1vw, 1.15rem);
       row-gap: var(--laptop-gap);
       align-items: start;
+      overflow: visible;
     }
     .brand {
       position: static;
-      grid-area: 1 / 9 / 2 / -1;
-      align-self: start;
+      grid-area: 1 / 9 / 2 / 13;
       justify-self: end;
-      font-size: clamp(2.1rem, 3.5vw, 3.15rem);
+      align-self: start;
       margin: 0;
+      font-size: clamp(2rem, 3vw, 3rem);
+      letter-spacing: -.04em;
     }
-    .brandMark { inline-size: .94em; block-size: .94em; }
+    .brandMark { inline-size: .95em; block-size: .95em; }
     .headline {
       position: static;
       grid-area: 2 / 2 / 3 / 12;
+      justify-self: center;
       align-self: center;
-      justify-self: stretch;
-      inline-size: 100%;
+      inline-size: min(100%, 17ch);
       margin: 0;
-      --type-heading-size: clamp(3.15rem, 5vw, 5.25rem);
+      --type-heading-size: clamp(3.05rem, 5vw, 5.2rem);
+      line-height: 1.04;
+      letter-spacing: -.04em;
+      text-align: center;
       text-wrap: balance;
-      letter-spacing: -.052em;
     }
+    .headline > span,
+    .headline > span + span { text-align: center; overflow-wrap: normal; }
     .lead {
       position: static;
       grid-area: 3 / 3 / 4 / 11;
       justify-self: center;
       margin: 0;
-      --type-lead-size: clamp(1.1rem, 1.6vw, 1.5rem);
-      line-height: 1.22;
-      letter-spacing: -.018em;
+      --type-lead-size: clamp(1.1rem, 1.55vw, 1.5rem);
+      line-height: 1.25;
+      letter-spacing: -.01em;
       text-align: center;
     }
     .lead br { display: none; }
@@ -713,9 +725,9 @@
       position: static;
       grid-area: 4 / 3 / 5 / 11;
       justify-self: center;
-      max-inline-size: 48ch;
+      max-inline-size: 55ch;
       margin: 0;
-      --type-paragraph-size: clamp(.975rem, 1.23vw, 1.15rem);
+      --type-paragraph-size: clamp(.95rem, 1.18vw, 1.14rem);
       line-height: 1.42;
       text-align: center;
     }
@@ -724,38 +736,41 @@
       grid-area: 5 / 4 / 6 / 7;
       justify-self: start;
       align-self: end;
-      inline-size: min(100%, 11rem);
-      block-size: clamp(7rem, 16svh, 9rem);
+      inline-size: min(100%, 10.25rem);
+      block-size: clamp(6.5rem, 14svh, 8.75rem);
       margin: 0;
       pointer-events: none;
     }
+    .mascot > section { min-inline-size: 0; }
     .mascot :global([data-mode]) {
-      --rizzie-width: clamp(8.75rem, 12vw, 10.5rem);
-      --sprite-scale: .85;
+      --rizzie-width: clamp(8rem, 11vw, 9.75rem);
+      --sprite-scale: .83;
     }
     .action {
       position: relative;
       grid-area: 6 / 4 / 7 / 7;
-      inline-size: 100%;
       justify-self: stretch;
       align-self: center;
+      inline-size: 100%;
+      min-inline-size: 0;
       margin: 0;
       z-index: 4;
     }
     .action summary {
-      min-block-size: clamp(3.5rem, 7svh, 4.25rem);
-      font-size: clamp(.95rem, 1.15vw, 1.1rem);
+      min-block-size: clamp(3.25rem, 6.5svh, 4rem);
+      font-size: clamp(.96rem, 1.07vw, 1.08rem);
     }
     .integration {
       position: static;
       grid-area: 6 / 7 / 7 / 11;
-      inline-size: min(100%, 16rem);
       justify-self: start;
       align-self: center;
+      inline-size: min(100%, 17rem);
+      min-inline-size: 0;
       margin: 0;
     }
     .hero[data-action-open="true"] .action {
-      grid-area: 5 / 2 / 6 / 12;
+      grid-area: 5 / 2 / 7 / 12;
       justify-self: stretch;
       align-self: start;
       inline-size: 100%;
@@ -763,7 +778,7 @@
     }
     .hero[data-action-open="true"] .mascot,
     .hero[data-action-open="true"] .integration {
-      opacity: 0;
+      visibility: hidden;
       pointer-events: none;
     }
   }

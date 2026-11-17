@@ -33,3 +33,14 @@
 - Real Storybook frame: http://100.110.158.49:3090/_qa/storybook-notebook.png
 
 No new modules, dependencies, branches, public deployment, CI or automated test infrastructure.
+
+## Follow-up correction after user review
+
+The earlier claim of a *fully* finished laptop composition was premature. Hero contained a **Rizzie** illustration above the CTA, not a product-device mockup. These must not be conflated.
+
+- Replaced the artificial six-track laptop Grid with intrinsic type/content rows and two height-distributed flexible rows; removed the opposing headline span alignment in laptop view so both title lines share a visual centre.
+- Reduced heading tracking to a safer -.04em and balanced its measure; kept brand in upper-right and real Integrations morph animation beside the existing Start For Free CTA.
+- Retained the real draggable/tappable Rizzie on a smaller stage above CTA. No substitute product image was introduced, because the existing local phone mockups and Ryze website screenshots represent different products/screens; the intended product mockup has not been identified.
+- Verified on Titan Chrome with 1366×768, 1440×900, 1536×864 and 1920×960 closed and expanded states, and 1024×1366, 874×402, 2000×1050 as non-laptop references. Submitted `example.com` result at 1366×768 appears at y≈581–703, below form and outside Hero copy.
+- Updated Storybook visual content automatically via shared production Hero and Header components. No duplicate mock Hero component made.
+- **OPEN / incomplete:** place the specifically intended product mockup above the button once its asset is unambiguously selected. Preserve Rizzie, do not arbitrarily use a marketing screenshot as a product mockup. This is not part of this CSS correction.
