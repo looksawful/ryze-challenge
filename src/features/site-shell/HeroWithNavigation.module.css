@@ -2,6 +2,32 @@
   .stage {
     position: relative;
     isolation: isolate;
+    --hero-background: transparent;
+    background: var(--color-background);
+  }
+
+  /* Full viewport canvas behind interactive Hero content. */
+  .motionBackdrop {
+    position: absolute;
+    inset: 0 0 auto;
+    inline-size: 100%;
+    block-size: 100svh;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .motionFrame {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    border: 0;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .stage > :global(main) {
+    z-index: 1;
   }
 
   .navigation {
@@ -9,6 +35,32 @@
     inset-block-start: 0;
     inset-inline: 0;
     z-index: 40;
+  }
+
+  /* Initial launch is a one-shot fullscreen motion act. The site is visible
+     only after the SVG has become a circle, shrunk away and the cards exit. */
+  .stage > :global(main),
+  .navigation {
+    transition: opacity .68s cubic-bezier(.22, 1, .36, 1);
+  }
+  .stage[data-intro="playing"] > :global(main),
+  .stage[data-intro="playing"] .navigation {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .stage[data-intro="ready"] .motionBackdrop {
+    opacity: 0;
+    transition: opacity .48s cubic-bezier(.22, 1, .36, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stage > :global(main), .navigation, .motionBackdrop {
+      transition: none;
+    }
+    .stage[data-intro="playing"] > :global(main),
+    .stage[data-intro="playing"] .navigation {
+      opacity: 1;
+      pointer-events: auto;
+    }
   }
 
   /* Without JavaScript, expose the native link fallback in document flow. */

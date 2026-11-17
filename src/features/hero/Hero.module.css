@@ -8,7 +8,7 @@
     flex-direction: column;
     align-items: center;
     padding: 48px 22px 76px;
-    background: var(--color-background);
+    background: var(--hero-background, var(--color-background));
     color: var(--color-foreground);
     --hero-muted: #999ba4;
     --hero-description: #777a83;

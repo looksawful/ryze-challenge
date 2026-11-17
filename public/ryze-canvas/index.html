@@ -1,0 +1,988 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Ryze · 3D Motion Component</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { color-scheme: dark; }
+  *,*::before,*::after { box-sizing: border-box; }
+  html,body { height:100%; width:100%; overflow:hidden; margin:0; background:transparent; }
+  body { -webkit-tap-highlight-color:transparent; }
+  #frame { position:fixed; inset:0; background:transparent; overflow:hidden; user-select:none; -webkit-user-select:none; }
+  #scene { width:100%; height:100%; display:block; background:transparent; }
+  #paper-stack { visibility:hidden; }
+  #finished-mark { fill:#FF5AF1; opacity:1; }
+  /* A few paper slips have a tiny dimensional curl. No GPU-heavy filters or 3D engine. */
+  .paper-depth {
+    transform-box: fill-box;
+    transform-origin: center center;
+    transform: perspective(420px) rotateX(var(--rx)) rotateY(var(--ry)) skewX(var(--shear));
+    backface-visibility: visible;
+  }
+  /* Scene 1: hand-placed exposures; scene 2: the same paper paths melt into a circle. */
+  #frame[data-state="assembling"] .paper-depth {
+    animation: finger-turn var(--paper-duration, 2.8s) steps(1, end) var(--paper-delay, 0s) both;
+  }
+  @keyframes finger-turn {
+    0%, 18%  { transform: perspective(420px) rotateX(var(--pre-x)) rotateY(var(--pre-y)) skewX(var(--pre-shear)); }
+    19%, 47% { transform: perspective(420px) rotateX(var(--mid-x)) rotateY(var(--mid-y)) skewX(var(--mid-shear)); }
+    48%, 77% { transform: perspective(420px) rotateX(var(--late-x)) rotateY(var(--late-y)) skewX(var(--late-shear)); }
+    78%, 100%{ transform: perspective(420px) rotateX(var(--rx)) rotateY(var(--ry)) skewX(var(--shear)); }
+  }
+
+  #frame[data-state="melting"] .paper-depth,
+  #frame[data-state="circle"] .paper-depth {
+    animation:none;
+    transform:none;
+    transition:transform .22s ease-out;
+  }
+  #frame[data-state="melting"] .paper-cut,
+  #frame[data-state="circle"] .paper-cut { stroke:none; }
+  @media(prefers-reduced-motion:reduce) {#paper-stack {display:none!important;}#finished-mark{opacity:1!important;}}
+
+  #canvas-3d{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none;z-index:2;background:transparent}
+</style>
+  <style>
+    #orbit-guide { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:0; }
+  </style>
+</head>
+<body>
+<main id="frame" role="img" aria-label="Эмблема Ryze из розовых бумажных фрагментов на чёрном фоне. Фрагменты собираются в логотип, затем плавно превращаются в круг без подмены слоя.">
+<svg id="scene" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<defs>
+<path id="ryze-shape" d="M22,1.1L22.8,1.5L23,1.9L22.7,3.1L22.9,5L22.2,7.6L22.2,9.5L22,10.9L21.7,12.2L21.8,12.8L22.8,13.2L23,13.1L23.7,12.2L25.5,9.3L28.4,6L30.3,4.4L30.7,4.3L31.1,4.2L31.5,4.4L32.4,5.2L33.2,6.4L33.3,6.8L32.8,8.3L32.3,9.1L30.6,10.3L29.4,11.7L29.3,12.5L28.4,13.9L27.3,15.2L26.5,15.9L26.2,16.3L26.8,16.2L29.1,15.2L31,14.2L35.7,12.8L36,12.8L36.3,13.1L37,14.9L37,15.4L36.6,15.9L35.7,16.5L34.2,17.7L31.9,18.9L29.9,19.7L28.7,20L28,20.5L27.4,21.1L27.4,21.3L29.8,22.3L30.8,22.5L34.7,23.8L35.6,24.4L36.3,24.6L36.3,25.2L36,26.6L35.3,27.8L34.9,28.3L34.5,29.1L34,29.8L33.5,30.2L32.9,30.2L31.7,29.6L29.2,28.8L27.6,27.9L24.2,27.2L23.4,26.6L23.3,26.6L23.7,27.9L24.4,32.8L25.8,37.4L25.7,37.9L25.5,38.2L23.6,38.9L23.4,38.8L23.2,38.4L22.8,38.2L22.5,37.4L22.2,36.4L21.8,35.5L21.3,34L20.8,32.6L20.2,29.9L20.1,29.7L19.9,29.7L19.4,31.7L19.4,33.2L18.9,35.7L18.4,36.5L18.3,37.5L18.1,38L17.5,38.3L15.8,38.3L14.3,37.9L13.9,37.6L13.8,37.1L14,35.3L14.4,34.2L14.7,32.6L15.5,29.9L15.7,27.4L15.9,26.5L15.5,26.3L15.3,26.5L15.2,27.6L14.4,30.3L12.7,33.3L11.3,36.3L10.8,36.7L10.2,36.8L9.5,36.6L8.2,35.7L8,35.3L8.1,34.3L9.7,30.9L11,28.6L11.2,27.5L12.1,25.8L12.4,24.9L12.4,24.4L11.9,23.8L11.8,23.8L10.9,24.7L8.9,26.4L6.9,28.6L5.2,29.5L4.6,29.5L4.2,29.2L3.4,28L3.3,27.4L3.5,27L4.5,26L5.3,25.4L7.6,22.9L9.7,21.5L10.7,20.6L10.9,20.3L7.9,20.1L5.7,20.4L1.7,20.5L1.2,20.3L1,20L1,18.1L1.2,17.6L1.6,17.4L3.5,17L6,17L8,16.7L9.8,16.7L7.3,14.6L6.6,14.3L5.6,14.1L4.2,13.5L3.5,13.1L2.7,12.2L2,11.8L1.9,11.2L2.1,10.4L2.6,9.6L2.7,8.9L3.3,8.1L3.8,8.1L4.3,8.6L5.2,9L6.5,9.8L7.9,10.4L9.2,11.2L12.1,12.9L14.1,14.6L14.3,14.5L14.2,14.3L12,11.5L11.1,10L9.5,7.9L8.3,6L7.2,4.4L7.1,4L7.4,3.6L7.9,3.3L8.3,2.9L9.8,2.2L10.4,2.1L11.1,2.4L11.8,3.2L13.6,5.5L14.1,6.8L16.7,9.9L17.5,11.4L17.9,12.4L18.2,12.7L18.5,12.3L18.5,9.2L19.4,6.1L19.3,4.2L19.7,1.7L19.9,1.2L20.2,1.1L21.5,1L22,1.1Z"/>
+<pattern id="paper-fiber" width="3" height="3" patternUnits="userSpaceOnUse"><path d="M0.2011 2.2519l0.0602 0.0181" stroke="#f1a3db" stroke-width=".012" opacity="0.2599"/><path d="M2.7339 2.5897l0.0676 0.0203" stroke="#f1a3db" stroke-width=".012" opacity="0.2822"/><path d="M1.8778 1.6312l0.0885 0.0266" stroke="#ffe0fa" stroke-width=".012" opacity="0.118"/><path d="M0.517 0.2651l0.0931 0.0279" stroke="#9f2a82" stroke-width=".012" opacity="0.2456"/><path d="M2.9906 2.0275l0.0993 0.0298" stroke="#f1a3db" stroke-width=".012" opacity="0.2635"/><path d="M0.3468 2.0469l0.0951 0.0285" stroke="#f1a3db" stroke-width=".012" opacity="0.1743"/><path d="M2.6045 0.0662l0.0995 0.0298" stroke="#9f2a82" stroke-width=".012" opacity="0.2452"/><path d="M2.0043 0.1016l0.0323 0.0097" stroke="#f1a3db" stroke-width=".012" opacity="0.2503"/><path d="M0.625 0.7734l0.0404 0.0121" stroke="#9f2a82" stroke-width=".012" opacity="0.2541"/><path d="M0.5092 0.7455l0.0782 0.0235" stroke="#ffe0fa" stroke-width=".012" opacity="0.2327"/><path d="M2.5983 1.9282l0.0922 0.0276" stroke="#9f2a82" stroke-width=".012" opacity="0.1072"/><path d="M2.0429 2.6072l0.0673 0.0202" stroke="#ffe0fa" stroke-width=".012" opacity="0.1703"/><path d="M2.9144 2.1444l0.114 0.0342" stroke="#9f2a82" stroke-width=".012" opacity="0.1247"/><path d="M2.824 1.8347l0.0748 0.0224" stroke="#ffe0fa" stroke-width=".012" opacity="0.2314"/><path d="M0.7839 1.5088l0.0901 0.027" stroke="#9f2a82" stroke-width=".012" opacity="0.2707"/><path d="M1.0156 2.9288l0.0578 0.0173" stroke="#ffe0fa" stroke-width=".012" opacity="0.1474"/><path d="M0.3568 0.7653l0.0802 0.0241" stroke="#ffe0fa" stroke-width=".012" opacity="0.1424"/><path d="M1.3125 1.4611l0.085 0.0255" stroke="#9f2a82" stroke-width=".012" opacity="0.2589"/><path d="M2.4344 2.9797l0.0397 0.0119" stroke="#f1a3db" stroke-width=".012" opacity="0.1459"/><path d="M1.2565 2.2182l0.0271 0.0081" stroke="#f1a3db" stroke-width=".012" opacity="0.1853"/><path d="M1.596 1.7307l0.1075 0.0323" stroke="#f1a3db" stroke-width=".012" opacity="0.1793"/><path d="M2.5697 0.812l0.1121 0.0336" stroke="#f1a3db" stroke-width=".012" opacity="0.1754"/><path d="M1.008 0.508l0.0955 0.0287" stroke="#9f2a82" stroke-width=".012" opacity="0.1224"/><path d="M1.3395 0.097l0.0743 0.0223" stroke="#ffe0fa" stroke-width=".012" opacity="0.2157"/><path d="M0.8829 2.8479l0.0591 0.0177" stroke="#f1a3db" stroke-width=".012" opacity="0.2815"/><path d="M0.0957 1.415l0.1001 0.03" stroke="#9f2a82" stroke-width=".012" opacity="0.1435"/><path d="M1.4978 0.7923l0.0854 0.0256" stroke="#ffe0fa" stroke-width=".012" opacity="0.1164"/><path d="M1.9505 0.4903l0.1076 0.0323" stroke="#f1a3db" stroke-width=".012" opacity="0.1922"/><path d="M2.9621 0.3204l0.1007 0.0302" stroke="#f1a3db" stroke-width=".012" opacity="0.1101"/><path d="M0.5509 2.7481l0.0634 0.019" stroke="#f1a3db" stroke-width=".012" opacity="0.184"/><path d="M2.3007 0.8921l0.0955 0.0286" stroke="#ffe0fa" stroke-width=".012" opacity="0.0851"/><path d="M2.9378 0.2515l0.074 0.0222" stroke="#ffe0fa" stroke-width=".012" opacity="0.2499"/><path d="M1.4287 2.0006l0.0719 0.0216" stroke="#f1a3db" stroke-width=".012" opacity="0.0827"/><path d="M1.4641 0.6518l0.0912 0.0274" stroke="#f1a3db" stroke-width=".012" opacity="0.2088"/><path d="M0.0633 1.0094l0.1114 0.0334" stroke="#ffe0fa" stroke-width=".012" opacity="0.2985"/><path d="M0.368 2.3829l0.0777 0.0233" stroke="#f1a3db" stroke-width=".012" opacity="0.2553"/><path d="M2.6837 0.3804l0.0284 0.0085" stroke="#9f2a82" stroke-width=".012" opacity="0.2132"/><path d="M2.2426 2.4309l0.1112 0.0334" stroke="#f1a3db" stroke-width=".012" opacity="0.1103"/><path d="M0.0636 2.758l0.0582 0.0174" stroke="#f1a3db" stroke-width=".012" opacity="0.2958"/><path d="M1.2312 2.4903l0.0709 0.0213" stroke="#9f2a82" stroke-width=".012" opacity="0.0842"/><path d="M1.8105 1.9027l0.074 0.0222" stroke="#f1a3db" stroke-width=".012" opacity="0.1839"/><path d="M0.2181 0.5583l0.1167 0.035" stroke="#f1a3db" stroke-width=".012" opacity="0.0843"/><path d="M0.8821 2.4712l0.0963 0.0289" stroke="#f1a3db" stroke-width=".012" opacity="0.1339"/><path d="M0.6186 2.0286l0.0573 0.0172" stroke="#ffe0fa" stroke-width=".012" opacity="0.1154"/><path d="M1.1222 1.5867l0.0904 0.0271" stroke="#f1a3db" stroke-width=".012" opacity="0.1013"/><path d="M0.8638 2.971l0.0384 0.0115" stroke="#f1a3db" stroke-width=".012" opacity="0.0957"/><path d="M1.094 0.4106l0.1052 0.0315" stroke="#9f2a82" stroke-width=".012" opacity="0.2432"/><path d="M1.317 1.8705l0.0525 0.0157" stroke="#ffe0fa" stroke-width=".012" opacity="0.1441"/><path d="M0.4904 1.9495l0.0301 0.009" stroke="#9f2a82" stroke-width=".012" opacity="0.2842"/><path d="M1.3702 1.3971l0.0921 0.0276" stroke="#f1a3db" stroke-width=".012" opacity="0.2919"/></pattern>
+<pattern id="paper-ink-ff52e9" patternUnits="userSpaceOnUse" width="3" height="3"><rect width="3" height="3" fill="#ff52e9"/><rect width="3" height="3" fill="url(#paper-fiber)"/></pattern>
+<pattern id="paper-ink-ff56ed" patternUnits="userSpaceOnUse" width="3" height="3"><rect width="3" height="3" fill="#ff56ed"/><rect width="3" height="3" fill="url(#paper-fiber)"/></pattern>
+<pattern id="paper-ink-ff58ef" patternUnits="userSpaceOnUse" width="3" height="3"><rect width="3" height="3" fill="#ff58ef"/><rect width="3" height="3" fill="url(#paper-fiber)"/></pattern>
+<pattern id="paper-ink-ff5af1" patternUnits="userSpaceOnUse" width="3" height="3"><rect width="3" height="3" fill="#ff5af1"/><rect width="3" height="3" fill="url(#paper-fiber)"/></pattern>
+<pattern id="paper-ink-ff5bf2" patternUnits="userSpaceOnUse" width="3" height="3"><rect width="3" height="3" fill="#ff5bf2"/><rect width="3" height="3" fill="url(#paper-fiber)"/></pattern>
+<pattern id="paper-ink-ff5df4" patternUnits="userSpaceOnUse" width="3" height="3"><rect width="3" height="3" fill="#ff5df4"/><rect width="3" height="3" fill="url(#paper-fiber)"/></pattern>
+<pattern id="paper-ink-ff5ff6" patternUnits="userSpaceOnUse" width="3" height="3"><rect width="3" height="3" fill="#ff5ff6"/><rect width="3" height="3" fill="url(#paper-fiber)"/></pattern>
+<pattern id="paper-ink-ff61f8" patternUnits="userSpaceOnUse" width="3" height="3"><rect width="3" height="3" fill="#ff61f8"/><rect width="3" height="3" fill="url(#paper-fiber)"/></pattern>
+<filter id="paper-liquid-filter" x="-100%" y="-100%" width="300%" height="300%" color-interpolation-filters="sRGB">
+  <feGaussianBlur id="liquid-blur" in="SourceGraphic" stdDeviation="0" result="soft-ink"/>
+  <feColorMatrix id="liquid-alpha" in="soft-ink" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"/>
+</filter>
+</defs>
+<!-- Only the emblem is visible when JavaScript/GSAP is unavailable. -->
+<g id="mark-placement" transform="translate(195 195) scale(15.25)">
+  <use id="finished-mark" href="#ryze-shape"/>
+  <g id="paper-stack"><g class="anchor" transform="translate(1.7083 21.053)">
+  <g class="mover" data-cx="1.7083" data-cy="21.053" data-id="0">
+    <g class="paper-depth" style="--rx:-2.10deg;--ry:-2.50deg;--shear:-0.29deg;--pre-x:+5.57deg;--pre-y:+6.12deg;--pre-shear:-0.57deg;--mid-x:-4.20deg;--mid-y:+5.50deg;--mid-shear:+0.60deg;--late-x:+1.78deg;--late-y:-3.12deg;--late-shear:-0.21deg"><path class="paper-cut" d="M2.353,-1.130L-0.619,-3.176L-0.708,-2.953L-0.708,-1.053L-0.508,-0.753L-0.008,-0.553L2.306,-0.611L2.353,-1.130Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(1.3616 11.77)">
+  <g class="mover" data-cx="1.3616" data-cy="11.77" data-id="1">
+    <g class="paper-depth"><path class="paper-cut" d="M2.386,-0.589L1.113,-1.970L0.738,-1.370L0.538,-0.570L0.638,0.030L1.338,0.430L1.715,0.854L2.386,-0.589Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(2.4475 5.5495)">
+  <g class="mover" data-cx="2.4475" data-cy="5.5495" data-id="2">
+    <g class="paper-depth"><path class="paper-cut" d="M1.700,5.564L2.708,3.723L2.710,3.432L1.853,3.050L1.353,2.550L0.853,2.550L0.253,3.351L0.153,4.050L0.027,4.251L1.300,5.632L1.700,5.564Z" fill="url(#paper-ink-ff56ed)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(3.3596 30.9249)">
+  <g class="mover" data-cx="3.3596" data-cy="30.9249" data-id="3">
+    <g class="paper-depth" style="--rx:+0.50deg;--ry:+1.70deg;--shear:+0.05deg;--pre-x:-1.32deg;--pre-y:-4.17deg;--pre-shear:+0.10deg;--mid-x:+1.00deg;--mid-y:-3.74deg;--mid-shear:-0.10deg;--late-x:-0.42deg;--late-y:+2.12deg;--late-shear:+0.03deg"><path class="paper-cut" d="M3.672,-3.700L-0.024,-3.313L0.040,-2.925L0.840,-1.725L1.240,-1.425L1.840,-1.425L3.540,-2.325L4.182,-3.031L3.672,-3.700Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(3.158 25.7524)">
+  <g class="mover" data-cx="3.158" data-cy="25.7524" data-id="4">
+    <g class="paper-depth"><path class="paper-cut" d="M3.874,1.472L3.815,0.393L2.642,-0.895L2.142,-0.352L1.342,0.248L0.342,1.248L0.142,1.648L0.177,1.859L3.874,1.472Z" fill="url(#paper-ink-ff56ed)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(2.2671 17.3615)">
+  <g class="mover" data-cx="2.2671" data-cy="17.3615" data-id="5">
+    <g class="paper-depth"><path class="paper-cut" d="M1.795,2.562L2.627,1.663L1.169,-0.348L-0.667,0.038L-1.067,0.239L-1.178,0.515L1.795,2.562Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(4.4918 16.6553)">
+  <g class="mover" data-cx="4.4918" data-cy="16.6553" data-id="6">
+    <g class="paper-depth"><path class="paper-cut" d="M1.060,2.311L1.333,0.345L-0.992,0.345L-1.056,0.358L0.402,2.369L1.060,2.311Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(6.8575 3.4924)">
+  <g class="mover" data-cx="6.8575" data-cy="3.4924" data-id="7">
+    <g class="paper-depth"><path class="paper-cut" d="M4.372,2.775L2.444,-1.060L1.443,-0.592L1.043,-0.192L0.543,0.108L0.242,0.508L0.343,0.908L1.443,2.508L2.402,4.026L4.372,2.775Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(4.0115 13.3223)">
+  <g class="mover" data-cx="4.0115" data-cy="13.3223" data-id="8">
+    <g class="paper-depth"><path class="paper-cut" d="M2.050,-1.265L0.136,-2.209L-0.264,-2.141L-0.935,-0.699L-0.511,-0.222L0.189,0.178L1.135,0.584L2.050,-1.265Z" fill="url(#paper-ink-ff61f8)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(5.3059 10.8678)">
+  <g class="mover" data-cx="5.3059" data-cy="10.8678" data-id="9">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.150,-1.596L-1.159,0.246L0.756,1.189L1.169,0.921L-0.150,-1.596Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(6.4571 14.0661)">
+  <g class="mover" data-cx="6.4571" data-cy="14.0661" data-id="10">
+    <g class="paper-depth"><path class="paper-cut" d="M-1.310,-0.160L-0.857,0.034L0.143,0.234L0.843,0.534L1.517,1.100L1.766,0.862L0.300,-2.333L0.018,-2.277L-0.395,-2.009L-1.310,-0.160Z" fill="url(#paper-ink-ff56ed)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(5.4946 20.9611)">
+  <g class="mover" data-cx="5.4946" data-cy="20.9611" data-id="11">
+    <g class="paper-depth" style="--rx:+1.70deg;--ry:+1.00deg;--shear:+0.14deg;--pre-x:-4.50deg;--pre-y:-2.45deg;--pre-shear:+0.29deg;--mid-x:+3.40deg;--mid-y:-2.20deg;--mid-shear:-0.30deg;--late-x:-1.44deg;--late-y:+1.25deg;--late-shear:+0.10deg"><path class="paper-cut" d="M-1.480,-0.519L0.205,-0.561L1.808,-0.780L1.718,-1.145L0.057,-1.995L-0.601,-1.936L-1.433,-1.038L-1.480,-0.519Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(6.8104 23.6374)">
+  <g class="mover" data-cx="6.8104" data-cy="23.6374" data-id="12">
+    <g class="paper-depth"><path class="paper-cut" d="M0.163,2.508L1.623,1.001L1.626,-1.295L0.790,-0.737L-1.011,1.220L0.163,2.508Z" fill="url(#paper-ink-ff56ed)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(6.8119 8.9874)">
+  <g class="mover" data-cx="6.8119" data-cy="8.9874" data-id="13">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.337,2.802L-0.055,2.745L1.694,1.786L1.088,1.413L-0.312,0.813L-1.612,0.013L-1.654,-0.006L-1.656,0.285L-0.337,2.802Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(6.579 17.8747)">
+  <g class="mover" data-cx="6.579" data-cy="17.8747" data-id="14">
+    <g class="paper-depth" style="--rx:+0.00deg;--ry:+0.10deg;--shear:-0.12deg;--pre-x:-0.00deg;--pre-y:-0.25deg;--pre-shear:-0.24deg;--mid-x:+0.00deg;--mid-y:-0.22deg;--mid-shear:+0.25deg;--late-x:-0.00deg;--late-y:+0.12deg;--late-shear:-0.09deg"><path class="paper-cut" d="M1.164,0.774L0.494,-1.036L-0.579,-0.875L-0.755,-0.875L-1.028,1.092L0.633,1.941L1.164,0.774Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(8.9659 26.7341)">
+  <g class="mover" data-cx="8.9659" data-cy="26.7341" data-id="15">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.533,-2.096L-1.993,-0.588L-1.934,0.491L-1.424,1.160L-0.066,-0.334L1.129,-1.349L-0.533,-2.096Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(10.1614 8.1512)">
+  <g class="mover" data-cx="10.1614" data-cy="8.1512" data-id="16">
+    <g class="paper-depth"><path class="paper-cut" d="M2.000,-1.072L1.617,-1.604L1.068,-1.884L-0.902,-0.633L-0.661,-0.251L0.390,1.129L2.000,-1.072Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(8.5682 19.8127)">
+  <g class="mover" data-cx="8.5682" data-cy="19.8127" data-id="17">
+    <g class="paper-depth"><path class="paper-cut" d="M-1.266,0.369L-0.668,0.287L1.318,0.420L0.967,-1.874L-0.825,-1.164L-1.356,0.003L-1.266,0.369Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(8.3512 12.676)">
+  <g class="mover" data-cx="8.3512" data-cy="12.676" data-id="18">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.129,2.252L0.902,1.711L1.191,0.594L0.763,-1.529L0.155,-1.903L-1.594,-0.943L-0.129,2.252Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(8.0864 17.0065)">
+  <g class="mover" data-cx="8.0864" data-cy="17.0065" data-id="19">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.344,1.642L1.449,0.932L1.668,0.696L0.860,-0.306L-0.086,-0.306L-1.013,-0.167L-0.344,1.642Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(11.1717 11.736)">
+  <g class="mover" data-cx="11.1717" data-cy="11.736" data-id="20">
+    <g class="paper-depth"><path class="paper-cut" d="M-1.629,1.534L1.079,1.292L0.928,1.164L-1.972,-0.536L-2.058,-0.589L-1.629,1.534ZM2.576,1.159L2.295,-0.275L1.982,-0.726L0.189,-1.302L0.828,-0.236L1.967,1.213L2.576,1.159Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(9.3657 15.8224)">
+  <g class="mover" data-cx="9.3657" data-cy="15.8224" data-id="21">
+    <g class="paper-depth"><path class="paper-cut" d="M0.617,1.825L1.206,-0.638L-0.113,-1.435L-1.143,-0.894L-1.392,-0.656L0.434,0.878L-0.419,0.878L0.389,1.880L0.617,1.825Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(5.1227 36.3832)">
+  <g class="mover" data-cx="5.1227" data-cy="36.3832" data-id="22">
+    <g class="paper-depth" style="--rx:+1.20deg;--ry:-0.60deg;--shear:-0.02deg;--pre-x:-3.18deg;--pre-y:+1.47deg;--pre-shear:-0.05deg;--mid-x:+2.40deg;--mid-y:+1.32deg;--mid-shear:+0.05deg;--late-x:-1.02deg;--late-y:-0.75deg;--late-shear:-0.02deg"><path class="paper-cut" d="M4.486,-3.513L3.730,-3.684L2.977,-2.083L2.877,-1.083L3.077,-0.683L4.136,0.049L5.783,-1.620L4.486,-3.513Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(10.4467 21.5005)">
+  <g class="mover" data-cx="10.4467" data-cy="21.5005" data-id="23">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.081,1.457L1.426,0.744L2.036,-1.175L1.596,-1.392L0.383,-1.205L0.453,-1.200L0.253,-0.900L-0.747,-0.000L-1.895,0.765L-0.081,1.457Z" fill="url(#paper-ink-ff61f8)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(9.6673 24.0252)">
+  <g class="mover" data-cx="9.6673" data-cy="24.0252" data-id="24">
+    <g class="paper-depth"><path class="paper-cut" d="M0.699,-1.068L-1.116,-1.759L-1.231,-1.683L-1.234,0.613L0.427,1.360L1.233,0.675L1.267,0.640L0.699,-1.068Z" fill="url(#paper-ink-ff56ed)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(9.1215 30.7611)">
+  <g class="mover" data-cx="9.1215" data-cy="30.7611" data-id="25">
+    <g class="paper-depth" style="--rx:-0.50deg;--ry:-1.50deg;--shear:-0.29deg;--pre-x:+1.32deg;--pre-y:+3.68deg;--pre-shear:-0.57deg;--mid-x:-1.00deg;--mid-y:+3.30deg;--mid-shear:+0.60deg;--late-x:+0.42deg;--late-y:-1.88deg;--late-shear:-0.21deg"><path class="paper-cut" d="M0.487,2.109L1.565,1.402L2.250,-0.337L2.230,-0.490L1.481,-1.458L0.579,0.139L-0.268,1.939L0.487,2.109Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(11.5542 33.5956)">
+  <g class="mover" data-cx="11.5542" data-cy="33.5956" data-id="26">
+    <g class="paper-depth"><path class="paper-cut" d="M0.384,1.337L1.146,-0.296L1.333,-0.625L1.181,-0.817L-0.868,-1.432L-1.946,-0.725L-0.648,1.168L0.384,1.337Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(10.6198 19.1048)">
+  <g class="mover" data-cx="10.6198" data-cy="19.1048" data-id="27">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.734,1.128L0.210,1.191L1.423,1.003L0.449,-1.178L-0.637,-1.457L-0.865,-1.402L-1.085,-1.166L-0.734,1.128Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(11.9464 2.2831)">
+  <g class="mover" data-cx="11.9464" data-cy="2.2831" data-id="28">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.168,4.264L1.062,2.460L-0.146,0.917L-0.846,0.117L-1.546,-0.183L-2.146,-0.083L-2.645,0.150L-0.717,3.984L-0.168,4.264Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(12.6322 26.6706)">
+  <g class="mover" data-cx="12.6322" data-cy="26.6706" data-id="29">
+    <g class="paper-depth"><path class="paper-cut" d="M1.772,1.600L1.253,-0.983L-0.332,-1.471L-0.532,-0.871L-1.409,0.785L1.772,1.600Z" fill="url(#paper-ink-ff61f8)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(11.8824 14.1121)">
+  <g class="mover" data-cx="11.8824" data-cy="14.1121" data-id="30">
+    <g class="paper-depth"><path class="paper-cut" d="M-1.310,1.072L1.599,1.194L2.177,0.453L0.369,-1.084L-2.340,-0.842L-2.630,0.275L-1.310,1.072ZM2.424,-0.047L1.865,-1.217L1.256,-1.163L2.318,0.188L2.330,0.212L2.424,-0.047Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(11.6082 23.8097)">
+  <g class="mover" data-cx="11.6082" data-cy="23.8097" data-id="31">
+    <g class="paper-depth"><path class="paper-cut" d="M1.256,-0.175L0.264,-1.565L-1.242,-0.852L-0.674,0.856L0.192,-0.010L0.292,-0.010L0.792,0.590L0.792,0.745L1.256,-0.175Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(12.2365 28.7997)">
+  <g class="mover" data-cx="12.2365" data-cy="28.7997" data-id="32">
+    <g class="paper-depth"><path class="paper-cut" d="M2.434,0.588L2.509,0.333L2.211,-0.495L2.168,-0.529L-1.013,-1.344L-1.037,-1.300L-1.236,-0.200L-1.634,0.503L-0.885,1.472L2.434,0.588Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(12.1025 9.2506)">
+  <g class="mover" data-cx="12.1025" data-cy="9.2506" data-id="33">
+    <g class="paper-depth" style="--rx:+0.70deg;--ry:-2.20deg;--shear:-0.19deg;--pre-x:-1.85deg;--pre-y:+5.39deg;--pre-shear:-0.38deg;--mid-x:+1.40deg;--mid-y:+4.84deg;--mid-shear:+0.40deg;--late-x:-0.59deg;--late-y:-2.75deg;--late-shear:-0.14deg"><path class="paper-cut" d="M1.551,-0.019L0.372,-2.074L0.059,-2.172L-1.551,0.030L-1.002,0.749L-0.742,1.183L1.051,1.759L1.551,-0.019Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(11.4832 16.3426)">
+  <g class="mover" data-cx="11.4832" data-cy="16.3426" data-id="34">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.414,1.584L1.935,-0.649L1.998,-1.036L-0.911,-1.158L-1.501,1.305L-0.414,1.584Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(12.7301 18.2254)">
+  <g class="mover" data-cx="12.7301" data-cy="18.2254" data-id="35">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.248,2.100L0.553,1.958L1.383,0.061L0.688,-2.532L-1.661,-0.299L-0.687,1.883L-0.248,2.100Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(10.1396 37.7947)">
+  <g class="mover" data-cx="10.1396" data-cy="37.7947" data-id="36">
+    <g class="paper-depth"><path class="paper-cut" d="M0.766,-3.031L-0.881,-1.362L-0.640,-1.195L0.060,-0.995L0.660,-1.095L1.160,-1.495L1.798,-2.862L0.766,-3.031Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(13.8994 38.027)">
+  <g class="mover" data-cx="13.8994" data-cy="38.027" data-id="37">
+    <g class="paper-depth"><path class="paper-cut" d="M1.492,-2.169L0.055,-2.317L-0.099,-0.927L0.001,-0.427L0.401,-0.127L1.616,0.197L1.800,-1.232L1.492,-2.169Z" fill="url(#paper-ink-ff56ed)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(15.4281 9.2654)">
+  <g class="mover" data-cx="15.4281" data-cy="9.2654" data-id="38">
+    <g class="paper-depth"><path class="paper-cut" d="M-1.961,2.196L1.299,0.686L1.272,0.635L-0.285,-1.222L-1.774,-0.034L-2.274,1.744L-1.961,2.196Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(11.7876 31.72)">
+  <g class="mover" data-cx="11.7876" data-cy="31.72" data-id="39">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.416,-1.296L-1.102,0.443L0.948,1.059L0.868,-0.270L-0.416,-1.296Z" fill="url(#paper-ink-ff61f8)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(14.1419 31.5653)">
+  <g class="mover" data-cx="14.1419" data-cy="31.5653" data-id="40">
+    <g class="paper-depth"><path class="paper-cut" d="M-1.255,1.405L0.228,-1.212L-1.487,-0.115L-1.406,1.213L-1.255,1.405ZM1.054,0.467L1.595,-1.066L1.499,-1.382L1.317,-1.528L0.649,0.727L1.054,0.467Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(14.9631 16.7742)">
+  <g class="mover" data-cx="14.9631" data-cy="16.7742" data-id="41">
+    <g class="paper-depth" style="--rx:+1.90deg;--ry:+2.20deg;--shear:-0.10deg;--pre-x:-5.03deg;--pre-y:-5.39deg;--pre-shear:-0.19deg;--mid-x:+3.80deg;--mid-y:-4.84deg;--mid-shear:+0.20deg;--late-x:-1.61deg;--late-y:+2.75deg;--late-shear:-0.07deg"><path class="paper-cut" d="M-0.850,1.512L1.228,1.617L2.124,0.840L-0.687,-2.262L-0.863,-2.174L-0.904,-2.209L-1.482,-1.468L-1.545,-1.081L-0.850,1.512Z" fill="url(#paper-ink-ff56ed)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(21.032 2.1796)">
+  <g class="mover" data-cx="21.032" data-cy="2.1796" data-id="42">
+    <g class="paper-depth"><path class="paper-cut" d="M-1.657,2.684L1.828,2.438L1.668,0.920L1.968,-0.280L1.768,-0.680L0.968,-1.080L0.468,-1.180L-0.832,-1.080L-1.132,-0.980L-1.332,-0.480L-1.732,2.020L-1.698,2.661L-1.657,2.684Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(14.6182 7.2363)">
+  <g class="mover" data-cx="14.6182" data-cy="7.2363" data-id="43">
+    <g class="paper-depth"><path class="paper-cut" d="M0.525,0.808L-0.518,-0.436L-0.637,-0.746L-2.144,-0.059L-0.964,1.995L0.525,0.808Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(14.6669 4.3344)">
+  <g class="mover" data-cx="14.6669" data-cy="4.3344" data-id="44">
+    <g class="paper-depth" style="--rx:+0.20deg;--ry:+1.30deg;--shear:+0.24deg;--pre-x:-0.53deg;--pre-y:-3.19deg;--pre-shear:+0.48deg;--mid-x:+0.40deg;--mid-y:-2.86deg;--mid-shear:-0.50deg;--late-x:-0.17deg;--late-y:+1.62deg;--late-shear:+0.17deg"><path class="paper-cut" d="M-2.193,2.843L-0.686,2.156L-1.067,1.166L-1.659,0.409L-2.888,2.213L-2.505,2.744L-2.193,2.843Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(13.2352 30.3279)">
+  <g class="mover" data-cx="13.2352" data-cy="30.3279" data-id="45">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.580,1.122L1.135,0.025L1.165,-0.028L1.435,-0.940L-1.883,-0.057L-1.864,0.096L-0.580,1.122Z" fill="url(#paper-ink-ff52e9)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(13.1223 21.8478)">
+  <g class="mover" data-cx="13.1223" data-cy="21.8478" data-id="46">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.258,1.787L0.609,1.590L1.247,-0.874L0.161,-1.664L-0.640,-1.523L-1.250,0.397L-0.258,1.787Z" fill="url(#paper-ink-ff61f8)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(16.408 28.2551)">
+  <g class="mover" data-cx="16.408" data-cy="28.2551" data-id="47">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.767,1.928L2.643,-0.415L2.643,-0.418L-0.245,-1.781L-0.582,-1.421L-0.708,-0.855L-0.908,1.645L-0.949,1.782L-0.767,1.928ZM-1.961,0.050L-1.662,0.877L-1.208,-0.655L-1.198,-0.764L-1.961,0.050Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(18.2399 6.1001)">
+  <g class="mover" data-cx="18.2399" data-cy="6.1001" data-id="48">
+    <g class="paper-depth"><path class="paper-cut" d="M1.485,2.040L1.962,1.626L2.228,0.202L1.135,-1.237L1.094,-1.260L1.160,-0.000L0.573,2.022L1.485,2.040Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(13.6675 24.5635)">
+  <g class="mover" data-cx="13.6675" data-cy="24.5635" data-id="49">
+    <g class="paper-depth"><path class="paper-cut" d="M1.784,-0.144L0.063,-1.125L-0.804,-0.929L-1.268,-0.009L-1.268,0.336L-1.367,0.636L0.217,1.124L1.784,-0.144Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(15.0655 26.167)">
+  <g class="mover" data-cx="15.0655" data-cy="26.167" data-id="50">
+    <g class="paper-depth"><path class="paper-cut" d="M0.144,1.324L0.235,0.333L0.434,0.133L0.835,0.333L0.760,0.667L1.097,0.307L1.044,-1.408L0.452,-1.752L0.386,-1.748L-1.181,-0.479L-0.661,2.103L-0.618,2.138L0.144,1.324Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(16.0387 12.0492)">
+  <g class="mover" data-cx="16.0387" data-cy="12.0492" data-id="51">
+    <g class="paper-depth"><path class="paper-cut" d="M-1.732,2.016L1.662,1.460L2.108,0.597L1.861,0.351L1.461,-0.649L0.689,-2.098L-2.572,-0.588L-2.291,0.846L-1.732,2.016ZM2.527,-0.213L2.461,-0.330L2.461,-0.085L2.527,-0.213Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(14.5967 34.2305)">
+  <g class="mover" data-cx="14.5967" data-cy="34.2305" data-id="52">
+    <g class="paper-depth" style="--rx:+1.40deg;--ry:+0.60deg;--shear:-0.26deg;--pre-x:-3.71deg;--pre-y:-1.47deg;--pre-shear:-0.52deg;--mid-x:+2.80deg;--mid-y:-1.32deg;--mid-shear:+0.55deg;--late-x:-1.19deg;--late-y:+0.75deg;--late-shear:-0.19deg"><path class="paper-cut" d="M0.794,1.627L1.629,0.922L1.687,0.120L0.599,-2.198L0.194,-1.938L0.103,-1.630L-0.197,-0.030L-0.597,1.069L-0.642,1.479L0.794,1.627Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(14.8182 22.7549)">
+  <g class="mover" data-cx="14.8182" data-cy="22.7549" data-id="53">
+    <g class="paper-depth"><path class="paper-cut" d="M0.699,1.660L0.962,-0.508L-0.203,-1.732L-0.449,-1.781L-1.087,0.683L0.634,1.664L0.699,1.660Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(14.8884 19.5581)">
+  <g class="mover" data-cx="14.8884" data-cy="19.5581" data-id="54">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.273,1.465L1.454,0.485L1.303,-1.167L-0.775,-1.272L-1.605,0.626L-0.519,1.416L-0.273,1.465Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(16.671 32.3339)">
+  <g class="mover" data-cx="16.671" data-cy="32.3339" data-id="55">
+    <g class="paper-depth" style="--rx:-0.30deg;--ry:-0.30deg;--shear:+0.07deg;--pre-x:+0.79deg;--pre-y:+0.73deg;--pre-shear:+0.14deg;--mid-x:-0.60deg;--mid-y:+0.66deg;--mid-shear:-0.15deg;--late-x:+0.26deg;--late-y:-0.38deg;--late-shear:+0.05deg"><path class="paper-cut" d="M2.084,-0.150L-0.934,-1.834L-1.475,-0.302L-0.387,2.017L2.084,-0.150Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(16.9046 23.3009)">
+  <g class="mover" data-cx="16.9046" data-cy="23.3009" data-id="56">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.795,1.458L1.009,1.041L1.450,-0.647L1.145,-1.423L-1.124,-1.054L-1.387,1.114L-0.795,1.458Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(17.4156 19.0156)">
+  <g class="mover" data-cx="17.4156" data-cy="19.0156" data-id="57">
+    <g class="paper-depth"><path class="paper-cut" d="M-1.073,1.027L0.629,1.708L1.281,-1.000L0.356,-1.453L-0.329,-1.402L-1.224,-0.624L-1.073,1.027Z" fill="url(#paper-ink-ff52e9)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(16.527 21.1975)">
+  <g class="mover" data-cx="16.527" data-cy="21.1975" data-id="58">
+    <g class="paper-depth"><path class="paper-cut" d="M1.522,0.681L1.669,-0.139L1.518,-0.474L-0.184,-1.155L-1.911,-0.174L-0.747,1.050L1.522,0.681Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(19.1608 9.9109)">
+  <g class="mover" data-cx="19.1608" data-cy="9.9109" data-id="59">
+    <g class="paper-depth"><path class="paper-cut" d="M2.378,1.279L0.564,-1.771L-0.348,-1.789L-0.661,-0.711L-0.661,1.808L-0.595,1.925L2.378,1.279Z" fill="url(#paper-ink-ff52e9)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(16.5152 15.2544)">
+  <g class="mover" data-cx="16.5152" data-cy="15.2544" data-id="60">
+    <g class="paper-depth"><path class="paper-cut" d="M0.572,2.359L1.256,2.308L1.403,-1.446L1.185,-1.745L-2.209,-1.189L-2.303,-0.930L-2.215,-0.754L-2.239,-0.742L0.572,2.359Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(18.4952 30.2203)">
+  <g class="mover" data-cx="18.4952" data-cy="30.2203" data-id="61">
+    <g class="paper-depth"><path class="paper-cut" d="M0.260,1.963L0.905,2.042L0.905,1.480L1.405,-0.520L1.605,-0.520L1.705,-0.320L1.911,0.609L2.244,-0.122L0.555,-2.380L-2.854,-0.037L-2.758,0.279L0.260,1.963Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(18.8281 37.0137)">
+  <g class="mover" data-cx="18.8281" data-cy="37.0137" data-id="62">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.703,0.924L-0.528,0.486L-0.428,-0.514L0.072,-1.314L0.082,-1.362L-2.603,-1.861L-3.437,-1.156L-3.128,-0.218L-0.703,0.924Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(19.5562 19.5697)">
+  <g class="mover" data-cx="19.5562" data-cy="19.5697" data-id="63">
+    <g class="paper-depth" style="--rx:+0.90deg;--ry:-1.00deg;--shear:+0.17deg;--pre-x:-2.38deg;--pre-y:+2.45deg;--pre-shear:+0.33deg;--mid-x:+1.80deg;--mid-y:+2.20deg;--mid-shear:-0.35deg;--late-x:-0.77deg;--late-y:-1.25deg;--late-shear:+0.12deg"><path class="paper-cut" d="M1.315,1.030L1.595,-0.054L1.378,-0.753L-0.212,-1.686L-0.860,-1.555L-1.511,1.154L-1.360,1.489L1.315,1.030Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(17.7915 25.9869)">
+  <g class="mover" data-cx="17.7915" data-cy="25.9869" data-id="64">
+    <g class="paper-depth"><path class="paper-cut" d="M1.259,1.850L1.745,0.708L1.281,-0.489L0.122,-1.645L-1.682,-1.228L-1.629,0.487L1.259,1.850Z" fill="url(#paper-ink-ff61f8)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(17.7913 38.9231)">
+  <g class="mover" data-cx="17.7913" data-cy="38.9231" data-id="65">
+    <g class="paper-depth"><path class="paper-cut" d="M-2.092,-2.128L-2.276,-0.699L-1.991,-0.623L-0.291,-0.623L0.309,-0.923L0.334,-0.985L-2.092,-2.128Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(27.6578 36.7545)">
+  <g class="mover" data-cx="27.6578" data-cy="36.7545" data-id="66">
+    <g class="paper-depth" style="--rx:-0.80deg;--ry:-1.90deg;--shear:-0.10deg;--pre-x:+2.12deg;--pre-y:+4.66deg;--pre-shear:-0.19deg;--mid-x:-1.60deg;--mid-y:+4.18deg;--mid-shear:+0.20deg;--late-x:+0.68deg;--late-y:-2.38deg;--late-shear:-0.07deg"><path class="paper-cut" d="M-6.050,-1.832L-5.858,-1.255L-5.458,-0.355L-5.158,0.645L-4.858,1.446L-4.458,1.645L-4.258,2.045L-4.058,2.145L-2.158,1.446L-1.958,1.145L-1.858,0.645L-3.236,-3.883L-6.050,-1.832Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(18.8246 34.2733)">
+  <g class="mover" data-cx="18.8246" data-cy="34.2733" data-id="67">
+    <g class="paper-depth"><path class="paper-cut" d="M0.085,1.378L0.575,-1.073L0.575,-2.011L-0.069,-2.090L-2.541,0.078L-2.599,0.879L0.085,1.378Z" fill="url(#paper-ink-ff56ed)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(20.1852 13.173)">
+  <g class="mover" data-cx="20.1852" data-cy="13.173" data-id="68">
+    <g class="paper-depth"><path class="paper-cut" d="M0.248,2.193L0.954,2.035L1.479,1.678L1.771,-0.311L1.615,-0.373L1.515,-0.973L1.733,-1.920L1.354,-1.983L-1.619,-1.337L-1.685,-1.209L-1.685,-0.873L-1.985,-0.473L-2.039,-0.526L-2.485,0.336L-2.267,0.636L0.248,2.193Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(18.8467 16.0504)">
+  <g class="mover" data-cx="18.8467" data-cy="16.0504" data-id="69">
+    <g class="paper-depth"><path class="paper-cut" d="M0.498,1.833L1.586,-0.684L-0.929,-2.242L-1.075,1.512L-0.150,1.965L0.498,1.833Z" fill="url(#paper-ink-ff56ed)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(21.2627 27.8762)">
+  <g class="mover" data-cx="21.2627" data-cy="27.8762" data-id="70">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.524,2.222L0.433,2.044L2.185,-0.220L1.268,-1.992L-1.726,-1.181L-2.212,-0.039L-2.212,-0.036L-0.524,2.222Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(19.9201 21.8697)">
+  <g class="mover" data-cx="19.9201" data-cy="21.8697" data-id="71">
+    <g class="paper-depth" style="--rx:+2.10deg;--ry:-1.70deg;--shear:+0.26deg;--pre-x:-5.57deg;--pre-y:+4.17deg;--pre-shear:+0.52deg;--mid-x:+4.20deg;--mid-y:+3.74deg;--mid-shear:-0.55deg;--late-x:-1.78deg;--late-y:-2.12deg;--late-shear:+0.19deg"><path class="paper-cut" d="M-1.566,0.784L1.369,1.122L2.000,0.942L0.951,-1.270L-1.724,-0.811L-1.871,0.008L-1.566,0.784Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(22.0534 32.3804)">
+  <g class="mover" data-cx="22.0534" data-cy="32.3804" data-id="72">
+    <g class="paper-depth"><path class="paper-cut" d="M2.368,0.491L2.347,0.420L2.164,-0.859L-0.358,-2.460L-1.315,-2.282L-1.647,-1.551L-1.253,0.220L-0.753,1.620L-0.446,2.542L2.368,0.491Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(19.3097 23.8193)">
+  <g class="mover" data-cx="19.3097" data-cy="23.8193" data-id="73">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.237,1.678L1.980,-0.827L-0.955,-1.166L-1.396,0.522L-0.237,1.678Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(20.7605 17.1284)">
+  <g class="mover" data-cx="20.7605" data-cy="17.1284" data-id="74">
+    <g class="paper-depth" style="--rx:+0.40deg;--ry:+2.50deg;--shear:+0.00deg;--pre-x:-1.06deg;--pre-y:-6.12deg;--pre-shear:+0.00deg;--mid-x:+0.80deg;--mid-y:-5.50deg;--mid-shear:-0.00deg;--late-x:-0.34deg;--late-y:+3.12deg;--late-shear:+0.00deg"><path class="paper-cut" d="M0.173,1.689L1.317,0.641L0.378,-1.920L-0.328,-1.762L-1.416,0.755L0.173,1.689Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(21.8632 9.2072)">
+  <g class="mover" data-cx="21.8632" data-cy="9.2072" data-id="75">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.324,1.983L0.055,2.046L0.137,1.693L0.337,0.293L0.337,-1.337L-1.662,-1.481L-2.138,-1.067L-0.324,1.983Z" fill="url(#paper-ink-ff61f8)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(21.1161 24.8905)">
+  <g class="mover" data-cx="21.1161" data-cy="24.8905" data-id="76">
+    <g class="paper-depth"><path class="paper-cut" d="M-2.044,0.607L-1.580,1.805L1.415,0.994L1.650,0.314L1.301,-1.868L0.804,-2.079L0.173,-1.898L-2.044,0.607Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(23.2837 18.7257)">
+  <g class="mover" data-cx="23.2837" data-cy="18.7257" data-id="77">
+    <g class="paper-depth"><path class="paper-cut" d="M1.710,1.261L1.800,-1.058L1.323,-1.293L-1.206,-0.956L-2.350,0.091L-2.133,0.790L1.710,1.261Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(22.3609 5.3705)">
+  <g class="mover" data-cx="22.3609" data-cy="5.3705" data-id="78">
+    <g class="paper-depth"><path class="paper-cut" d="M0.234,0.764L0.539,-0.370L0.499,-0.753L-2.986,-0.507L-1.893,0.932L0.234,0.764Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(22.9357 21.0431)">
+  <g class="mover" data-cx="22.9357" data-cy="21.0431" data-id="79">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.519,1.980L2.072,0.422L2.348,-0.149L2.058,-1.057L-1.785,-1.527L-2.065,-0.443L-1.016,1.769L-0.519,1.980Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(24.9167 9.8176)">
+  <g class="mover" data-cx="24.9167" data-cy="9.8176" data-id="80">
+    <g class="paper-depth"><path class="paper-cut" d="M0.006,2.608L0.879,2.173L1.991,0.426L2.099,-0.275L1.358,-1.399L0.583,-0.518L-0.992,2.021L0.006,2.608Z" fill="url(#paper-ink-ff52e9)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(23.1906 13.2647)">
+  <g class="mover" data-cx="23.1906" data-cy="13.2647" data-id="81">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.051,2.130L1.905,-0.001L1.732,-0.839L0.734,-1.426L0.509,-1.065L-0.191,-0.165L-0.391,-0.065L-1.235,-0.402L-1.526,1.586L-0.051,2.130Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(22.681 16.4216)">
+  <g class="mover" data-cx="22.681" data-cy="16.4216" data-id="82">
+    <g class="paper-depth" style="--rx:+1.60deg;--ry:+1.80deg;--shear:+0.10deg;--pre-x:-4.24deg;--pre-y:-4.41deg;--pre-shear:+0.19deg;--mid-x:+3.20deg;--mid-y:-3.96deg;--mid-shear:-0.20deg;--late-x:-1.36deg;--late-y:+2.25deg;--late-shear:+0.07deg"><path class="paper-cut" d="M-0.603,1.348L1.925,1.011L0.459,-1.027L-1.017,-1.571L-1.542,-1.214L-0.603,1.348Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(22.5687 6.9754)">
+  <g class="mover" data-cx="22.5687" data-cy="6.9754" data-id="83">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.369,0.895L-0.369,0.625L0.026,-0.841L-2.101,-0.673L-2.367,0.751L-0.369,0.895Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(24.1911 26.4442)">
+  <g class="mover" data-cx="24.1911" data-cy="26.4442" data-id="84">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.743,1.212L-0.551,1.261L-0.891,0.156L-0.791,0.156L0.009,0.756L1.204,1.002L1.518,0.420L0.940,-1.324L-1.425,-1.239L-1.660,-0.560L-0.743,1.212Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(24.1408 23.612)">
+  <g class="mover" data-cx="24.1408" data-cy="23.612" data-id="85">
+    <g class="paper-depth" style="--rx:-0.10deg;--ry:+0.90deg;--shear:-0.17deg;--pre-x:+0.27deg;--pre-y:-2.21deg;--pre-shear:-0.33deg;--mid-x:-0.20deg;--mid-y:-1.98deg;--mid-shear:+0.35deg;--late-x:+0.09deg;--late-y:+1.12deg;--late-shear:-0.12deg"><path class="paper-cut" d="M0.991,1.509L1.506,1.007L1.341,-1.115L0.867,-2.147L-1.724,-0.589L-1.375,1.593L0.991,1.509Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(24.6506 30.0656)">
+  <g class="mover" data-cx="24.6506" data-cy="30.0656" data-id="86">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.433,1.456L-0.951,-2.166L-1.011,-2.361L-1.203,-2.410L-2.955,-0.145L-0.433,1.456Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(27.7518 22.2978)">
+  <g class="mover" data-cx="27.7518" data-cy="22.2978" data-id="87">
+    <g class="paper-depth"><path class="paper-cut" d="M0.486,1.972L2.205,0.947L2.561,0.105L2.048,0.002L-0.352,-0.998L-0.352,-1.198L-0.204,-1.345L-2.468,-1.403L-2.744,-0.833L-2.270,0.199L0.486,1.972Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(26.9546 5.5385)">
+  <g class="mover" data-cx="26.9546" data-cy="5.5385" data-id="88">
+    <g class="paper-depth"><path class="paper-cut" d="M3.250,1.936L3.312,1.380L1.966,0.023L1.445,0.462L0.314,1.749L3.250,1.936Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(25.1148 15.6078)">
+  <g class="mover" data-cx="25.1148" data-cy="15.6078" data-id="89">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.031,2.060L1.800,0.726L1.962,0.472L1.685,0.592L1.085,0.692L1.385,0.292L1.726,-0.006L-0.019,-2.345L-1.975,-0.213L-0.508,1.825L-0.031,2.060Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(26.3051 25.6506)">
+  <g class="mover" data-cx="26.3051" data-cy="25.6506" data-id="90">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.596,1.213L1.236,0.360L1.260,-0.472L-0.659,-1.032L-1.174,-0.530L-0.596,1.213Z" fill="url(#paper-ink-ff61f8)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(26.6471 24.042)">
+  <g class="mover" data-cx="26.6471" data-cy="24.042" data-id="91">
+    <g class="paper-depth"><path class="paper-cut" d="M0.918,1.136L1.591,0.228L-1.165,-1.545L-1.001,0.577L0.918,1.136Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(30.079 30.7553)">
+  <g class="mover" data-cx="30.079" data-cy="30.7553" data-id="92">
+    <g class="paper-depth"><path class="paper-cut" d="M0.422,-4.431L-0.492,-3.950L-0.958,-1.999L-0.879,-1.955L0.867,-1.396L0.422,-4.431Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(26.6887 28.1984)">
+  <g class="mover" data-cx="26.6887" data-cy="28.1984" data-id="93">
+    <g class="paper-depth" style="--rx:+1.10deg;--ry:+0.20deg;--shear:-0.07deg;--pre-x:-2.92deg;--pre-y:-0.49deg;--pre-shear:-0.14deg;--mid-x:+2.20deg;--mid-y:-0.44deg;--mid-shear:+0.15deg;--late-x:-0.94deg;--late-y:+0.25deg;--late-shear:-0.05deg"><path class="paper-cut" d="M1.177,-1.752L0.853,-2.188L-0.979,-1.334L-1.293,-0.752L0.911,-0.298L1.001,-0.248L1.177,-1.752Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(29.5355 10.797)">
+  <g class="mover" data-cx="29.5355" data-cy="10.797" data-id="94">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.238,1.707L-0.235,1.703L-0.136,0.903L1.065,-0.497L1.786,-1.006L1.692,-1.099L-2.520,-1.255L-2.628,-0.553L-0.238,1.707Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(26.9889 13.6699)">
+  <g class="mover" data-cx="26.9889" data-cy="13.6699" data-id="95">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.148,1.932L0.311,1.530L1.411,0.230L2.069,-0.793L-1.193,-1.679L-2.067,-1.244L-1.893,-0.407L-0.148,1.932Z" fill="url(#paper-ink-ff56ed)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(26.8423 19.1196)">
+  <g class="mover" data-cx="26.8423" data-cy="19.1196" data-id="96">
+    <g class="paper-depth" style="--rx:-0.60deg;--ry:-0.70deg;--shear:+0.26deg;--pre-x:+1.59deg;--pre-y:+1.72deg;--pre-shear:+0.52deg;--mid-x:-1.20deg;--mid-y:+1.54deg;--mid-shear:-0.55deg;--late-x:+0.51deg;--late-y:-0.88deg;--late-shear:+0.19deg"><path class="paper-cut" d="M0.705,1.833L1.158,1.380L1.858,0.880L2.237,0.786L2.240,0.734L0.072,-2.786L-1.758,-1.451L-1.849,0.867L-1.559,1.775L0.705,1.833Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(29.165 25.2761)">
+  <g class="mover" data-cx="29.165" data-cy="25.2761" data-id="97">
+    <g class="paper-depth"><path class="paper-cut" d="M-1.624,0.735L-1.299,1.170L0.422,1.529L1.336,1.049L1.561,0.782L0.792,-2.031L-0.927,-1.006L-1.600,-0.098L-1.624,0.735Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(28.3058 29.0633)">
+  <g class="mover" data-cx="28.3058" data-cy="29.0633" data-id="98">
+    <g class="paper-depth"><path class="paper-cut" d="M1.282,-2.258L-0.440,-2.617L-0.616,-1.113L0.816,-0.307L1.282,-2.258Z" fill="url(#paper-ink-ff52e9)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(27.4921 11.7516)">
+  <g class="mover" data-cx="27.4921" data-cy="11.7516" data-id="99">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.585,-1.508L-1.697,0.239L1.566,1.125L1.806,0.752L-0.585,-1.508Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(29.9948 14.1647)">
+  <g class="mover" data-cx="29.9948" data-cy="14.1647" data-id="100">
+    <g class="paper-depth"><path class="paper-cut" d="M1.022,1.780L1.474,0.058L1.441,-0.094L1.005,0.035L-0.895,1.035L-1.394,1.252L1.022,1.780Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(30.7628 20.2388)">
+  <g class="mover" data-cx="30.7628" data-cy="20.2388" data-id="101">
+    <g class="paper-depth" style="--rx:-2.00deg;--ry:-0.50deg;--shear:+0.02deg;--pre-x:+5.30deg;--pre-y:+1.23deg;--pre-shear:+0.05deg;--mid-x:-4.00deg;--mid-y:+1.10deg;--mid-shear:-0.05deg;--late-x:+1.70deg;--late-y:-0.62deg;--late-shear:+0.02deg"><path class="paper-cut" d="M0.181,-2.620L-0.257,-2.447L-1.681,-0.385L-1.683,-0.334L-0.863,-0.539L0.907,-1.247L0.181,-2.620Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(28.7538 17.8387)">
+  <g class="mover" data-cx="28.7538" data-cy="17.8387" data-id="102">
+    <g class="paper-depth"><path class="paper-cut" d="M0.328,2.015L1.752,-0.047L-1.627,-1.781L-1.677,-1.759L-1.839,-1.505L0.328,2.015Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(29.5072 16.4287)">
+  <g class="mover" data-cx="29.5072" data-cy="16.4287" data-id="103">
+    <g class="paper-depth"><path class="paper-cut" d="M0.998,1.363L1.437,1.190L1.948,0.521L1.510,-0.483L-0.906,-1.012L-2.380,-0.371L0.998,1.363Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(28.4437 8.4507)">
+  <g class="mover" data-cx="28.4437" data-cy="8.4507" data-id="104">
+    <g class="paper-depth" style="--rx:+0.60deg;--ry:-1.40deg;--shear:-0.24deg;--pre-x:-1.59deg;--pre-y:+3.43deg;--pre-shear:-0.48deg;--mid-x:+1.20deg;--mid-y:+3.08deg;--mid-shear:+0.50deg;--late-x:-0.51deg;--late-y:-1.75deg;--late-shear:-0.17deg"><path class="paper-cut" d="M2.784,1.247L1.761,-0.976L-1.176,-1.163L-2.169,-0.032L-1.428,1.092L2.784,1.247Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(34.9677 7.9083)">
+  <g class="mover" data-cx="34.9677" data-cy="7.9083" data-id="105">
+    <g class="paper-depth"><path class="paper-cut" d="M-3.646,1.882L-2.668,1.192L-2.168,0.392L-1.668,-1.108L-1.768,-1.508L-1.972,-1.815L-4.250,-1.725L-4.701,-0.990L-4.763,-0.434L-3.740,1.790L-3.646,1.882Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(28.9699 2.5315)">
+  <g class="mover" data-cx="28.9699" data-cy="2.5315" data-id="106">
+    <g class="paper-depth"><path class="paper-cut" d="M1.297,4.387L1.748,3.652L2.136,1.671L2.130,1.669L1.730,1.768L1.330,1.869L-0.049,3.030L1.297,4.387Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(31.5581 24.3623)">
+  <g class="mover" data-cx="31.5581" data-cy="24.3623" data-id="107">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.832,1.696L0.149,1.957L2.167,1.254L0.377,-1.484L-0.758,-1.862L-1.245,-1.960L-1.601,-1.117L-0.832,1.696Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(32.0845 31.1434)">
+  <g class="mover" data-cx="32.0845" data-cy="31.1434" data-id="108">
+    <g class="paper-depth"><path class="paper-cut" d="M0.840,-1.174L-0.378,-4.825L-1.359,-5.085L-1.584,-4.819L-1.138,-1.785L-0.384,-1.543L0.816,-0.943L0.866,-0.943L0.840,-1.174Z" fill="url(#paper-ink-ff58ef)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(33.2786 12.63)">
+  <g class="mover" data-cx="33.2786" data-cy="12.63" data-id="109">
+    <g class="paper-depth"><path class="paper-cut" d="M0.884,3.146L0.969,3.126L1.626,0.407L-1.843,1.440L-1.810,1.592L0.884,3.146Z" fill="url(#paper-ink-ff5bf2)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(32.2668 15.7595)">
+  <g class="mover" data-cx="32.2668" data-cy="15.7595" data-id="110">
+    <g class="paper-depth"><path class="paper-cut" d="M0.140,1.185L1.896,0.016L-0.798,-1.537L-1.250,0.186L-0.811,1.191L0.140,1.185Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(36.8211 32.2994)">
+  <g class="mover" data-cx="36.8211" data-cy="32.2994" data-id="111">
+    <g class="paper-depth"><path class="paper-cut" d="M-3.896,-2.330L-3.871,-2.099L-3.321,-2.099L-2.821,-2.499L-2.321,-3.199L-1.921,-3.999L-1.521,-4.499L-0.821,-5.699L-0.574,-6.852L-3.071,-6.676L-3.896,-2.330Z" fill="url(#paper-ink-ff5df4)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(32.795 27.2983)">
+  <g class="mover" data-cx="32.795" data-cy="27.2983" data-id="112">
+    <g class="paper-depth" style="--rx:+1.80deg;--ry:-2.10deg;--shear:-0.14deg;--pre-x:-4.77deg;--pre-y:+5.15deg;--pre-shear:-0.29deg;--mid-x:+3.60deg;--mid-y:+4.62deg;--mid-shear:+0.30deg;--late-x:-1.53deg;--late-y:-2.62deg;--late-shear:-0.10deg"><path class="paper-cut" d="M0.130,2.671L0.955,-1.675L0.930,-1.682L-1.088,-0.979L0.130,2.671Z" fill="url(#paper-ink-ff61f8)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(32.632 19.0388)">
+  <g class="mover" data-cx="32.632" data-cy="19.0388" data-id="113">
+    <g class="paper-depth"><path class="paper-cut" d="M-0.226,-2.095L-1.176,-2.089L-1.688,-1.420L-0.963,-0.047L-0.732,-0.139L0.497,-0.780L-0.226,-2.095Z" fill="url(#paper-ink-ff5af1)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(36.193 23.0259)">
+  <g class="mover" data-cx="36.193" data-cy="23.0259" data-id="114">
+    <g class="paper-depth"><path class="paper-cut" d="M-2.468,2.591L-2.443,2.597L0.054,2.421L0.107,2.174L0.107,1.574L-0.593,1.374L-1.493,0.774L-4.258,-0.148L-2.468,2.591Z" fill="url(#paper-ink-ff5ff6)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(35.6139 3.0688)">
+  <g class="mover" data-cx="35.6139" data-cy="3.0688" data-id="115">
+    <g class="paper-depth" style="--rx:+0.10deg;--ry:+2.10deg;--shear:+0.19deg;--pre-x:-0.27deg;--pre-y:-5.15deg;--pre-shear:+0.38deg;--mid-x:+0.20deg;--mid-y:-4.62deg;--mid-shear:-0.40deg;--late-x:-0.09deg;--late-y:+2.62deg;--late-shear:+0.14deg"><path class="paper-cut" d="M-2.618,3.025L-3.214,2.131L-4.114,1.331L-4.508,1.134L-4.896,3.114L-2.618,3.025Z" fill="url(#paper-ink-ff52e9)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(37.7462 14.1387)">
+  <g class="mover" data-cx="37.7462" data-cy="14.1387" data-id="116">
+    <g class="paper-depth"><path class="paper-cut" d="M-3.499,1.617L-2.383,2.631L-2.046,2.361L-1.146,1.761L-0.746,1.261L-0.746,0.761L-1.446,-1.039L-1.746,-1.339L-2.046,-1.339L-2.842,-1.102L-3.499,1.617Z" fill="url(#paper-ink-ff61f8)"/></g>
+  </g>
+</g>
+<g class="anchor" transform="translate(35.4887 18.7215)">
+  <g class="mover" data-cx="35.4887" data-cy="18.7215" data-id="117">
+    <g class="paper-depth"><path class="paper-cut" d="M-2.360,-0.463L-1.289,-1.021L-0.126,-1.952L-1.242,-2.966L-1.326,-2.946L-3.082,-1.777L-2.360,-0.463Z" fill="url(#paper-ink-ff56ed)"/></g>
+  </g>
+</g></g>
+</g>
+</svg>
+<canvas id="canvas-3d" aria-hidden="true"></canvas>
+</main>
+<!-- Offline standalone: native requestAnimationFrame clock, GSAP supported if already loaded. -->
+<svg id="orbit-guide" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="none"><path id="orbit-motion-path" fill="none"/></svg>
+<script src="./vendor/gsap.min.js"></script>
+<script>
+(() => {
+  'use strict';
+  const svg = document.getElementById('scene');
+  const placement = document.getElementById('mark-placement');
+  const stack = document.getElementById('paper-stack');
+  const still = document.getElementById('finished-mark');
+  const frame = document.getElementById('frame');
+  const pieces = Array.from(document.querySelectorAll('.mover'));
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const LOGO_SIZE = 40;
+  const PAPER_FPS = 10; // Individual photographed poses; the driver stays at browser refresh rate.
+  let tween = null;
+  let geometryFrame = 0;
+
+  function randomGenerator(seed) {
+    let s = seed >>> 0;
+    return () => ((s = (1664525 * s + 1013904223) >>> 0) / 4294967296);
+  }
+  const ease = x => { x = Math.max(0, Math.min(1, x)); return x*x*(3-2*x); };
+  const curve = (a,b,c,t) => {
+    const q = 1-t;
+    return q*q*q*a+3*q*q*t*b+3*q*t*t*c;
+  };
+
+  // Each cutout has its own exposure sheet. We advance only on recorded hand poses,
+  // not on evenly spaced frames of a mathematically smooth curve.
+  function makeHandPlacedFrames(rand, cfg) {
+    const {dx,dy,x1,y1,x2,y2,angle,phase,small,finalX,finalY,finalRot,finalScale,fingerTilt} = cfg;
+    const keyframes=[];
+    const sample=(progress, correctionX=0, correctionY=0, correctionRot=0, correctionScale=0) => {
+      const p=Math.max(0,Math.min(1,progress));
+      const early=1-p;
+      const amp=(0.12 + early*0.88);
+      const x=curve(dx,x1,x2,p)+early*Math.sin(p*16+phase)*.24+finalX*p+correctionX;
+      const y=curve(dy,y1,y2,p)+early*Math.cos(p*11+phase)*.20+finalY*p+correctionY;
+      const rot=early*(angle+Math.sin(p*10+phase)*fingerTilt)+finalRot*p+correctionRot;
+      const scale=small+(finalScale-small)*p + correctionScale*amp;
+      return `translate(${x.toFixed(3)} ${y.toFixed(3)}) rotate(${rot.toFixed(2)}) scale(${scale.toFixed(3)})`;
+    };
+    let exposure=0;
+    const add=(pose, holdFrames, progress) => {
+      exposure+=holdFrames;
+      keyframes.push({time:exposure/PAPER_FPS, transform:pose, progress});
+    };
+    add(sample(0),0,0);
+
+    const baseProgress=[0.07,0.15,0.23,0.34,0.46,0.57,0.68,0.78,0.86,0.92,0.965,0.99,1];
+    let prevP=0;
+    let prevPose=sample(0);
+    for(let idx=0; idx<baseProgress.length; idx++){
+      let p=baseProgress[idx] + (rand()-.5)*(idx<6 ? 0.035 : 0.02);
+      p=Math.max(prevP + 0.01, Math.min(1, p));
+      const nearEnd = p > 0.82;
+      const amp = nearEnd ? 0.22 : p > 0.5 ? 0.42 : 0.72;
+      const cx=(rand()-.5)*amp;
+      const cy=(rand()-.5)*amp*0.9;
+      const crot=(rand()-.5)*(nearEnd ? 2.8 : 8.0);
+      const cscale=(rand()-.5)*(nearEnd ? 0.008 : 0.018);
+      let pose=sample(p,cx,cy,crot,cscale);
+      let hold = 1;
+      // occasional photographed hold: literally no movement for one extra exposure
+      if(rand()<0.22){
+        add(prevPose,1,prevP);
+      }
+      // occasional over-shoot or tiny back-step like hand repositioning
+      if(idx>1 && rand()<0.33){
+        const back=Math.max(prevP+0.005, p-(0.025+rand()*0.04));
+        const bax=(rand()-.5)*(amp*0.55);
+        const bay=(rand()-.5)*(amp*0.55);
+        const bar=(rand()-.5)*(nearEnd ? 1.5 : 4);
+        add(sample(back,bax,bay,bar,(rand()-.5)*0.01),1,back);
+      }
+      add(pose,hold,p);
+      // tiny manual correction on some exposures
+      if(rand()<0.58 && p<0.995){
+        const tx=(rand()-.5)*(nearEnd ? 0.10 : 0.24);
+        const ty=(rand()-.5)*(nearEnd ? 0.10 : 0.24);
+        const tr=(rand()-.5)*(nearEnd ? 0.8 : 2.2);
+        add(sample(p, cx+tx, cy+ty, crot+tr, cscale+(rand()-.5)*0.006),1,p);
+        prevPose=sample(p, cx+tx, cy+ty, crot+tr, cscale+(rand()-.5)*0.006);
+      } else {
+        prevPose=pose;
+      }
+      prevP=p;
+    }
+    // final settle: one or two nudges, then exact resting pose
+    if(rand()<0.7){
+      const n1x=(rand()-.5)*0.11, n1y=(rand()-.5)*0.11, n1r=(rand()-.5)*0.9;
+      add(sample(1,n1x,n1y,n1r,(rand()-.5)*0.004),1,1);
+      if(rand()<0.45){
+        add(sample(1,n1x*0.4,n1y*0.4,n1r*0.4,(rand()-.5)*0.003),1,1);
+      }
+    }
+    const finalTransform=`translate(${finalX.toFixed(3)} ${finalY.toFixed(3)}) rotate(${finalRot.toFixed(2)}) scale(${finalScale.toFixed(3)})`;
+    add(finalTransform,1,1);
+    return {keyframes,duration:exposure/PAPER_FPS,finalTransform};
+  }
+  function layout() {
+    const w = Math.max(1, frame.clientWidth);
+    const h = Math.max(1, frame.clientHeight);
+    const unit = 1000 / Math.min(w,h);
+    const sw = w*unit, sh = h*unit;
+    const span = 610;
+    const scale = span/LOGO_SIZE;
+    const ox = (sw-span)/2, oy=(sh-span)/2;
+    svg.setAttribute('viewBox',`0 0 ${sw} ${sh}`);
+    placement.setAttribute('transform',`translate(${ox} ${oy}) scale(${scale})`);
+    return {sw,sh,ox,oy,scale};
+  }
+  // GSAP is used if provided by a host page; a small native clock keeps the
+  // *standalone downloaded HTML* fully operational without external scripts.
+  function createClockTween(clock, options) {
+    if (window.gsap && typeof window.gsap.to === 'function') return window.gsap.to(clock, options);
+    let raf=0, running=true, stopped=false, elapsed=0, startedAt=0;
+    const durationMs=Math.max(1, options.duration*1000);
+    const target=options.time;
+    const tick=(now)=>{
+      if(stopped || !running) return;
+      if(!startedAt) startedAt=now;
+      elapsed=Math.min(durationMs,elapsed+Math.max(0,now-startedAt));
+      startedAt=now;
+      clock.time=target*(elapsed/durationMs);
+      options.onUpdate?.();
+      if(elapsed>=durationMs){
+        stopped=true;
+        options.onComplete?.();
+      } else raf=requestAnimationFrame(tick);
+    };
+    raf=requestAnimationFrame(tick);
+    return {
+      kill(){stopped=true;cancelAnimationFrame(raf);},
+      pause(){if(!stopped){running=false;cancelAnimationFrame(raf);startedAt=0;}},
+      resume(){if(!stopped && !running){running=true;startedAt=0;raf=requestAnimationFrame(tick);}}
+    };
+  }
+  function staticLogo() {
+    if(tween){tween.kill();tween=null;}
+    layout();
+    stack.style.visibility='hidden';
+    still.style.opacity='1';
+    frame.dataset.state='static';
+  }
+  // The SAME 118 paths remain visible from paper through liquid to the final circle.
+  // GSAP drives one clock continuously. No opacity handoffs and no second visible SVG.
+  const morphGeometry = [{"points":[2.353,-1.13,2.34,-0.982,2.327,-0.835,2.313,-0.687,2.234,-0.609,2.086,-0.605,1.938,-0.602,1.79,-0.598,1.642,-0.594,1.494,-0.591,1.346,-0.587,1.197,-0.583,1.049,-0.579,0.901,-0.576,0.753,-0.572,0.605,-0.568,0.457,-0.565,0.309,-0.561,0.16,-0.557,0.012,-0.554,-0.127,-0.6,-0.264,-0.655,-0.402,-0.71,-0.527,-0.781,-0.609,-0.904,-0.691,-1.028,-0.708,-1.171,-0.708,-1.319,-0.708,-1.467,-0.708,-1.615,-0.708,-1.764,-0.708,-1.912,-0.708,-2.06,-0.708,-2.208,-0.708,-2.356,-0.708,-2.505,-0.708,-2.653,-0.708,-2.801,-0.708,-2.949,-0.655,-3.087,-0.576,-3.147,-0.454,-3.063,-0.332,-2.979,-0.21,-2.895,-0.088,-2.811,0.034,-2.727,0.156,-2.642,0.278,-2.558,0.4,-2.474,0.522,-2.39,0.645,-2.306,0.767,-2.222,0.889,-2.138,1.011,-2.054,1.133,-1.97,1.255,-1.886,1.377,-1.802,1.499,-1.718,1.621,-1.634,1.743,-1.55,1.865,-1.466,1.987,-1.382,2.109,-1.298,2.231,-1.214],"area":4.778,"initial":"M2.353,-1.130L-0.619,-3.176L-0.708,-2.953L-0.708,-1.053L-0.508,-0.753L-0.008,-0.553L2.306,-0.611L2.353,-1.130Z"},{"points":[2.386,-0.589,2.34,-0.49,2.294,-0.391,2.248,-0.292,2.202,-0.193,2.156,-0.094,2.11,0.005,2.064,0.104,2.018,0.203,1.972,0.302,1.926,0.4,1.88,0.499,1.834,0.598,1.788,0.697,1.742,0.796,1.685,0.819,1.612,0.738,1.54,0.656,1.467,0.575,1.395,0.493,1.317,0.418,1.223,0.364,1.128,0.31,1.033,0.256,0.938,0.201,0.844,0.147,0.749,0.093,0.654,0.039,0.623,-0.06,0.606,-0.167,0.588,-0.275,0.57,-0.382,0.552,-0.49,0.545,-0.597,0.572,-0.703,0.598,-0.809,0.625,-0.915,0.651,-1.02,0.677,-1.126,0.704,-1.232,0.73,-1.338,0.779,-1.434,0.836,-1.527,0.894,-1.619,0.952,-1.712,1.01,-1.804,1.068,-1.897,1.129,-1.952,1.203,-1.872,1.277,-1.792,1.351,-1.712,1.425,-1.631,1.499,-1.551,1.573,-1.471,1.646,-1.391,1.72,-1.311,1.794,-1.23,1.868,-1.15,1.942,-1.07,2.016,-0.99,2.09,-0.909,2.164,-0.829,2.238,-0.749,2.312,-0.669],"area":2.912,"initial":"M2.386,-0.589L1.113,-1.970L0.738,-1.370L0.538,-0.570L0.638,0.030L1.338,0.430L1.715,0.854L2.386,-0.589Z"},{"points":[2.71,3.494,2.709,3.631,2.686,3.763,2.62,3.883,2.555,4.003,2.489,4.123,2.423,4.243,2.357,4.363,2.292,4.483,2.226,4.603,2.16,4.724,2.094,4.844,2.029,4.964,1.963,5.084,1.897,5.204,1.831,5.324,1.766,5.444,1.7,5.564,1.565,5.587,1.43,5.61,1.296,5.628,1.204,5.528,1.111,5.427,1.018,5.326,0.925,5.225,0.832,5.125,0.74,5.024,0.647,4.923,0.554,4.823,0.461,4.722,0.368,4.621,0.276,4.521,0.183,4.42,0.09,4.319,0.051,4.214,0.123,4.097,0.164,3.97,0.183,3.834,0.203,3.699,0.222,3.563,0.241,3.428,0.288,3.303,0.37,3.194,0.452,3.084,0.534,2.975,0.617,2.865,0.699,2.756,0.781,2.646,0.87,2.55,1.007,2.55,1.144,2.55,1.281,2.55,1.399,2.597,1.495,2.693,1.592,2.79,1.689,2.887,1.786,2.984,1.892,3.068,2.017,3.123,2.142,3.179,2.267,3.235,2.392,3.29,2.517,3.346,2.642,3.402],"area":5.101,"initial":"M1.700,5.564L2.708,3.723L2.710,3.432L1.853,3.050L1.353,2.550L0.853,2.550L0.253,3.351L0.153,4.050L0.027,4.251L1.300,5.632L1.700,5.564Z"},{"points":[4.163,-3.056,4.094,-2.934,3.985,-2.814,3.876,-2.694,3.767,-2.574,3.658,-2.454,3.549,-2.334,3.409,-2.255,3.265,-2.179,3.122,-2.103,2.979,-2.028,2.836,-1.952,2.692,-1.876,2.549,-1.8,2.406,-1.724,2.263,-1.649,2.12,-1.573,1.976,-1.497,1.832,-1.425,1.67,-1.425,1.508,-1.425,1.346,-1.425,1.195,-1.459,1.066,-1.556,0.936,-1.653,0.817,-1.76,0.727,-1.895,0.637,-2.03,0.547,-2.165,0.457,-2.3,0.367,-2.435,0.277,-2.569,0.187,-2.704,0.098,-2.839,0.031,-2.983,0.004,-3.143,-0.023,-3.303,0.126,-3.329,0.287,-3.346,0.449,-3.363,0.61,-3.38,0.771,-3.397,0.932,-3.413,1.093,-3.43,1.254,-3.447,1.416,-3.464,1.577,-3.481,1.738,-3.498,1.899,-3.515,2.06,-3.532,2.221,-3.548,2.383,-3.565,2.544,-3.582,2.705,-3.599,2.866,-3.616,3.027,-3.633,3.189,-3.65,3.35,-3.666,3.511,-3.683,3.672,-3.7,3.77,-3.571,3.869,-3.442,3.967,-3.313,4.065,-3.185],"area":6.227,"initial":"M3.672,-3.700L-0.024,-3.313L0.040,-2.925L0.840,-1.725L1.240,-1.425L1.840,-1.425L3.540,-2.325L4.182,-3.031L3.672,-3.700Z"},{"points":[3.874,1.472,3.713,1.489,3.552,1.506,3.391,1.523,3.23,1.54,3.069,1.556,2.908,1.573,2.747,1.59,2.586,1.607,2.426,1.624,2.265,1.641,2.104,1.658,1.943,1.674,1.782,1.691,1.621,1.708,1.46,1.725,1.299,1.742,1.138,1.759,0.977,1.775,0.817,1.792,0.656,1.809,0.495,1.826,0.334,1.843,0.177,1.855,0.15,1.695,0.193,1.546,0.265,1.401,0.337,1.257,0.449,1.14,0.564,1.026,0.678,0.912,0.792,0.797,0.907,0.683,1.021,0.568,1.136,0.454,1.25,0.34,1.367,0.229,1.497,0.132,1.626,0.034,1.756,-0.063,1.885,-0.16,2.014,-0.257,2.144,-0.354,2.253,-0.473,2.363,-0.592,2.472,-0.711,2.582,-0.83,2.691,-0.841,2.8,-0.722,2.909,-0.602,3.018,-0.482,3.127,-0.363,3.236,-0.243,3.344,-0.124,3.453,-0.004,3.562,0.116,3.671,0.235,3.78,0.355,3.821,0.503,3.83,0.665,3.839,0.826,3.847,0.988,3.856,1.149,3.865,1.311],"area":5.776,"initial":"M3.874,1.472L3.815,0.393L2.642,-0.895L2.142,-0.352L1.342,0.248L0.342,1.248L0.142,1.648L0.177,1.859L3.874,1.472Z"},{"points":[2.616,1.649,2.533,1.764,2.428,1.878,2.322,1.992,2.217,2.106,2.111,2.22,2.006,2.334,1.9,2.448,1.795,2.562,1.667,2.474,1.539,2.385,1.411,2.297,1.283,2.209,1.155,2.121,1.027,2.033,0.899,1.945,0.771,1.857,0.644,1.769,0.516,1.681,0.388,1.593,0.26,1.505,0.132,1.417,0.004,1.329,-0.124,1.241,-0.252,1.153,-0.38,1.065,-0.508,0.977,-0.636,0.889,-0.763,0.801,-0.891,0.712,-1.019,0.624,-1.147,0.536,-1.134,0.406,-1.076,0.261,-0.95,0.18,-0.811,0.111,-0.672,0.041,-0.521,0.008,-0.369,-0.024,-0.217,-0.056,-0.065,-0.088,0.087,-0.12,0.239,-0.152,0.391,-0.184,0.543,-0.216,0.695,-0.248,0.847,-0.28,0.999,-0.312,1.15,-0.344,1.249,-0.237,1.34,-0.112,1.431,0.014,1.522,0.14,1.613,0.266,1.705,0.391,1.796,0.517,1.887,0.643,1.978,0.769,2.069,0.894,2.16,1.02,2.251,1.146,2.343,1.271,2.434,1.397,2.525,1.523],"area":5.558,"initial":"M1.795,2.562L2.627,1.663L1.169,-0.348L-0.667,0.038L-1.067,0.239L-1.178,0.515L1.795,2.562Z"},{"points":[1.32,0.345,1.318,0.449,1.302,0.565,1.286,0.682,1.27,0.798,1.253,0.915,1.237,1.031,1.221,1.147,1.205,1.264,1.189,1.38,1.173,1.496,1.156,1.613,1.14,1.729,1.124,1.846,1.108,1.962,1.092,2.078,1.076,2.195,1.06,2.311,0.942,2.321,0.825,2.332,0.708,2.342,0.591,2.353,0.474,2.363,0.376,2.333,0.307,2.238,0.238,2.143,0.169,2.048,0.1,1.953,0.031,1.858,-0.038,1.762,-0.107,1.667,-0.176,1.572,-0.245,1.477,-0.314,1.382,-0.383,1.287,-0.452,1.192,-0.521,1.097,-0.59,1.001,-0.659,0.906,-0.728,0.811,-0.797,0.716,-0.866,0.621,-0.935,0.526,-1.004,0.431,-1.029,0.352,-0.912,0.345,-0.794,0.345,-0.677,0.345,-0.559,0.345,-0.442,0.345,-0.324,0.345,-0.207,0.345,-0.089,0.345,0.028,0.345,0.146,0.345,0.263,0.345,0.381,0.345,0.498,0.345,0.616,0.345,0.733,0.345,0.851,0.345,0.968,0.345,1.086,0.345,1.203,0.345],"area":3.066,"initial":"M1.060,2.311L1.333,0.345L-0.992,0.345L-1.056,0.358L0.402,2.369L1.060,2.311Z"},{"points":[4.372,2.775,4.193,2.888,4.015,3.001,3.836,3.115,3.658,3.228,3.48,3.342,3.301,3.455,3.123,3.568,2.944,3.682,2.766,3.795,2.587,3.908,2.409,4.022,2.293,3.855,2.18,3.676,2.068,3.497,1.955,3.318,1.842,3.14,1.729,2.961,1.616,2.782,1.503,2.603,1.387,2.427,1.267,2.253,1.147,2.078,1.028,1.904,0.908,1.73,0.788,1.556,0.668,1.382,0.549,1.207,0.429,1.033,0.328,0.85,0.277,0.645,0.284,0.452,0.411,0.283,0.538,0.114,0.717,0.003,0.898,-0.106,1.073,-0.223,1.223,-0.373,1.372,-0.522,1.544,-0.64,1.735,-0.729,1.927,-0.819,2.119,-0.908,2.31,-0.997,2.473,-1.003,2.568,-0.814,2.662,-0.625,2.757,-0.436,2.852,-0.247,2.947,-0.058,3.042,0.131,3.137,0.319,3.232,0.508,3.327,0.697,3.422,0.886,3.517,1.075,3.612,1.264,3.707,1.453,3.802,1.642,3.897,1.83,3.992,2.019,4.087,2.208,4.182,2.397,4.277,2.586],"area":11.042,"initial":"M4.372,2.775L2.444,-1.060L1.443,-0.592L1.043,-0.192L0.543,0.108L0.242,0.508L0.343,0.908L1.443,2.508L2.402,4.026L4.372,2.775Z"},{"points":[2.05,-1.265,1.99,-1.144,1.93,-1.023,1.87,-0.901,1.81,-0.78,1.75,-0.658,1.69,-0.537,1.63,-0.416,1.57,-0.294,1.51,-0.173,1.45,-0.052,1.39,0.07,1.33,0.191,1.269,0.313,1.209,0.434,1.149,0.555,1.04,0.543,0.915,0.489,0.791,0.436,0.666,0.383,0.542,0.329,0.417,0.276,0.293,0.222,0.17,0.167,0.052,0.1,-0.065,0.033,-0.183,-0.035,-0.301,-0.102,-0.418,-0.169,-0.53,-0.243,-0.62,-0.344,-0.71,-0.446,-0.8,-0.547,-0.89,-0.648,-0.906,-0.76,-0.849,-0.883,-0.792,-1.006,-0.735,-1.128,-0.678,-1.251,-0.621,-1.374,-0.564,-1.497,-0.507,-1.62,-0.45,-1.742,-0.392,-1.865,-0.335,-1.988,-0.278,-2.111,-0.163,-2.158,-0.03,-2.18,0.104,-2.203,0.228,-2.163,0.349,-2.103,0.471,-2.043,0.592,-1.984,0.714,-1.924,0.835,-1.864,0.957,-1.804,1.078,-1.744,1.2,-1.684,1.321,-1.624,1.443,-1.565,1.564,-1.505,1.686,-1.445,1.807,-1.385,1.929,-1.325],"area":4.985,"initial":"M2.050,-1.265L0.136,-2.209L-0.264,-2.141L-0.935,-0.699L-0.511,-0.222L0.189,0.178L1.135,0.584L2.050,-1.265Z"},{"points":[1.168,0.918,1.073,0.983,0.974,1.048,0.875,1.112,0.776,1.176,0.671,1.147,0.565,1.095,0.459,1.043,0.353,0.991,0.247,0.938,0.141,0.886,0.034,0.834,-0.072,0.782,-0.178,0.729,-0.284,0.677,-0.39,0.625,-0.496,0.572,-0.602,0.52,-0.708,0.468,-0.814,0.416,-0.92,0.363,-1.026,0.311,-1.132,0.259,-1.116,0.168,-1.059,0.064,-1.002,-0.04,-0.945,-0.143,-0.889,-0.247,-0.832,-0.351,-0.775,-0.455,-0.718,-0.558,-0.661,-0.662,-0.605,-0.766,-0.548,-0.869,-0.491,-0.973,-0.434,-1.077,-0.378,-1.181,-0.321,-1.284,-0.264,-1.388,-0.207,-1.492,-0.15,-1.596,-0.095,-1.491,-0.041,-1.386,0.014,-1.281,0.069,-1.177,0.124,-1.072,0.179,-0.967,0.234,-0.862,0.289,-0.758,0.344,-0.653,0.399,-0.548,0.454,-0.444,0.509,-0.339,0.564,-0.234,0.618,-0.129,0.673,-0.025,0.728,0.08,0.783,0.185,0.838,0.29,0.893,0.394,0.948,0.499,1.003,0.604,1.058,0.708,1.113,0.813],"area":2.935,"initial":"M-0.150,-1.596L-1.159,0.246L0.756,1.189L1.169,0.921L-0.150,-1.596Z"},{"points":[1.747,0.823,1.686,0.938,1.575,1.045,1.46,1.052,1.342,0.953,1.224,0.854,1.106,0.755,0.988,0.656,0.87,0.557,0.734,0.487,0.593,0.427,0.451,0.366,0.31,0.305,0.168,0.245,0.019,0.209,-0.132,0.179,-0.283,0.149,-0.434,0.118,-0.585,0.088,-0.736,0.058,-0.885,0.022,-1.027,-0.039,-1.169,-0.1,-1.31,-0.16,-1.242,-0.298,-1.174,-0.436,-1.105,-0.574,-1.037,-0.712,-0.969,-0.851,-0.9,-0.989,-0.832,-1.127,-0.764,-1.265,-0.696,-1.403,-0.627,-1.541,-0.559,-1.679,-0.491,-1.817,-0.422,-1.955,-0.317,-2.06,-0.188,-2.144,-0.058,-2.227,0.08,-2.289,0.231,-2.32,0.335,-2.257,0.399,-2.117,0.463,-1.977,0.527,-1.837,0.591,-1.697,0.656,-1.557,0.72,-1.417,0.784,-1.277,0.848,-1.137,0.913,-0.997,0.977,-0.857,1.041,-0.717,1.105,-0.577,1.169,-0.437,1.234,-0.297,1.298,-0.157,1.362,-0.017,1.426,0.123,1.49,0.263,1.555,0.403,1.619,0.543,1.683,0.683],"area":4.774,"initial":"M-1.310,-0.160L-0.857,0.034L0.143,0.234L0.843,0.534L1.517,1.100L1.766,0.862L0.300,-2.333L0.018,-2.277L-0.395,-2.009L-1.310,-0.160Z"},{"points":[1.795,-0.829,1.735,-0.77,1.612,-0.753,1.489,-0.736,1.366,-0.719,1.243,-0.703,1.12,-0.686,0.997,-0.669,0.874,-0.652,0.75,-0.635,0.627,-0.619,0.504,-0.602,0.381,-0.585,0.258,-0.568,0.134,-0.559,0.01,-0.556,-0.114,-0.553,-0.238,-0.55,-0.362,-0.547,-0.487,-0.544,-0.611,-0.541,-0.735,-0.538,-0.859,-0.534,-0.983,-0.531,-1.108,-0.528,-1.232,-0.525,-1.356,-0.522,-1.48,-0.519,-1.469,-0.643,-1.458,-0.766,-1.446,-0.89,-1.435,-1.014,-1.365,-1.111,-1.28,-1.203,-1.196,-1.294,-1.112,-1.385,-1.027,-1.476,-0.943,-1.567,-0.858,-1.658,-0.774,-1.75,-0.69,-1.841,-0.605,-1.932,-0.483,-1.947,-0.36,-1.958,-0.236,-1.969,-0.112,-1.98,0.012,-1.991,0.127,-1.959,0.238,-1.902,0.348,-1.846,0.459,-1.789,0.569,-1.732,0.68,-1.676,0.791,-1.619,0.901,-1.563,1.012,-1.506,1.122,-1.45,1.233,-1.393,1.344,-1.336,1.454,-1.28,1.565,-1.223,1.675,-1.167,1.736,-1.07,1.766,-0.95],"area":3.276,"initial":"M-1.480,-0.519L0.205,-0.561L1.808,-0.780L1.718,-1.145L0.057,-1.995L-0.601,-1.936L-1.433,-1.038L-1.480,-0.519Z"},{"points":[1.625,-1.189,1.625,-1.035,1.625,-0.882,1.625,-0.729,1.625,-0.576,1.624,-0.423,1.624,-0.27,1.624,-0.117,1.624,0.037,1.624,0.19,1.623,0.343,1.623,0.496,1.623,0.649,1.623,0.802,1.623,0.955,1.548,1.078,1.441,1.188,1.335,1.298,1.228,1.408,1.122,1.518,1.015,1.628,0.908,1.738,0.802,1.848,0.695,1.958,0.589,2.068,0.482,2.178,0.376,2.288,0.269,2.398,0.163,2.508,0.06,2.395,-0.043,2.282,-0.147,2.169,-0.25,2.055,-0.353,1.942,-0.456,1.829,-0.559,1.716,-0.662,1.602,-0.765,1.489,-0.868,1.376,-0.971,1.263,-0.947,1.15,-0.843,1.037,-0.739,0.924,-0.636,0.812,-0.532,0.699,-0.428,0.586,-0.325,0.474,-0.221,0.361,-0.117,0.248,-0.014,0.136,0.09,0.023,0.194,-0.09,0.298,-0.203,0.401,-0.315,0.505,-0.428,0.609,-0.541,0.712,-0.653,0.822,-0.759,0.949,-0.844,1.077,-0.929,1.204,-1.014,1.332,-1.099,1.459,-1.184,1.587,-1.269],"area":5.164,"initial":"M0.163,2.508L1.623,1.001L1.626,-1.295L0.790,-0.737L-1.011,1.220L0.163,2.508Z"},{"points":[1.674,1.773,1.588,1.844,1.462,1.913,1.336,1.982,1.209,2.052,1.083,2.121,0.957,2.19,0.83,2.26,0.704,2.329,0.578,2.398,0.451,2.468,0.325,2.537,0.199,2.606,0.072,2.676,-0.054,2.745,-0.195,2.773,-0.337,2.802,-0.404,2.674,-0.47,2.546,-0.537,2.419,-0.604,2.291,-0.671,2.164,-0.738,2.036,-0.805,1.908,-0.872,1.781,-0.939,1.653,-1.006,1.525,-1.073,1.398,-1.14,1.27,-1.207,1.143,-1.274,1.015,-1.341,0.887,-1.407,0.76,-1.474,0.632,-1.541,0.504,-1.608,0.377,-1.656,0.244,-1.655,0.1,-1.62,0.009,-1.497,0.083,-1.374,0.159,-1.251,0.235,-1.128,0.31,-1.006,0.386,-0.883,0.461,-0.76,0.537,-0.638,0.612,-0.515,0.688,-0.392,0.763,-0.266,0.832,-0.134,0.889,-0.001,0.946,0.131,1.003,0.264,1.059,0.396,1.116,0.529,1.173,0.661,1.23,0.794,1.286,0.926,1.343,1.059,1.4,1.184,1.471,1.306,1.547,1.429,1.622,1.552,1.698],"area":3.717,"initial":"M-0.337,2.802L-0.055,2.745L1.694,1.786L1.088,1.413L-0.312,0.813L-1.612,0.013L-1.654,-0.006L-1.656,0.285L-0.337,2.802Z"},{"points":[1.164,0.774,1.11,0.892,1.056,1.011,1.002,1.129,0.949,1.247,0.895,1.366,0.841,1.484,0.787,1.603,0.733,1.721,0.68,1.84,0.617,1.933,0.501,1.874,0.386,1.815,0.27,1.756,0.154,1.696,0.038,1.637,-0.077,1.578,-0.193,1.519,-0.309,1.459,-0.425,1.4,-0.541,1.341,-0.656,1.282,-0.772,1.222,-0.888,1.163,-1.004,1.104,-1.014,0.99,-0.996,0.861,-0.978,0.732,-0.96,0.603,-0.942,0.474,-0.924,0.345,-0.906,0.217,-0.888,0.088,-0.87,-0.041,-0.853,-0.17,-0.835,-0.299,-0.817,-0.428,-0.799,-0.556,-0.781,-0.685,-0.763,-0.814,-0.686,-0.875,-0.556,-0.878,-0.427,-0.897,-0.299,-0.917,-0.17,-0.936,-0.042,-0.955,0.087,-0.975,0.216,-0.994,0.344,-1.013,0.473,-1.032,0.532,-0.934,0.577,-0.812,0.622,-0.69,0.667,-0.568,0.712,-0.446,0.758,-0.324,0.803,-0.202,0.848,-0.08,0.893,0.042,0.938,0.164,0.983,0.286,1.028,0.408,1.073,0.53,1.119,0.652],"area":4.476,"initial":"M1.164,0.774L0.494,-1.036L-0.579,-0.875L-0.755,-0.875L-1.028,1.092L0.633,1.941L1.164,0.774Z"},{"points":[1.08,-1.371,1.057,-1.289,0.945,-1.193,0.833,-1.098,0.72,-1.002,0.608,-0.907,0.496,-0.812,0.384,-0.716,0.271,-0.621,0.159,-0.525,0.047,-0.43,-0.065,-0.334,-0.165,-0.225,-0.264,-0.116,-0.363,-0.007,-0.462,0.102,-0.561,0.211,-0.66,0.32,-0.759,0.429,-0.858,0.538,-0.957,0.647,-1.057,0.756,-1.156,0.865,-1.255,0.974,-1.354,1.083,-1.45,1.126,-1.539,1.009,-1.629,0.892,-1.718,0.774,-1.807,0.657,-1.897,0.54,-1.939,0.406,-1.947,0.258,-1.955,0.111,-1.963,-0.036,-1.971,-0.183,-1.979,-0.33,-1.987,-0.477,-1.968,-0.614,-1.865,-0.72,-1.763,-0.826,-1.66,-0.932,-1.558,-1.038,-1.455,-1.143,-1.353,-1.249,-1.25,-1.355,-1.148,-1.461,-1.045,-1.567,-0.943,-1.673,-0.84,-1.778,-0.738,-1.884,-0.635,-1.99,-0.533,-2.096,-0.399,-2.036,-0.264,-1.975,-0.13,-1.915,0.005,-1.854,0.139,-1.794,0.273,-1.734,0.408,-1.673,0.542,-1.613,0.677,-1.552,0.811,-1.492,0.945,-1.432],"area":4.795,"initial":"M-0.533,-2.096L-1.993,-0.588L-1.934,0.491L-1.424,1.160L-0.066,-0.334L1.129,-1.349L-0.533,-2.096Z"},{"points":[2.0,-1.072,1.922,-0.965,1.843,-0.857,1.765,-0.75,1.686,-0.643,1.607,-0.535,1.529,-0.428,1.45,-0.32,1.372,-0.213,1.293,-0.105,1.214,0.002,1.136,0.11,1.057,0.217,0.979,0.325,0.9,0.432,0.822,0.539,0.743,0.647,0.664,0.754,0.586,0.862,0.507,0.969,0.429,1.077,0.349,1.075,0.268,0.969,0.188,0.863,0.107,0.757,0.026,0.651,-0.054,0.546,-0.135,0.44,-0.216,0.334,-0.296,0.228,-0.377,0.122,-0.458,0.016,-0.538,-0.09,-0.619,-0.196,-0.695,-0.305,-0.766,-0.417,-0.837,-0.53,-0.893,-0.639,-0.78,-0.71,-0.668,-0.782,-0.555,-0.853,-0.443,-0.924,-0.331,-0.996,-0.218,-1.067,-0.106,-1.138,0.006,-1.21,0.119,-1.281,0.231,-1.353,0.344,-1.424,0.456,-1.495,0.568,-1.567,0.681,-1.638,0.793,-1.709,0.905,-1.781,1.018,-1.852,1.134,-1.851,1.252,-1.79,1.371,-1.73,1.489,-1.669,1.608,-1.609,1.689,-1.504,1.767,-1.396,1.845,-1.288,1.922,-1.18],"area":4.351,"initial":"M2.000,-1.072L1.617,-1.604L1.068,-1.884L-0.902,-0.633L-0.661,-0.251L0.390,1.129L2.000,-1.072Z"},{"points":[1.308,0.357,1.248,0.415,1.115,0.406,0.983,0.397,0.85,0.389,0.718,0.38,0.585,0.371,0.453,0.362,0.32,0.353,0.188,0.344,0.055,0.336,-0.077,0.327,-0.21,0.318,-0.342,0.309,-0.475,0.3,-0.607,0.291,-0.739,0.297,-0.871,0.315,-1.003,0.333,-1.134,0.351,-1.266,0.369,-1.298,0.24,-1.329,0.111,-1.347,-0.017,-1.292,-0.138,-1.237,-0.259,-1.182,-0.38,-1.127,-0.501,-1.072,-0.621,-1.017,-0.742,-0.962,-0.863,-0.907,-0.984,-0.852,-1.105,-0.762,-1.189,-0.639,-1.238,-0.515,-1.287,-0.392,-1.336,-0.268,-1.385,-0.145,-1.434,-0.021,-1.483,0.102,-1.532,0.226,-1.581,0.349,-1.629,0.473,-1.678,0.596,-1.727,0.72,-1.776,0.843,-1.825,0.967,-1.874,0.987,-1.743,1.007,-1.612,1.027,-1.481,1.047,-1.349,1.067,-1.218,1.087,-1.087,1.108,-0.956,1.128,-0.824,1.148,-0.693,1.168,-0.562,1.188,-0.43,1.208,-0.299,1.228,-0.168,1.248,-0.036,1.268,0.095,1.288,0.226],"area":4.201,"initial":"M-1.266,0.369L-0.668,0.287L1.318,0.420L0.967,-1.874L-0.825,-1.164L-1.356,0.003L-1.266,0.369Z"},{"points":[1.186,0.57,1.155,0.732,1.113,0.894,1.071,1.056,1.03,1.218,0.988,1.38,0.946,1.542,0.904,1.704,0.76,1.785,0.612,1.863,0.464,1.941,0.316,2.019,0.168,2.097,0.02,2.175,-0.129,2.252,-0.198,2.1,-0.268,1.948,-0.338,1.796,-0.408,1.644,-0.477,1.492,-0.547,1.34,-0.617,1.188,-0.687,1.036,-0.756,0.884,-0.826,0.732,-0.896,0.58,-0.966,0.428,-1.035,0.275,-1.105,0.123,-1.175,-0.029,-1.245,-0.181,-1.314,-0.333,-1.384,-0.485,-1.454,-0.637,-1.524,-0.789,-1.593,-0.941,-1.45,-1.023,-1.303,-1.103,-1.156,-1.184,-1.01,-1.264,-0.863,-1.345,-0.716,-1.425,-0.569,-1.505,-0.423,-1.586,-0.276,-1.666,-0.129,-1.747,0.017,-1.827,0.164,-1.898,0.306,-1.81,0.449,-1.722,0.591,-1.634,0.734,-1.547,0.789,-1.398,0.822,-1.234,0.855,-1.07,0.888,-0.906,0.922,-0.742,0.955,-0.578,0.988,-0.414,1.021,-0.25,1.054,-0.086,1.087,0.078,1.12,0.242,1.153,0.406],"area":7.068,"initial":"M-0.129,2.252L0.902,1.711L1.191,0.594L0.763,-1.529L0.155,-1.903L-1.594,-0.943L-0.129,2.252Z"},{"points":[1.638,0.659,1.622,0.746,1.544,0.83,1.466,0.914,1.365,0.965,1.258,1.008,1.151,1.05,1.044,1.092,0.938,1.134,0.831,1.177,0.724,1.219,0.617,1.261,0.511,1.304,0.404,1.346,0.297,1.388,0.19,1.431,0.083,1.473,-0.023,1.515,-0.13,1.557,-0.237,1.6,-0.344,1.642,-0.384,1.534,-0.423,1.427,-0.463,1.319,-0.503,1.211,-0.543,1.103,-0.583,0.996,-0.623,0.888,-0.663,0.78,-0.702,0.673,-0.742,0.565,-0.782,0.457,-0.822,0.349,-0.862,0.242,-0.902,0.134,-0.942,0.026,-0.981,-0.081,-0.99,-0.171,-0.877,-0.188,-0.763,-0.205,-0.65,-0.222,-0.536,-0.239,-0.422,-0.256,-0.309,-0.273,-0.195,-0.29,-0.082,-0.306,0.033,-0.306,0.148,-0.306,0.263,-0.306,0.378,-0.306,0.493,-0.306,0.607,-0.306,0.722,-0.306,0.837,-0.306,0.918,-0.235,0.99,-0.145,1.062,-0.056,1.134,0.033,1.206,0.123,1.278,0.212,1.35,0.302,1.422,0.391,1.494,0.481,1.566,0.57],"area":3.331,"initial":"M-0.344,1.642L1.449,0.932L1.668,0.696L0.860,-0.306L-0.086,-0.306L-1.013,-0.167L-0.344,1.642Z"},{"points":[1.031,1.297,0.898,1.309,0.765,1.321,0.632,1.332,0.499,1.344,0.366,1.356,0.233,1.368,0.1,1.38,-0.033,1.392,-0.166,1.404,-0.299,1.416,-0.432,1.427,-0.565,1.439,-0.698,1.451,-0.831,1.463,-0.964,1.475,-1.097,1.487,-1.23,1.499,-1.363,1.51,-1.496,1.522,-1.629,1.534,-1.656,1.403,-1.682,1.272,-1.709,1.142,-1.735,1.011,-1.761,0.88,-1.788,0.749,-1.814,0.618,-1.841,0.487,-1.867,0.356,-1.893,0.225,-1.92,0.094,-1.946,-0.037,-1.973,-0.167,-1.999,-0.298,-2.025,-0.429,-2.052,-0.56,-1.969,-0.534,-1.854,-0.467,-1.738,-0.399,-1.623,-0.332,-1.508,-0.264,-1.393,-0.197,-1.278,-0.129,-1.162,-0.062,-1.047,0.006,-0.932,0.073,-0.817,0.141,-0.702,0.209,-0.586,0.276,-0.471,0.344,-0.356,0.411,-0.241,0.479,-0.126,0.546,-0.01,0.614,0.105,0.681,0.22,0.749,0.335,0.816,0.45,0.884,0.566,0.951,0.681,1.019,0.796,1.086,0.911,1.154,1.015,1.238],"area":5.621,"initial":"M-1.629,1.534L1.079,1.292L0.928,1.164L-1.972,-0.536L-2.058,-0.589L-1.629,1.534ZM2.576,1.159L2.295,-0.275L1.982,-0.726L0.189,-1.302L0.828,-0.236L1.967,1.213L2.576,1.159Z"},{"points":[1.181,-0.533,1.144,-0.375,1.106,-0.218,1.068,-0.061,1.031,0.096,0.993,0.253,0.955,0.41,0.918,0.568,0.88,0.725,0.843,0.882,0.805,1.039,0.767,1.196,0.73,1.353,0.692,1.511,0.655,1.668,0.617,1.825,0.46,1.863,0.333,1.812,0.232,1.686,0.13,1.56,0.029,1.434,-0.072,1.308,-0.174,1.182,-0.275,1.057,-0.376,0.931,-0.326,0.878,-0.164,0.878,-0.003,0.878,0.159,0.878,0.321,0.878,0.398,0.847,0.274,0.743,0.15,0.639,0.026,0.535,-0.097,0.431,-0.221,0.327,-0.345,0.223,-0.469,0.119,-0.592,0.015,-0.716,-0.089,-0.84,-0.193,-0.963,-0.297,-1.087,-0.4,-1.211,-0.504,-1.335,-0.608,-1.329,-0.716,-1.212,-0.828,-1.084,-0.925,-0.941,-1.0,-0.798,-1.075,-0.655,-1.15,-0.512,-1.225,-0.369,-1.301,-0.226,-1.376,-0.084,-1.418,0.054,-1.334,0.193,-1.251,0.331,-1.167,0.469,-1.083,0.608,-1.0,0.746,-0.916,0.884,-0.833,1.023,-0.749,1.161,-0.666],"area":4.1,"initial":"M0.617,1.825L1.206,-0.638L-0.113,-1.435L-1.143,-0.894L-1.392,-0.656L0.434,0.878L-0.419,0.878L0.389,1.880L0.617,1.825Z"},{"points":[5.762,-1.598,5.653,-1.488,5.544,-1.377,5.435,-1.267,5.326,-1.156,5.217,-1.046,5.108,-0.936,4.999,-0.825,4.89,-0.715,4.781,-0.605,4.672,-0.494,4.563,-0.384,4.455,-0.274,4.346,-0.163,4.237,-0.053,4.127,0.043,3.999,-0.045,3.872,-0.133,3.744,-0.222,3.617,-0.31,3.489,-0.398,3.362,-0.486,3.234,-0.575,3.107,-0.663,3.024,-0.79,2.955,-0.929,2.885,-1.067,2.891,-1.22,2.906,-1.374,2.922,-1.528,2.937,-1.683,2.953,-1.837,2.968,-1.991,3.004,-2.14,3.07,-2.28,3.136,-2.42,3.202,-2.561,3.268,-2.701,3.334,-2.841,3.4,-2.982,3.466,-3.122,3.532,-3.262,3.598,-3.402,3.664,-3.543,3.73,-3.683,3.881,-3.65,4.032,-3.615,4.183,-3.581,4.335,-3.547,4.486,-3.513,4.574,-3.385,4.661,-3.257,4.749,-3.129,4.836,-3.001,4.924,-2.873,5.012,-2.745,5.099,-2.618,5.187,-2.49,5.275,-2.362,5.362,-2.234,5.45,-2.106,5.538,-1.978,5.625,-1.85,5.713,-1.722],"area":6.572,"initial":"M4.486,-3.513L3.730,-3.684L2.977,-2.083L2.877,-1.083L3.077,-0.683L4.136,0.049L5.783,-1.620L4.486,-3.513Z"},{"points":[2.014,-1.106,1.964,-0.95,1.915,-0.794,1.865,-0.637,1.815,-0.481,1.766,-0.325,1.716,-0.168,1.666,-0.012,1.617,0.144,1.567,0.3,1.517,0.457,1.467,0.613,1.402,0.755,1.253,0.826,1.105,0.896,0.957,0.966,0.809,1.036,0.661,1.106,0.512,1.176,0.364,1.247,0.216,1.317,0.068,1.387,-0.081,1.457,-0.234,1.399,-0.387,1.34,-0.54,1.282,-0.694,1.223,-0.847,1.165,-1.0,1.107,-1.153,1.048,-1.307,0.99,-1.46,0.931,-1.613,0.873,-1.766,0.814,-1.874,0.751,-1.737,0.66,-1.601,0.569,-1.464,0.478,-1.328,0.387,-1.191,0.296,-1.055,0.205,-0.918,0.114,-0.782,0.023,-0.656,-0.082,-0.534,-0.192,-0.412,-0.301,-0.29,-0.411,-0.168,-0.521,-0.047,-0.631,0.075,-0.74,0.197,-0.85,0.302,-0.974,0.393,-1.111,0.397,-1.204,0.531,-1.228,0.694,-1.253,0.856,-1.278,1.018,-1.303,1.18,-1.328,1.342,-1.353,1.504,-1.378,1.66,-1.361,1.807,-1.289,1.954,-1.216],"area":5.82,"initial":"M-0.081,1.457L1.426,0.744L2.036,-1.175L1.596,-1.392L0.383,-1.205L0.453,-1.200L0.253,-0.900L-0.747,-0.000L-1.895,0.765L-0.081,1.457Z"},{"points":[1.238,0.552,1.232,0.675,1.124,0.767,1.016,0.859,0.907,0.951,0.799,1.044,0.69,1.136,0.582,1.228,0.474,1.32,0.353,1.326,0.223,1.268,0.094,1.21,-0.036,1.151,-0.166,1.093,-0.296,1.035,-0.425,0.976,-0.555,0.918,-0.685,0.86,-0.815,0.802,-0.944,0.743,-1.074,0.685,-1.204,0.627,-1.234,0.504,-1.234,0.362,-1.234,0.22,-1.234,0.077,-1.233,-0.065,-1.233,-0.207,-1.233,-0.349,-1.233,-0.492,-1.233,-0.634,-1.232,-0.776,-1.232,-0.918,-1.232,-1.061,-1.232,-1.203,-1.232,-1.345,-1.232,-1.487,-1.231,-1.63,-1.157,-1.732,-1.029,-1.726,-0.896,-1.676,-0.763,-1.625,-0.63,-1.574,-0.497,-1.524,-0.365,-1.473,-0.232,-1.422,-0.099,-1.372,0.034,-1.321,0.167,-1.27,0.3,-1.22,0.433,-1.169,0.566,-1.118,0.699,-1.068,0.744,-0.933,0.789,-0.798,0.834,-0.663,0.878,-0.528,0.923,-0.393,0.968,-0.258,1.013,-0.123,1.058,0.012,1.103,0.147,1.148,0.282,1.193,0.417],"area":5.367,"initial":"M0.699,-1.068L-1.116,-1.759L-1.231,-1.683L-1.234,0.613L0.427,1.360L1.233,0.675L1.267,0.640L0.699,-1.068Z"},{"points":[2.244,-0.32,2.191,-0.187,2.139,-0.055,2.087,0.078,2.034,0.211,1.982,0.344,1.93,0.477,1.877,0.609,1.825,0.742,1.772,0.875,1.72,1.008,1.668,1.14,1.615,1.273,1.561,1.405,1.442,1.483,1.322,1.561,1.203,1.639,1.084,1.718,0.964,1.796,0.845,1.874,0.726,1.953,0.606,2.031,0.487,2.109,0.348,2.078,0.209,2.046,0.069,2.015,-0.07,1.983,-0.209,1.952,-0.234,1.864,-0.173,1.735,-0.112,1.606,-0.051,1.477,0.01,1.348,0.07,1.219,0.131,1.09,0.192,0.96,0.253,0.831,0.313,0.702,0.374,0.573,0.435,0.444,0.496,0.315,0.557,0.185,0.623,0.059,0.694,-0.065,0.764,-0.189,0.834,-0.313,0.904,-0.438,0.975,-0.562,1.045,-0.686,1.115,-0.81,1.185,-0.935,1.256,-1.059,1.326,-1.183,1.396,-1.307,1.466,-1.432,1.55,-1.37,1.637,-1.257,1.724,-1.144,1.812,-1.031,1.899,-0.918,1.986,-0.805,2.074,-0.692,2.161,-0.579,2.234,-0.461],"area":4.24,"initial":"M0.487,2.109L1.565,1.402L2.250,-0.337L2.230,-0.490L1.481,-1.458L0.579,0.139L-0.268,1.939L0.487,2.109Z"},{"points":[1.32,-0.603,1.249,-0.478,1.178,-0.353,1.113,-0.225,1.052,-0.095,0.991,0.036,0.931,0.166,0.87,0.296,0.809,0.426,0.748,0.556,0.688,0.686,0.627,0.817,0.566,0.947,0.505,1.077,0.444,1.207,0.384,1.337,0.242,1.314,0.1,1.291,-0.042,1.268,-0.183,1.244,-0.325,1.221,-0.467,1.198,-0.609,1.174,-0.707,1.082,-0.788,0.964,-0.869,0.845,-0.95,0.727,-1.032,0.608,-1.113,0.49,-1.194,0.371,-1.275,0.253,-1.357,0.134,-1.438,0.016,-1.519,-0.103,-1.6,-0.221,-1.681,-0.34,-1.763,-0.458,-1.844,-0.577,-1.925,-0.695,-1.856,-0.784,-1.736,-0.863,-1.616,-0.942,-1.496,-1.02,-1.375,-1.099,-1.255,-1.178,-1.135,-1.257,-1.015,-1.336,-0.895,-1.415,-0.761,-1.4,-0.624,-1.359,-0.486,-1.318,-0.349,-1.276,-0.211,-1.235,-0.073,-1.194,0.064,-1.152,0.202,-1.111,0.339,-1.07,0.477,-1.028,0.615,-0.987,0.752,-0.946,0.89,-0.905,1.028,-0.863,1.165,-0.822,1.26,-0.718],"area":5.467,"initial":"M0.384,1.337L1.146,-0.296L1.333,-0.625L1.181,-0.817L-0.868,-1.432L-1.946,-0.725L-0.648,1.168L0.384,1.337Z"},{"points":[1.391,1.008,1.258,1.029,1.126,1.049,0.994,1.07,0.862,1.09,0.729,1.11,0.597,1.131,0.465,1.151,0.333,1.172,0.201,1.19,0.067,1.181,-0.066,1.172,-0.2,1.163,-0.333,1.154,-0.467,1.145,-0.6,1.136,-0.734,1.128,-0.754,0.995,-0.774,0.863,-0.795,0.731,-0.815,0.599,-0.835,0.466,-0.855,0.334,-0.875,0.202,-0.896,0.07,-0.916,-0.063,-0.936,-0.195,-0.956,-0.327,-0.976,-0.459,-0.997,-0.592,-1.017,-0.724,-1.037,-0.856,-1.057,-0.988,-1.078,-1.121,-1.025,-1.23,-0.934,-1.328,-0.833,-1.41,-0.703,-1.441,-0.573,-1.441,-0.444,-1.408,-0.314,-1.375,-0.185,-1.341,-0.055,-1.308,0.074,-1.275,0.204,-1.241,0.334,-1.208,0.455,-1.165,0.51,-1.043,0.564,-0.921,0.619,-0.799,0.673,-0.677,0.728,-0.555,0.782,-0.432,0.837,-0.31,0.891,-0.188,0.946,-0.066,1.0,0.056,1.055,0.178,1.11,0.301,1.164,0.423,1.219,0.545,1.273,0.667,1.328,0.789,1.382,0.911],"area":4.543,"initial":"M-0.734,1.128L0.210,1.191L1.423,1.003L0.449,-1.178L-0.637,-1.457L-0.865,-1.402L-1.085,-1.166L-0.734,1.128Z"},{"points":[1.016,2.402,0.997,2.555,0.891,2.71,0.785,2.866,0.679,3.021,0.574,3.176,0.468,3.332,0.362,3.487,0.256,3.642,0.15,3.798,0.044,3.953,-0.062,4.109,-0.168,4.264,-0.335,4.179,-0.503,4.093,-0.67,4.008,-0.778,3.863,-0.862,3.695,-0.947,3.527,-1.031,3.359,-1.116,3.191,-1.2,3.023,-1.285,2.855,-1.369,2.687,-1.454,2.519,-1.538,2.351,-1.623,2.183,-1.707,2.015,-1.792,1.847,-1.876,1.679,-1.96,1.511,-2.045,1.343,-2.129,1.175,-2.214,1.007,-2.298,0.839,-2.383,0.671,-2.467,0.503,-2.552,0.335,-2.636,0.167,-2.492,0.078,-2.322,-0.001,-2.152,-0.081,-1.967,-0.113,-1.781,-0.144,-1.596,-0.175,-1.419,-0.129,-1.247,-0.055,-1.074,0.019,-0.901,0.094,-0.762,0.214,-0.638,0.355,-0.514,0.497,-0.39,0.638,-0.266,0.78,-0.143,0.922,-0.027,1.07,0.089,1.218,0.205,1.366,0.321,1.514,0.437,1.662,0.553,1.81,0.668,1.958,0.784,2.106,0.9,2.254],"area":8.068,"initial":"M-0.168,4.264L1.062,2.460L-0.146,0.917L-0.846,0.117L-1.546,-0.183L-2.146,-0.083L-2.645,0.150L-0.717,3.984L-0.168,4.264Z"},{"points":[1.772,1.6,1.62,1.561,1.467,1.522,1.314,1.483,1.162,1.444,1.009,1.404,0.857,1.365,0.704,1.326,0.551,1.287,0.399,1.248,0.246,1.209,0.093,1.17,-0.059,1.131,-0.212,1.092,-0.365,1.053,-0.517,1.014,-0.67,0.975,-0.822,0.936,-0.975,0.896,-1.128,0.857,-1.28,0.818,-1.397,0.763,-1.324,0.624,-1.25,0.485,-1.176,0.346,-1.102,0.206,-1.029,0.067,-0.955,-0.072,-0.881,-0.211,-0.808,-0.351,-0.734,-0.49,-0.66,-0.629,-0.586,-0.768,-0.519,-0.91,-0.469,-1.06,-0.419,-1.209,-0.37,-1.359,-0.295,-1.46,-0.144,-1.414,0.006,-1.367,0.157,-1.321,0.307,-1.274,0.458,-1.228,0.608,-1.182,0.759,-1.135,0.91,-1.089,1.06,-1.042,1.211,-0.996,1.275,-0.871,1.306,-0.717,1.337,-0.563,1.368,-0.408,1.399,-0.254,1.43,-0.099,1.462,0.055,1.493,0.21,1.524,0.364,1.555,0.519,1.586,0.673,1.617,0.828,1.648,0.982,1.679,1.137,1.71,1.291,1.741,1.445],"area":5.85,"initial":"M1.772,1.600L1.253,-0.983L-0.332,-1.471L-0.532,-0.871L-1.409,0.785L1.772,1.600Z"},{"points":[2.157,0.479,2.045,0.622,1.933,0.766,1.821,0.909,1.709,1.053,1.597,1.194,1.415,1.187,1.234,1.179,1.052,1.171,0.87,1.164,0.688,1.156,0.507,1.149,0.325,1.141,0.143,1.133,-0.038,1.126,-0.22,1.118,-0.402,1.11,-0.583,1.103,-0.765,1.095,-0.947,1.087,-1.129,1.08,-1.31,1.072,-1.466,0.978,-1.622,0.884,-1.777,0.79,-1.933,0.696,-2.089,0.602,-2.244,0.508,-2.4,0.414,-2.555,0.32,-2.606,0.183,-2.56,0.007,-2.514,-0.169,-2.469,-0.345,-2.423,-0.522,-2.377,-0.698,-2.307,-0.845,-2.126,-0.861,-1.945,-0.877,-1.764,-0.893,-1.583,-0.909,-1.402,-0.926,-1.221,-0.942,-1.039,-0.958,-0.858,-0.974,-0.677,-0.99,-0.496,-1.006,-0.315,-1.023,-0.134,-1.039,0.047,-1.055,0.229,-1.071,0.4,-1.057,0.539,-0.939,0.677,-0.821,0.816,-0.704,0.954,-0.586,1.093,-0.468,1.231,-0.35,1.37,-0.233,1.509,-0.115,1.647,0.003,1.786,0.121,1.924,0.239,2.063,0.356],"area":8.492,"initial":"M-1.310,1.072L1.599,1.194L2.177,0.453L0.369,-1.084L-2.340,-0.842L-2.630,0.275L-1.310,1.072ZM2.424,-0.047L1.865,-1.217L1.256,-1.163L2.318,0.188L2.330,0.212L2.424,-0.047Z"},{"points":[1.256,-0.175,1.196,-0.057,1.137,0.061,1.077,0.179,1.018,0.297,0.958,0.415,0.898,0.533,0.839,0.651,0.792,0.717,0.788,0.586,0.704,0.485,0.619,0.383,0.534,0.281,0.45,0.18,0.365,0.078,0.274,-0.01,0.156,0.026,0.063,0.119,-0.031,0.213,-0.124,0.306,-0.218,0.4,-0.311,0.493,-0.405,0.587,-0.498,0.68,-0.592,0.774,-0.679,0.84,-0.721,0.715,-0.762,0.589,-0.804,0.464,-0.846,0.338,-0.888,0.213,-0.929,0.087,-0.971,-0.038,-1.013,-0.164,-1.055,-0.289,-1.097,-0.415,-1.138,-0.54,-1.18,-0.666,-1.222,-0.791,-1.181,-0.881,-1.061,-0.938,-0.942,-0.994,-0.822,-1.051,-0.703,-1.107,-0.583,-1.164,-0.464,-1.221,-0.344,-1.277,-0.225,-1.334,-0.105,-1.39,0.014,-1.447,0.134,-1.504,0.254,-1.56,0.334,-1.467,0.411,-1.36,0.488,-1.252,0.565,-1.144,0.641,-1.037,0.718,-0.929,0.795,-0.821,0.872,-0.714,0.949,-0.606,1.025,-0.498,1.102,-0.391,1.179,-0.283],"area":3.327,"initial":"M1.256,-0.175L0.264,-1.565L-1.242,-0.852L-0.674,0.856L0.192,-0.010L0.292,-0.010L0.792,0.590L0.792,0.745L1.256,-0.175Z"},{"points":[2.483,0.422,2.434,0.588,2.266,0.633,2.098,0.678,1.93,0.722,1.762,0.767,1.594,0.812,1.426,0.857,1.259,0.901,1.091,0.946,0.923,0.991,0.755,1.035,0.587,1.08,0.419,1.125,0.251,1.169,0.083,1.214,-0.085,1.259,-0.252,1.303,-0.42,1.348,-0.588,1.393,-0.756,1.437,-0.91,1.439,-1.016,1.302,-1.122,1.165,-1.228,1.027,-1.335,0.89,-1.441,0.752,-1.547,0.615,-1.618,0.475,-1.532,0.324,-1.447,0.172,-1.361,0.021,-1.276,-0.13,-1.22,-0.292,-1.189,-0.463,-1.158,-0.634,-1.126,-0.805,-1.095,-0.976,-1.064,-1.147,-1.028,-1.316,-0.876,-1.309,-0.707,-1.265,-0.539,-1.222,-0.371,-1.179,-0.202,-1.136,-0.034,-1.093,0.134,-1.05,0.302,-1.007,0.471,-0.964,0.639,-0.921,0.807,-0.878,0.976,-0.835,1.144,-0.791,1.312,-0.748,1.48,-0.705,1.649,-0.662,1.817,-0.619,1.985,-0.576,2.154,-0.533,2.246,-0.397,2.305,-0.233,2.364,-0.07,2.423,0.093,2.482,0.257],"area":7.338,"initial":"M2.434,0.588L2.509,0.333L2.211,-0.495L2.168,-0.529L-1.013,-1.344L-1.037,-1.300L-1.236,-0.200L-1.634,0.503L-0.885,1.472L2.434,0.588Z"},{"points":[1.551,-0.019,1.507,0.14,1.462,0.299,1.417,0.458,1.373,0.617,1.328,0.776,1.283,0.934,1.238,1.093,1.194,1.252,1.149,1.411,1.104,1.57,1.06,1.729,0.924,1.718,0.766,1.668,0.609,1.617,0.452,1.567,0.295,1.516,0.138,1.466,-0.019,1.415,-0.177,1.365,-0.334,1.314,-0.491,1.264,-0.648,1.214,-0.776,1.126,-0.861,0.985,-0.946,0.843,-1.036,0.705,-1.136,0.574,-1.236,0.443,-1.336,0.311,-1.436,0.18,-1.536,0.049,-1.467,-0.084,-1.37,-0.218,-1.272,-0.351,-1.175,-0.484,-1.077,-0.617,-0.98,-0.751,-0.883,-0.884,-0.785,-1.017,-0.688,-1.15,-0.59,-1.284,-0.493,-1.417,-0.395,-1.55,-0.298,-1.684,-0.2,-1.817,-0.103,-1.95,-0.006,-2.083,0.112,-2.155,0.27,-2.106,0.401,-2.023,0.483,-1.88,0.565,-1.737,0.647,-1.594,0.729,-1.451,0.812,-1.308,0.894,-1.164,0.976,-1.021,1.058,-0.878,1.14,-0.735,1.223,-0.592,1.305,-0.449,1.387,-0.305,1.469,-0.162],"area":7.161,"initial":"M1.551,-0.019L0.372,-2.074L0.059,-2.172L-1.551,0.030L-1.002,0.749L-0.742,1.183L1.051,1.759L1.551,-0.019Z"},{"points":[1.978,-0.911,1.952,-0.753,1.896,-0.612,1.78,-0.502,1.665,-0.393,1.549,-0.283,1.434,-0.173,1.318,-0.063,1.203,0.047,1.087,0.156,0.972,0.266,0.856,0.376,0.741,0.486,0.625,0.596,0.51,0.705,0.394,0.815,0.279,0.925,0.163,1.035,0.048,1.145,-0.068,1.254,-0.183,1.364,-0.299,1.474,-0.414,1.584,-0.569,1.544,-0.723,1.504,-0.877,1.465,-1.032,1.425,-1.186,1.385,-1.34,1.346,-1.495,1.306,-1.465,1.156,-1.428,1.001,-1.391,0.846,-1.354,0.691,-1.316,0.536,-1.279,0.381,-1.242,0.226,-1.205,0.071,-1.168,-0.084,-1.131,-0.239,-1.094,-0.394,-1.057,-0.549,-1.02,-0.704,-0.983,-0.859,-0.946,-1.014,-0.9,-1.158,-0.741,-1.151,-0.582,-1.144,-0.422,-1.138,-0.263,-1.131,-0.104,-1.124,0.055,-1.118,0.215,-1.111,0.374,-1.104,0.533,-1.098,0.692,-1.091,0.851,-1.084,1.011,-1.078,1.17,-1.071,1.329,-1.064,1.488,-1.058,1.647,-1.051,1.807,-1.044,1.966,-1.037],"area":5.762,"initial":"M-0.414,1.584L1.935,-0.649L1.998,-1.036L-0.911,-1.158L-1.501,1.305L-0.414,1.584Z"},{"points":[1.374,0.024,1.325,0.193,1.252,0.361,1.179,0.528,1.106,0.695,1.033,0.863,0.959,1.03,0.886,1.197,0.813,1.365,0.74,1.532,0.667,1.699,0.593,1.867,0.472,1.973,0.292,2.004,0.112,2.036,-0.068,2.068,-0.248,2.1,-0.411,2.019,-0.575,1.938,-0.711,1.83,-0.785,1.663,-0.859,1.496,-0.934,1.33,-1.008,1.163,-1.083,0.996,-1.157,0.829,-1.232,0.662,-1.306,0.496,-1.381,0.329,-1.455,0.162,-1.53,-0.005,-1.604,-0.171,-1.63,-0.329,-1.498,-0.454,-1.365,-0.58,-1.233,-0.706,-1.101,-0.832,-0.968,-0.958,-0.836,-1.084,-0.703,-1.209,-0.571,-1.335,-0.439,-1.461,-0.306,-1.587,-0.174,-1.713,-0.041,-1.839,0.091,-1.965,0.223,-2.09,0.356,-2.216,0.488,-2.342,0.62,-2.468,0.711,-2.446,0.758,-2.269,0.806,-2.093,0.853,-1.916,0.9,-1.74,0.948,-1.564,0.995,-1.387,1.042,-1.211,1.09,-1.034,1.137,-0.858,1.184,-0.682,1.232,-0.505,1.279,-0.329,1.326,-0.152],"area":8.294,"initial":"M-0.248,2.100L0.553,1.958L1.383,0.061L0.688,-2.532L-1.661,-0.299L-0.687,1.883L-0.248,2.100Z"},{"points":[1.767,-2.794,1.719,-2.693,1.672,-2.591,1.625,-2.49,1.577,-2.388,1.53,-2.287,1.483,-2.185,1.435,-2.084,1.388,-1.982,1.34,-1.88,1.293,-1.779,1.246,-1.677,1.198,-1.576,1.143,-1.481,1.055,-1.411,0.968,-1.341,0.88,-1.271,0.793,-1.201,0.705,-1.131,0.607,-1.086,0.496,-1.067,0.386,-1.049,0.275,-1.031,0.165,-1.012,0.054,-0.996,-0.053,-1.027,-0.161,-1.058,-0.269,-1.089,-0.377,-1.12,-0.484,-1.15,-0.592,-1.181,-0.691,-1.23,-0.783,-1.294,-0.875,-1.358,-0.808,-1.437,-0.729,-1.516,-0.65,-1.596,-0.572,-1.676,-0.493,-1.755,-0.414,-1.835,-0.336,-1.915,-0.257,-1.995,-0.178,-2.074,-0.099,-2.154,-0.021,-2.234,0.058,-2.314,0.137,-2.393,0.215,-2.473,0.294,-2.553,0.373,-2.633,0.451,-2.712,0.53,-2.792,0.609,-2.872,0.688,-2.952,0.766,-3.031,0.877,-3.013,0.987,-2.995,1.098,-2.977,1.209,-2.959,1.319,-2.94,1.43,-2.922,1.54,-2.904,1.651,-2.886,1.761,-2.868],"area":2.921,"initial":"M0.766,-3.031L-0.881,-1.362L-0.640,-1.195L0.060,-0.995L0.660,-1.095L1.160,-1.495L1.798,-2.862L0.766,-3.031Z"},{"points":[1.791,-1.159,1.776,-1.042,1.761,-0.926,1.746,-0.809,1.731,-0.692,1.715,-0.575,1.7,-0.458,1.685,-0.342,1.67,-0.225,1.655,-0.108,1.64,0.009,1.625,0.126,1.571,0.185,1.458,0.155,1.344,0.125,1.23,0.094,1.116,0.064,1.002,0.033,0.889,0.003,0.775,-0.027,0.661,-0.058,0.547,-0.088,0.433,-0.118,0.333,-0.177,0.239,-0.248,0.145,-0.319,0.051,-0.389,-0.01,-0.481,-0.033,-0.596,-0.056,-0.712,-0.079,-0.827,-0.098,-0.943,-0.085,-1.06,-0.072,-1.177,-0.059,-1.294,-0.046,-1.411,-0.033,-1.528,-0.02,-1.645,-0.007,-1.763,0.006,-1.88,0.019,-1.997,0.032,-2.114,0.045,-2.231,0.086,-2.314,0.203,-2.302,0.32,-2.29,0.437,-2.278,0.554,-2.266,0.671,-2.254,0.789,-2.242,0.906,-2.23,1.023,-2.217,1.14,-2.205,1.257,-2.193,1.374,-2.181,1.492,-2.169,1.528,-2.057,1.565,-1.945,1.602,-1.834,1.639,-1.722,1.676,-1.61,1.713,-1.498,1.749,-1.386,1.786,-1.274],"area":3.766,"initial":"M1.492,-2.169L0.055,-2.317L-0.099,-0.927L0.001,-0.427L0.401,-0.127L1.616,0.197L1.800,-1.232L1.492,-2.169Z"},{"points":[1.275,0.697,1.128,0.765,0.981,0.833,0.834,0.901,0.687,0.969,0.54,1.038,0.392,1.106,0.245,1.174,0.098,1.242,-0.049,1.31,-0.196,1.378,-0.343,1.446,-0.49,1.515,-0.637,1.583,-0.784,1.651,-0.931,1.719,-1.079,1.787,-1.226,1.855,-1.373,1.923,-1.52,1.991,-1.667,2.06,-1.814,2.128,-1.961,2.196,-2.054,2.063,-2.146,1.93,-2.238,1.796,-2.248,1.649,-2.204,1.493,-2.16,1.337,-2.116,1.181,-2.072,1.025,-2.028,0.869,-1.984,0.713,-1.94,0.557,-1.896,0.401,-1.853,0.245,-1.809,0.089,-1.747,-0.056,-1.62,-0.157,-1.493,-0.258,-1.367,-0.359,-1.24,-0.46,-1.113,-0.561,-0.986,-0.662,-0.86,-0.763,-0.733,-0.864,-0.606,-0.965,-0.479,-1.066,-0.353,-1.167,-0.236,-1.164,-0.132,-1.04,-0.028,-0.915,0.076,-0.791,0.18,-0.667,0.284,-0.543,0.389,-0.419,0.493,-0.294,0.597,-0.17,0.701,-0.046,0.805,0.078,0.909,0.202,1.014,0.327,1.118,0.451,1.222,0.575],"area":6.261,"initial":"M-1.961,2.196L1.299,0.686L1.272,0.635L-0.285,-1.222L-1.774,-0.034L-2.274,1.744L-1.961,2.196Z"},{"points":[0.946,1.031,0.87,1.035,0.766,1.004,0.661,0.972,0.557,0.941,0.452,0.91,0.348,0.878,0.243,0.847,0.139,0.816,0.034,0.784,-0.07,0.753,-0.175,0.721,-0.279,0.69,-0.384,0.659,-0.488,0.627,-0.593,0.596,-0.698,0.565,-0.802,0.533,-0.907,0.502,-1.011,0.471,-1.096,0.43,-1.056,0.328,-1.016,0.227,-0.976,0.125,-0.936,0.024,-0.896,-0.078,-0.856,-0.179,-0.816,-0.281,-0.776,-0.382,-0.736,-0.484,-0.696,-0.585,-0.656,-0.687,-0.616,-0.788,-0.576,-0.89,-0.536,-0.991,-0.496,-1.093,-0.456,-1.194,-0.416,-1.296,-0.331,-1.228,-0.245,-1.159,-0.16,-1.091,-0.075,-1.023,0.01,-0.955,0.095,-0.887,0.181,-0.819,0.266,-0.751,0.351,-0.683,0.436,-0.614,0.522,-0.546,0.607,-0.478,0.692,-0.41,0.777,-0.342,0.862,-0.274,0.874,-0.167,0.88,-0.058,0.887,0.051,0.894,0.159,0.9,0.268,0.907,0.377,0.913,0.486,0.92,0.595,0.926,0.704,0.933,0.813,0.94,0.922],"area":2.804,"initial":"M-0.416,-1.296L-1.102,0.443L0.948,1.059L0.868,-0.270L-0.416,-1.296Z"},{"points":[0.224,-1.204,0.173,-1.114,0.122,-1.024,0.071,-0.934,0.02,-0.844,-0.031,-0.754,-0.082,-0.664,-0.133,-0.574,-0.184,-0.484,-0.235,-0.395,-0.286,-0.305,-0.337,-0.215,-0.388,-0.125,-0.439,-0.035,-0.49,0.055,-0.541,0.145,-0.592,0.235,-0.643,0.325,-0.694,0.415,-0.745,0.505,-0.796,0.595,-0.847,0.685,-0.898,0.775,-0.949,0.865,-1.0,0.955,-1.051,1.045,-1.102,1.135,-1.153,1.225,-1.204,1.315,-1.255,1.405,-1.319,1.324,-1.383,1.243,-1.41,1.147,-1.417,1.044,-1.423,0.941,-1.429,0.838,-1.435,0.734,-1.442,0.631,-1.448,0.528,-1.454,0.425,-1.46,0.322,-1.467,0.218,-1.473,0.115,-1.479,0.012,-1.485,-0.091,-1.42,-0.158,-1.332,-0.214,-1.245,-0.269,-1.158,-0.325,-1.071,-0.381,-0.984,-0.437,-0.897,-0.492,-0.81,-0.548,-0.723,-0.604,-0.636,-0.66,-0.548,-0.715,-0.461,-0.771,-0.374,-0.827,-0.287,-0.882,-0.2,-0.938,-0.113,-0.994,-0.026,-1.05,0.061,-1.105,0.148,-1.161],"area":2.252,"initial":"M-1.255,1.405L0.228,-1.212L-1.487,-0.115L-1.406,1.213L-1.255,1.405ZM1.054,0.467L1.595,-1.066L1.499,-1.382L1.317,-1.528L0.649,0.727L1.054,0.467Z"},{"points":[2.104,0.818,2.008,0.94,1.87,1.06,1.731,1.18,1.593,1.3,1.455,1.42,1.317,1.54,1.162,1.614,0.979,1.604,0.796,1.595,0.614,1.586,0.431,1.577,0.248,1.567,0.065,1.558,-0.118,1.549,-0.301,1.54,-0.484,1.53,-0.667,1.521,-0.85,1.512,-0.897,1.335,-0.944,1.158,-0.992,0.981,-1.039,0.804,-1.087,0.628,-1.134,0.451,-1.182,0.274,-1.229,0.097,-1.276,-0.08,-1.324,-0.257,-1.371,-0.434,-1.419,-0.61,-1.466,-0.787,-1.514,-0.964,-1.535,-1.142,-1.505,-1.323,-1.459,-1.497,-1.347,-1.641,-1.234,-1.785,-1.122,-1.93,-1.009,-2.074,-0.895,-2.201,-0.736,-2.238,-0.601,-2.167,-0.478,-2.032,-0.355,-1.896,-0.232,-1.76,-0.109,-1.625,0.014,-1.489,0.137,-1.353,0.26,-1.218,0.383,-1.082,0.506,-0.946,0.629,-0.81,0.751,-0.675,0.874,-0.539,0.997,-0.403,1.12,-0.268,1.243,-0.132,1.366,0.004,1.489,0.139,1.612,0.275,1.735,0.411,1.858,0.546,1.981,0.682],"area":8.123,"initial":"M-0.850,1.512L1.228,1.617L2.124,0.840L-0.687,-2.262L-0.863,-2.174L-0.904,-2.209L-1.482,-1.468L-1.545,-1.081L-0.850,1.512Z"},{"points":[1.939,-0.338,1.933,-0.139,1.882,0.066,1.831,0.27,1.779,0.475,1.728,0.679,1.677,0.884,1.686,1.092,1.708,1.302,1.73,1.511,1.752,1.721,1.774,1.931,1.796,2.14,1.818,2.35,1.706,2.447,1.496,2.461,1.286,2.476,1.075,2.491,0.865,2.506,0.655,2.521,0.445,2.536,0.235,2.55,0.024,2.565,-0.186,2.58,-0.396,2.595,-0.606,2.61,-0.816,2.625,-1.027,2.639,-1.237,2.654,-1.447,2.669,-1.657,2.684,-1.707,2.497,-1.718,2.287,-1.729,2.076,-1.708,1.868,-1.674,1.66,-1.641,1.452,-1.608,1.243,-1.574,1.035,-1.541,0.827,-1.508,0.619,-1.475,0.411,-1.441,0.203,-1.408,-0.005,-1.375,-0.213,-1.341,-0.421,-1.276,-0.62,-1.197,-0.816,-1.099,-0.991,-0.899,-1.057,-0.693,-1.09,-0.483,-1.106,-0.272,-1.123,-0.062,-1.139,0.148,-1.155,0.358,-1.171,0.566,-1.16,0.773,-1.119,0.979,-1.074,1.167,-0.98,1.356,-0.886,1.544,-0.792,1.733,-0.697,1.845,-0.527],"area":11.921,"initial":"M-1.657,2.684L1.828,2.438L1.668,0.920L1.968,-0.280L1.768,-0.680L0.968,-1.080L0.468,-1.180L-0.832,-1.080L-1.132,-0.980L-1.332,-0.480L-1.732,2.020L-1.698,2.661L-1.657,2.684Z"},{"points":[0.525,0.808,0.429,0.884,0.332,0.961,0.236,1.038,0.14,1.115,0.043,1.192,-0.053,1.268,-0.149,1.345,-0.246,1.422,-0.342,1.499,-0.438,1.576,-0.535,1.653,-0.631,1.729,-0.727,1.806,-0.824,1.883,-0.92,1.96,-0.997,1.938,-1.059,1.831,-1.12,1.724,-1.181,1.617,-1.243,1.51,-1.304,1.403,-1.365,1.297,-1.427,1.19,-1.488,1.083,-1.549,0.976,-1.611,0.869,-1.672,0.762,-1.734,0.655,-1.795,0.549,-1.856,0.442,-1.918,0.335,-1.979,0.228,-2.04,0.121,-2.102,0.014,-2.109,-0.075,-1.997,-0.126,-1.885,-0.177,-1.773,-0.229,-1.661,-0.28,-1.549,-0.331,-1.436,-0.382,-1.324,-0.433,-1.212,-0.484,-1.1,-0.535,-0.988,-0.586,-0.876,-0.638,-0.764,-0.689,-0.652,-0.74,-0.599,-0.646,-0.555,-0.531,-0.504,-0.42,-0.425,-0.325,-0.346,-0.231,-0.267,-0.136,-0.188,-0.042,-0.108,0.052,-0.029,0.147,0.05,0.241,0.129,0.336,0.208,0.43,0.288,0.524,0.367,0.619,0.446,0.713],"area":3.713,"initial":"M0.525,0.808L-0.518,-0.436L-0.637,-0.746L-2.144,-0.059L-0.964,1.995L0.525,0.808Z"},{"points":[-0.706,2.104,-0.733,2.177,-0.831,2.221,-0.928,2.266,-1.025,2.31,-1.123,2.355,-1.22,2.399,-1.317,2.443,-1.414,2.488,-1.512,2.532,-1.609,2.576,-1.706,2.621,-1.803,2.665,-1.901,2.709,-1.998,2.754,-2.095,2.798,-2.193,2.843,-2.295,2.811,-2.397,2.779,-2.499,2.746,-2.564,2.663,-2.626,2.577,-2.689,2.49,-2.751,2.403,-2.814,2.316,-2.876,2.229,-2.84,2.141,-2.779,2.053,-2.719,1.965,-2.659,1.876,-2.599,1.788,-2.539,1.7,-2.478,1.611,-2.418,1.523,-2.358,1.435,-2.298,1.346,-2.238,1.258,-2.177,1.17,-2.117,1.081,-2.057,0.993,-1.997,0.905,-1.936,0.816,-1.876,0.728,-1.816,0.64,-1.756,0.551,-1.696,0.463,-1.633,0.442,-1.567,0.526,-1.501,0.61,-1.435,0.695,-1.37,0.779,-1.304,0.863,-1.238,0.947,-1.172,1.031,-1.106,1.116,-1.051,1.206,-1.013,1.306,-0.975,1.406,-0.936,1.506,-0.898,1.605,-0.859,1.705,-0.821,1.805,-0.783,1.905,-0.744,2.004],"area":2.877,"initial":"M-2.193,2.843L-0.686,2.156L-1.067,1.166L-1.659,0.409L-2.888,2.213L-2.505,2.744L-2.193,2.843Z"},{"points":[1.414,-0.87,1.378,-0.746,1.341,-0.622,1.304,-0.498,1.267,-0.374,1.231,-0.25,1.194,-0.126,1.152,-0.004,1.055,0.077,0.946,0.146,0.837,0.216,0.728,0.286,0.619,0.355,0.51,0.425,0.401,0.495,0.292,0.565,0.183,0.634,0.074,0.704,-0.035,0.774,-0.144,0.844,-0.253,0.913,-0.362,0.983,-0.471,1.053,-0.58,1.122,-0.681,1.042,-0.782,0.961,-0.883,0.88,-0.984,0.799,-1.085,0.719,-1.186,0.638,-1.287,0.557,-1.388,0.476,-1.489,0.395,-1.59,0.315,-1.692,0.234,-1.793,0.153,-1.868,0.058,-1.87,-0.06,-1.745,-0.093,-1.62,-0.127,-1.495,-0.16,-1.37,-0.193,-1.245,-0.226,-1.12,-0.26,-0.995,-0.293,-0.87,-0.326,-0.745,-0.36,-0.62,-0.393,-0.495,-0.426,-0.37,-0.459,-0.245,-0.493,-0.12,-0.526,0.005,-0.559,0.13,-0.592,0.255,-0.626,0.38,-0.659,0.505,-0.692,0.63,-0.726,0.755,-0.759,0.88,-0.792,1.005,-0.825,1.13,-0.859,1.255,-0.892,1.38,-0.925],"area":3.289,"initial":"M-0.580,1.122L1.135,0.025L1.165,-0.028L1.435,-0.940L-1.883,-0.057L-1.864,0.096L-0.580,1.122Z"},{"points":[1.225,-0.789,1.188,-0.648,1.152,-0.507,1.115,-0.366,1.079,-0.225,1.042,-0.084,1.006,0.056,0.969,0.197,0.933,0.338,0.896,0.479,0.86,0.62,0.823,0.761,0.787,0.902,0.75,1.042,0.714,1.183,0.677,1.324,0.641,1.465,0.593,1.594,0.451,1.626,0.309,1.658,0.167,1.69,0.025,1.722,-0.116,1.754,-0.258,1.787,-0.343,1.668,-0.427,1.55,-0.512,1.431,-0.596,1.313,-0.681,1.194,-0.765,1.076,-0.85,0.957,-0.934,0.839,-1.019,0.72,-1.103,0.602,-1.188,0.484,-1.238,0.36,-1.194,0.221,-1.15,0.082,-1.106,-0.056,-1.062,-0.195,-1.018,-0.334,-0.974,-0.472,-0.929,-0.611,-0.885,-0.75,-0.841,-0.888,-0.797,-1.027,-0.753,-1.166,-0.709,-1.304,-0.665,-1.443,-0.579,-1.533,-0.436,-1.559,-0.292,-1.584,-0.149,-1.609,-0.006,-1.635,0.138,-1.66,0.259,-1.592,0.377,-1.507,0.495,-1.421,0.612,-1.336,0.73,-1.25,0.848,-1.164,0.965,-1.079,1.083,-0.993,1.201,-0.908],"area":5.772,"initial":"M-0.258,1.787L0.609,1.590L1.247,-0.874L0.161,-1.664L-0.640,-1.523L-1.250,0.397L-0.258,1.787Z"},{"points":[2.577,-0.37,2.432,-0.27,2.286,-0.17,2.141,-0.07,1.996,0.03,1.85,0.13,1.705,0.23,1.559,0.33,1.414,0.429,1.269,0.529,1.123,0.629,0.978,0.729,0.832,0.829,0.687,0.929,0.542,1.029,0.396,1.129,0.251,1.229,0.105,1.328,-0.04,1.428,-0.185,1.528,-0.331,1.628,-0.476,1.728,-0.622,1.828,-0.767,1.928,-0.905,1.817,-0.915,1.667,-0.896,1.492,-0.882,1.316,-0.868,1.14,-0.854,0.964,-0.839,0.789,-0.825,0.613,-0.811,0.437,-0.797,0.261,-0.783,0.085,-0.769,-0.091,-0.755,-0.266,-0.741,-0.442,-0.727,-0.618,-0.713,-0.794,-0.683,-0.968,-0.645,-1.14,-0.606,-1.312,-0.538,-1.468,-0.418,-1.597,-0.297,-1.726,-0.154,-1.738,0.006,-1.663,0.165,-1.587,0.325,-1.512,0.484,-1.437,0.644,-1.361,0.803,-1.286,0.963,-1.211,1.122,-1.136,1.282,-1.06,1.441,-0.985,1.601,-0.91,1.76,-0.834,1.92,-0.759,2.08,-0.684,2.239,-0.609,2.399,-0.533,2.558,-0.458],"area":7.08,"initial":"M-0.767,1.928L2.643,-0.415L2.643,-0.418L-0.245,-1.781L-0.582,-1.421L-0.708,-0.855L-0.908,1.645L-0.949,1.782L-0.767,1.928ZM-1.961,0.050L-1.662,0.877L-1.208,-0.655L-1.198,-0.764L-1.961,0.050Z"},{"points":[2.223,0.228,2.199,0.354,2.176,0.481,2.152,0.607,2.129,0.733,2.105,0.859,2.081,0.985,2.058,1.111,2.034,1.237,2.011,1.364,1.987,1.49,1.963,1.616,1.872,1.703,1.776,1.787,1.679,1.872,1.582,1.956,1.485,2.04,1.357,2.037,1.229,2.035,1.1,2.032,0.972,2.03,0.844,2.027,0.715,2.024,0.587,2.022,0.605,1.912,0.641,1.788,0.677,1.665,0.712,1.542,0.748,1.419,0.784,1.296,0.82,1.172,0.856,1.049,0.891,0.926,0.927,0.803,0.963,0.679,0.999,0.556,1.034,0.433,1.07,0.31,1.106,0.186,1.142,0.063,1.157,-0.062,1.15,-0.19,1.143,-0.319,1.137,-0.447,1.13,-0.575,1.123,-0.703,1.116,-0.831,1.11,-0.959,1.103,-1.087,1.096,-1.216,1.157,-1.207,1.235,-1.105,1.312,-1.003,1.39,-0.901,1.468,-0.798,1.545,-0.696,1.623,-0.594,1.7,-0.492,1.778,-0.39,1.856,-0.287,1.933,-0.185,2.011,-0.083,2.088,0.019,2.166,0.121],"area":2.95,"initial":"M1.485,2.040L1.962,1.626L2.228,0.202L1.135,-1.237L1.094,-1.260L1.160,-0.000L0.573,2.022L1.485,2.040Z"},{"points":[1.784,-0.144,1.684,-0.063,1.584,0.018,1.484,0.098,1.384,0.179,1.284,0.26,1.184,0.341,1.084,0.422,0.984,0.503,0.884,0.584,0.784,0.665,0.684,0.746,0.584,0.827,0.484,0.908,0.384,0.989,0.284,1.07,0.177,1.112,0.054,1.074,-0.069,1.036,-0.192,0.998,-0.315,0.96,-0.438,0.922,-0.561,0.884,-0.684,0.846,-0.807,0.808,-0.93,0.77,-1.053,0.732,-1.176,0.695,-1.299,0.657,-1.349,0.581,-1.308,0.459,-1.268,0.337,-1.268,0.208,-1.268,0.08,-1.25,-0.045,-1.192,-0.16,-1.134,-0.274,-1.076,-0.389,-1.018,-0.504,-0.96,-0.619,-0.902,-0.734,-0.844,-0.849,-0.766,-0.938,-0.64,-0.966,-0.515,-0.995,-0.389,-1.023,-0.264,-1.051,-0.138,-1.08,-0.013,-1.108,0.107,-1.1,0.219,-1.036,0.331,-0.973,0.443,-0.909,0.555,-0.845,0.666,-0.782,0.778,-0.718,0.89,-0.654,1.002,-0.59,1.114,-0.527,1.225,-0.463,1.337,-0.399,1.449,-0.336,1.561,-0.272,1.673,-0.208],"area":4.314,"initial":"M1.784,-0.144L0.063,-1.125L-0.804,-0.929L-1.268,-0.009L-1.268,0.336L-1.367,0.636L0.217,1.124L1.784,-0.144Z"},{"points":[1.093,0.155,1.085,0.32,0.969,0.444,0.853,0.567,0.768,0.634,0.804,0.469,0.807,0.319,0.656,0.244,0.504,0.168,0.37,0.198,0.25,0.318,0.221,0.48,0.206,0.649,0.19,0.818,0.175,0.987,0.16,1.155,0.144,1.324,0.028,1.448,-0.087,1.572,-0.203,1.695,-0.319,1.819,-0.435,1.943,-0.551,2.066,-0.664,2.088,-0.698,1.922,-0.731,1.755,-0.764,1.589,-0.798,1.423,-0.831,1.257,-0.865,1.091,-0.898,0.925,-0.932,0.758,-0.965,0.592,-0.999,0.426,-1.032,0.26,-1.065,0.094,-1.099,-0.072,-1.132,-0.239,-1.166,-0.405,-1.108,-0.538,-0.976,-0.645,-0.845,-0.751,-0.713,-0.858,-0.581,-0.965,-0.449,-1.071,-0.318,-1.178,-0.186,-1.285,-0.054,-1.391,0.078,-1.498,0.209,-1.605,0.341,-1.711,0.491,-1.729,0.638,-1.644,0.784,-1.559,0.931,-1.474,1.045,-1.369,1.051,-1.2,1.056,-1.03,1.061,-0.861,1.066,-0.692,1.072,-0.522,1.077,-0.353,1.082,-0.183,1.087,-0.014],"area":4.999,"initial":"M0.144,1.324L0.235,0.333L0.434,0.133L0.835,0.333L0.760,0.667L1.097,0.307L1.044,-1.408L0.452,-1.752L0.386,-1.748L-1.181,-0.479L-0.661,2.103L-0.618,2.138L0.144,1.324Z"},{"points":[2.067,0.676,1.968,0.868,1.869,1.06,1.769,1.252,1.67,1.444,1.466,1.492,1.253,1.527,1.04,1.562,0.827,1.597,0.614,1.632,0.4,1.667,0.187,1.702,-0.026,1.737,-0.239,1.772,-0.453,1.807,-0.666,1.842,-0.879,1.876,-1.092,1.911,-1.306,1.946,-1.519,1.981,-1.732,2.016,-1.825,1.821,-1.918,1.626,-2.011,1.431,-2.104,1.236,-2.198,1.041,-2.291,0.846,-2.332,0.634,-2.374,0.422,-2.415,0.21,-2.457,-0.002,-2.498,-0.214,-2.54,-0.426,-2.525,-0.609,-2.329,-0.7,-2.133,-0.791,-1.937,-0.882,-1.741,-0.973,-1.545,-1.064,-1.349,-1.154,-1.153,-1.245,-0.957,-1.336,-0.761,-1.427,-0.565,-1.518,-0.369,-1.608,-0.172,-1.699,0.024,-1.79,0.22,-1.881,0.416,-1.972,0.612,-2.063,0.75,-1.982,0.852,-1.791,0.954,-1.601,1.055,-1.41,1.157,-1.219,1.259,-1.029,1.361,-0.838,1.462,-0.647,1.542,-0.447,1.623,-0.246,1.703,-0.045,1.783,0.155,1.865,0.355,2.018,0.507],"area":12.585,"initial":"M-1.732,2.016L1.662,1.460L2.108,0.597L1.861,0.351L1.461,-0.649L0.689,-2.098L-2.572,-0.588L-2.291,0.846L-1.732,2.016ZM2.527,-0.213L2.461,-0.330L2.461,-0.085L2.527,-0.213Z"},{"points":[1.684,0.158,1.673,0.312,1.662,0.467,1.65,0.621,1.639,0.776,1.622,0.927,1.504,1.027,1.386,1.127,1.267,1.227,1.149,1.327,1.031,1.427,0.912,1.527,0.794,1.627,0.64,1.612,0.486,1.596,0.332,1.58,0.178,1.564,0.024,1.548,-0.13,1.532,-0.284,1.516,-0.439,1.5,-0.593,1.484,-0.631,1.375,-0.614,1.221,-0.596,1.067,-0.543,0.921,-0.49,0.776,-0.437,0.63,-0.384,0.485,-0.331,0.339,-0.278,0.193,-0.225,0.048,-0.184,-0.101,-0.155,-0.253,-0.126,-0.405,-0.098,-0.558,-0.069,-0.71,-0.041,-0.862,-0.012,-1.014,0.016,-1.167,0.045,-1.319,0.073,-1.471,0.102,-1.623,0.145,-1.772,0.189,-1.921,0.309,-2.012,0.44,-2.096,0.57,-2.179,0.65,-2.09,0.716,-1.95,0.782,-1.809,0.848,-1.669,0.914,-1.529,0.979,-1.389,1.045,-1.248,1.111,-1.108,1.177,-0.968,1.242,-0.828,1.308,-0.687,1.374,-0.547,1.44,-0.407,1.506,-0.267,1.571,-0.126,1.637,0.014],"area":5.439,"initial":"M0.794,1.627L1.629,0.922L1.687,0.120L0.599,-2.198L0.194,-1.938L0.103,-1.630L-0.197,-0.030L-0.597,1.069L-0.642,1.479L0.794,1.627Z"},{"points":[0.961,-0.503,0.945,-0.368,0.929,-0.233,0.912,-0.098,0.896,0.037,0.88,0.173,0.863,0.308,0.847,0.443,0.83,0.578,0.814,0.713,0.798,0.849,0.781,0.984,0.765,1.119,0.749,1.254,0.732,1.389,0.716,1.525,0.699,1.66,0.573,1.629,0.454,1.562,0.336,1.495,0.218,1.427,0.099,1.36,-0.019,1.292,-0.137,1.225,-0.256,1.157,-0.374,1.09,-0.492,1.022,-0.611,0.955,-0.729,0.888,-0.847,0.82,-0.966,0.753,-1.084,0.685,-1.054,0.555,-1.02,0.423,-0.986,0.292,-0.952,0.16,-0.918,0.028,-0.883,-0.104,-0.849,-0.236,-0.815,-0.368,-0.781,-0.5,-0.747,-0.631,-0.713,-0.763,-0.678,-0.895,-0.644,-1.027,-0.61,-1.159,-0.576,-1.291,-0.542,-1.422,-0.508,-1.554,-0.474,-1.686,-0.411,-1.773,-0.278,-1.747,-0.162,-1.689,-0.068,-1.59,0.026,-1.491,0.12,-1.393,0.214,-1.294,0.308,-1.195,0.402,-1.097,0.495,-0.998,0.589,-0.899,0.683,-0.801,0.777,-0.702,0.871,-0.603],"area":4.368,"initial":"M0.699,1.660L0.962,-0.508L-0.203,-1.732L-0.449,-1.781L-1.087,0.683L0.634,1.664L0.699,1.660Z"},{"points":[1.448,0.417,1.386,0.524,1.258,0.596,1.131,0.668,1.003,0.741,0.876,0.813,0.748,0.886,0.62,0.958,0.493,1.031,0.365,1.103,0.238,1.175,0.11,1.248,-0.018,1.32,-0.145,1.393,-0.273,1.465,-0.417,1.436,-0.553,1.391,-0.672,1.305,-0.791,1.218,-0.909,1.132,-1.028,1.046,-1.147,0.959,-1.265,0.873,-1.384,0.787,-1.503,0.7,-1.597,0.608,-1.538,0.473,-1.48,0.339,-1.421,0.204,-1.362,0.07,-1.303,-0.065,-1.244,-0.199,-1.186,-0.333,-1.127,-0.468,-1.068,-0.602,-1.009,-0.737,-0.95,-0.871,-0.891,-1.005,-0.833,-1.14,-0.772,-1.272,-0.626,-1.264,-0.479,-1.257,-0.333,-1.25,-0.186,-1.242,-0.04,-1.235,0.107,-1.227,0.254,-1.22,0.4,-1.213,0.547,-1.205,0.693,-1.198,0.84,-1.19,0.986,-1.183,1.133,-1.176,1.279,-1.168,1.314,-1.044,1.328,-0.898,1.341,-0.752,1.354,-0.606,1.368,-0.46,1.381,-0.314,1.395,-0.168,1.408,-0.021,1.421,0.125,1.435,0.271],"area":6.001,"initial":"M-0.273,1.465L1.454,0.485L1.303,-1.167L-0.775,-1.272L-1.605,0.626L-0.519,1.416L-0.273,1.465Z"},{"points":[2.084,-0.15,1.956,-0.038,1.828,0.075,1.699,0.187,1.571,0.3,1.442,0.413,1.314,0.525,1.186,0.638,1.057,0.75,0.929,0.863,0.8,0.976,0.672,1.088,0.544,1.201,0.415,1.313,0.287,1.426,0.158,1.539,0.03,1.651,-0.098,1.764,-0.227,1.876,-0.355,1.989,-0.442,1.901,-0.514,1.746,-0.587,1.592,-0.659,1.437,-0.732,1.282,-0.804,1.128,-0.877,0.973,-0.949,0.819,-1.022,0.664,-1.094,0.509,-1.167,0.355,-1.239,0.2,-1.312,0.046,-1.384,-0.109,-1.457,-0.264,-1.432,-0.423,-1.375,-0.584,-1.318,-0.745,-1.261,-0.906,-1.205,-1.067,-1.148,-1.228,-1.091,-1.389,-1.034,-1.55,-0.977,-1.712,-0.898,-1.815,-0.749,-1.731,-0.6,-1.648,-0.451,-1.565,-0.302,-1.482,-0.153,-1.399,-0.004,-1.315,0.145,-1.232,0.295,-1.149,0.444,-1.066,0.593,-0.982,0.742,-0.899,0.891,-0.816,1.04,-0.733,1.189,-0.65,1.339,-0.566,1.488,-0.483,1.637,-0.4,1.786,-0.317,1.935,-0.234],"area":6.812,"initial":"M2.084,-0.150L-0.934,-1.834L-1.475,-0.302L-0.387,2.017L2.084,-0.150Z"},{"points":[1.449,-0.649,1.413,-0.504,1.375,-0.359,1.337,-0.214,1.299,-0.069,1.261,0.076,1.223,0.221,1.185,0.366,1.148,0.511,1.11,0.656,1.072,0.801,1.034,0.946,0.958,1.053,0.812,1.086,0.666,1.12,0.52,1.154,0.374,1.188,0.228,1.222,0.082,1.255,-0.065,1.289,-0.211,1.323,-0.357,1.357,-0.503,1.391,-0.649,1.424,-0.795,1.458,-0.925,1.383,-1.054,1.307,-1.184,1.232,-1.313,1.157,-1.379,1.049,-1.361,0.901,-1.343,0.752,-1.325,0.603,-1.307,0.454,-1.289,0.305,-1.271,0.156,-1.253,0.007,-1.235,-0.141,-1.217,-0.29,-1.199,-0.439,-1.181,-0.588,-1.163,-0.737,-1.145,-0.886,-1.127,-1.035,-0.995,-1.075,-0.847,-1.099,-0.699,-1.123,-0.551,-1.147,-0.403,-1.171,-0.255,-1.195,-0.107,-1.219,0.041,-1.243,0.189,-1.267,0.337,-1.291,0.485,-1.315,0.633,-1.34,0.781,-1.364,0.929,-1.388,1.077,-1.412,1.174,-1.347,1.229,-1.208,1.284,-1.068,1.339,-0.928,1.394,-0.789],"area":6.22,"initial":"M-0.795,1.458L1.009,1.041L1.450,-0.647L1.145,-1.423L-1.124,-1.054L-1.387,1.114L-0.795,1.458Z"},{"points":[1.274,-0.973,1.241,-0.833,1.207,-0.694,1.174,-0.554,1.14,-0.415,1.106,-0.275,1.073,-0.136,1.039,0.004,1.006,0.143,0.972,0.283,0.939,0.422,0.905,0.561,0.872,0.701,0.838,0.84,0.805,0.98,0.771,1.119,0.737,1.259,0.704,1.398,0.67,1.538,0.637,1.677,0.525,1.666,0.392,1.613,0.259,1.56,0.126,1.506,-0.007,1.453,-0.14,1.4,-0.274,1.347,-0.407,1.293,-0.54,1.24,-0.673,1.187,-0.806,1.134,-0.94,1.08,-1.073,1.027,-1.086,0.884,-1.099,0.742,-1.112,0.599,-1.125,0.456,-1.138,0.313,-1.151,0.17,-1.164,0.027,-1.178,-0.115,-1.191,-0.258,-1.204,-0.401,-1.217,-0.544,-1.177,-0.665,-1.069,-0.759,-0.96,-0.853,-0.852,-0.947,-0.744,-1.042,-0.635,-1.136,-0.527,-1.23,-0.419,-1.324,-0.305,-1.404,-0.162,-1.414,-0.019,-1.425,0.124,-1.436,0.267,-1.447,0.405,-1.429,0.534,-1.366,0.663,-1.303,0.791,-1.24,0.92,-1.177,1.049,-1.114,1.178,-1.051],"area":5.608,"initial":"M-1.073,1.027L0.629,1.708L1.281,-1.000L0.356,-1.453L-0.329,-1.402L-1.224,-0.624L-1.073,1.027Z"},{"points":[1.664,-0.15,1.646,-0.012,1.621,0.126,1.597,0.265,1.572,0.404,1.547,0.542,1.522,0.681,1.383,0.703,1.244,0.726,1.105,0.748,0.966,0.771,0.828,0.794,0.689,0.816,0.55,0.839,0.411,0.861,0.272,0.884,0.133,0.907,-0.006,0.929,-0.145,0.952,-0.284,0.974,-0.423,0.997,-0.562,1.02,-0.701,1.042,-0.812,0.982,-0.909,0.88,-1.006,0.778,-1.103,0.676,-1.2,0.574,-1.297,0.472,-1.394,0.37,-1.491,0.268,-1.588,0.166,-1.685,0.064,-1.782,-0.038,-1.879,-0.14,-1.83,-0.22,-1.708,-0.29,-1.585,-0.359,-1.463,-0.429,-1.341,-0.498,-1.218,-0.568,-1.096,-0.637,-0.973,-0.707,-0.851,-0.776,-0.729,-0.846,-0.606,-0.915,-0.484,-0.985,-0.361,-1.054,-0.239,-1.124,-0.112,-1.126,0.019,-1.074,0.149,-1.021,0.28,-0.969,0.411,-0.917,0.541,-0.865,0.672,-0.812,0.803,-0.76,0.934,-0.708,1.064,-0.656,1.195,-0.603,1.326,-0.551,1.456,-0.499,1.548,-0.406,1.606,-0.278],"area":5.093,"initial":"M1.522,0.681L1.669,-0.139L1.518,-0.474L-0.184,-1.155L-1.911,-0.174L-0.747,1.050L1.522,0.681Z"},{"points":[2.378,1.279,2.206,1.317,2.034,1.354,1.862,1.392,1.689,1.429,1.517,1.466,1.345,1.504,1.173,1.541,1.0,1.579,0.828,1.616,0.656,1.654,0.484,1.691,0.311,1.728,0.139,1.766,-0.033,1.803,-0.205,1.841,-0.377,1.878,-0.55,1.915,-0.659,1.812,-0.661,1.636,-0.661,1.46,-0.661,1.284,-0.661,1.108,-0.661,0.931,-0.661,0.755,-0.661,0.579,-0.661,0.403,-0.661,0.226,-0.661,0.05,-0.661,-0.126,-0.661,-0.302,-0.661,-0.479,-0.661,-0.655,-0.627,-0.826,-0.578,-0.996,-0.529,-1.165,-0.48,-1.334,-0.431,-1.503,-0.382,-1.673,-0.293,-1.788,-0.117,-1.785,0.059,-1.781,0.236,-1.777,0.412,-1.774,0.576,-1.75,0.667,-1.599,0.757,-1.447,0.847,-1.296,0.937,-1.144,1.027,-0.993,1.117,-0.841,1.207,-0.69,1.297,-0.538,1.387,-0.387,1.477,-0.235,1.567,-0.084,1.657,0.068,1.748,0.219,1.838,0.371,1.928,0.522,2.018,0.673,2.108,0.825,2.198,0.976,2.288,1.128],"area":7.347,"initial":"M2.378,1.279L0.564,-1.771L-0.348,-1.789L-0.661,-0.711L-0.661,1.808L-0.595,1.925L2.378,1.279Z"},{"points":[1.4,-1.449,1.395,-1.248,1.387,-1.046,1.379,-0.844,1.371,-0.642,1.364,-0.44,1.356,-0.238,1.348,-0.036,1.34,0.166,1.332,0.368,1.324,0.57,1.316,0.772,1.308,0.974,1.3,1.176,1.293,1.378,1.285,1.58,1.277,1.782,1.269,1.984,1.261,2.186,1.177,2.314,0.975,2.329,0.773,2.344,0.572,2.359,0.436,2.21,0.3,2.06,0.165,1.91,0.029,1.76,-0.107,1.61,-0.243,1.461,-0.378,1.311,-0.514,1.161,-0.65,1.011,-0.786,0.862,-0.921,0.712,-1.057,0.562,-1.193,0.412,-1.329,0.263,-1.464,0.113,-1.6,-0.037,-1.736,-0.187,-1.872,-0.337,-2.007,-0.486,-2.143,-0.636,-2.229,-0.783,-2.29,-0.965,-2.221,-1.155,-2.045,-1.216,-1.845,-1.249,-1.646,-1.281,-1.446,-1.314,-1.247,-1.347,-1.047,-1.379,-0.848,-1.412,-0.648,-1.445,-0.449,-1.477,-0.249,-1.51,-0.05,-1.543,0.15,-1.575,0.349,-1.608,0.549,-1.641,0.748,-1.673,0.947,-1.706,1.147,-1.739,1.281,-1.613],"area":9.303,"initial":"M0.572,2.359L1.256,2.308L1.403,-1.446L1.185,-1.745L-2.209,-1.189L-2.303,-0.930L-2.215,-0.754L-2.239,-0.742L0.572,2.359Z"},{"points":[2.186,0.004,2.082,0.234,1.977,0.465,1.891,0.517,1.836,0.27,1.781,0.023,1.726,-0.224,1.636,-0.459,1.421,-0.52,1.347,-0.29,1.286,-0.045,1.225,0.201,1.163,0.446,1.102,0.692,1.04,0.937,0.979,1.183,0.918,1.428,0.905,1.68,0.905,1.933,0.762,2.025,0.511,1.994,0.26,1.963,0.039,1.84,-0.182,1.717,-0.403,1.593,-0.624,1.47,-0.845,1.347,-1.066,1.223,-1.287,1.1,-1.508,0.977,-1.729,0.854,-1.95,0.73,-2.171,0.607,-2.392,0.484,-2.613,0.36,-2.783,0.196,-2.847,-0.042,-2.639,-0.186,-2.43,-0.329,-2.221,-0.472,-2.013,-0.615,-1.804,-0.759,-1.596,-0.902,-1.387,-1.045,-1.178,-1.189,-0.97,-1.332,-0.761,-1.475,-0.553,-1.618,-0.344,-1.762,-0.136,-1.905,0.073,-2.048,0.282,-2.192,0.49,-2.335,0.66,-2.241,0.811,-2.038,0.963,-1.835,1.114,-1.633,1.266,-1.43,1.417,-1.227,1.569,-1.025,1.72,-0.822,1.872,-0.619,2.023,-0.417,2.175,-0.214],"area":11.124,"initial":"M0.260,1.963L0.905,2.042L0.905,1.480L1.405,-0.520L1.605,-0.520L1.705,-0.320L1.911,0.609L2.244,-0.122L0.555,-2.380L-2.854,-0.037L-2.758,0.279L0.260,1.963Z"},{"points":[0.061,-1.366,0.027,-1.241,-0.056,-1.109,-0.138,-0.977,-0.221,-0.845,-0.303,-0.713,-0.386,-0.581,-0.436,-0.438,-0.451,-0.284,-0.467,-0.129,-0.482,0.026,-0.498,0.181,-0.513,0.336,-0.53,0.49,-0.588,0.635,-0.645,0.779,-0.703,0.924,-0.844,0.858,-0.985,0.791,-1.126,0.725,-1.266,0.659,-1.407,0.592,-1.548,0.526,-1.689,0.46,-1.829,0.393,-1.97,0.327,-2.111,0.261,-2.252,0.194,-2.393,0.128,-2.533,0.062,-2.674,-0.004,-2.815,-0.071,-2.956,-0.137,-3.097,-0.203,-3.166,-0.333,-3.215,-0.481,-3.263,-0.628,-3.312,-0.776,-3.361,-0.924,-3.41,-1.072,-3.386,-1.199,-3.267,-1.3,-3.148,-1.4,-3.029,-1.501,-2.911,-1.601,-2.792,-1.702,-2.673,-1.802,-2.54,-1.85,-2.387,-1.821,-2.234,-1.793,-2.081,-1.764,-1.928,-1.736,-1.775,-1.707,-1.622,-1.679,-1.469,-1.651,-1.316,-1.622,-1.163,-1.594,-1.01,-1.565,-0.857,-1.537,-0.704,-1.508,-0.551,-1.48,-0.398,-1.451,-0.245,-1.423,-0.092,-1.394],"area":5.881,"initial":"M-0.703,0.924L-0.528,0.486L-0.428,-0.514L0.072,-1.314L0.082,-1.362L-2.603,-1.861L-3.437,-1.156L-3.128,-0.218L-0.703,0.924Z"},{"points":[1.594,-0.052,1.555,0.102,1.515,0.257,1.475,0.412,1.435,0.566,1.395,0.721,1.355,0.876,1.315,1.03,1.157,1.057,1.0,1.084,0.843,1.111,0.685,1.138,0.528,1.165,0.37,1.192,0.213,1.219,0.055,1.246,-0.102,1.273,-0.26,1.3,-0.417,1.327,-0.574,1.354,-0.732,1.381,-0.889,1.408,-1.047,1.435,-1.204,1.462,-1.361,1.488,-1.426,1.342,-1.492,1.196,-1.485,1.044,-1.447,0.888,-1.41,0.733,-1.373,0.578,-1.335,0.423,-1.298,0.267,-1.261,0.112,-1.223,-0.043,-1.186,-0.199,-1.149,-0.354,-1.111,-0.509,-1.074,-0.665,-1.036,-0.82,-0.999,-0.975,-0.962,-1.131,-0.924,-1.286,-0.887,-1.441,-0.817,-1.563,-0.661,-1.595,-0.504,-1.627,-0.348,-1.659,-0.194,-1.676,-0.056,-1.595,0.082,-1.514,0.219,-1.433,0.357,-1.352,0.495,-1.271,0.633,-1.19,0.77,-1.109,0.908,-1.029,1.046,-0.948,1.184,-0.867,1.321,-0.786,1.406,-0.663,1.453,-0.51,1.5,-0.357,1.548,-0.205],"area":6.912,"initial":"M1.315,1.030L1.595,-0.054L1.378,-0.753L-0.212,-1.686L-0.860,-1.555L-1.511,1.154L-1.360,1.489L1.315,1.030Z"},{"points":[1.727,0.751,1.66,0.908,1.593,1.065,1.526,1.222,1.46,1.379,1.393,1.536,1.326,1.693,1.259,1.85,1.105,1.777,0.951,1.704,0.796,1.632,0.642,1.559,0.487,1.486,0.333,1.413,0.179,1.34,0.024,1.267,-0.13,1.195,-0.284,1.122,-0.439,1.049,-0.593,0.976,-0.747,0.903,-0.902,0.83,-1.056,0.758,-1.21,0.685,-1.365,0.612,-1.519,0.539,-1.63,0.438,-1.636,0.267,-1.641,0.097,-1.646,-0.074,-1.651,-0.244,-1.657,-0.415,-1.662,-0.586,-1.667,-0.756,-1.673,-0.927,-1.678,-1.097,-1.643,-1.237,-1.476,-1.275,-1.31,-1.314,-1.144,-1.352,-0.978,-1.391,-0.811,-1.429,-0.645,-1.468,-0.479,-1.506,-0.312,-1.545,-0.146,-1.583,0.02,-1.622,0.169,-1.599,0.29,-1.478,0.411,-1.358,0.531,-1.237,0.652,-1.117,0.773,-0.996,0.894,-0.876,1.015,-0.755,1.136,-0.635,1.256,-0.514,1.33,-0.363,1.392,-0.204,1.453,-0.044,1.515,0.115,1.577,0.274,1.638,0.433,1.7,0.592],"area":7.754,"initial":"M1.259,1.850L1.745,0.708L1.281,-0.489L0.122,-1.645L-1.682,-1.228L-1.629,0.487L1.259,1.850Z"},{"points":[0.331,-0.987,0.276,-0.907,0.18,-0.859,0.084,-0.811,-0.011,-0.763,-0.107,-0.715,-0.203,-0.667,-0.3,-0.623,-0.407,-0.623,-0.514,-0.623,-0.621,-0.623,-0.728,-0.623,-0.835,-0.623,-0.942,-0.623,-1.049,-0.623,-1.156,-0.623,-1.264,-0.623,-1.371,-0.623,-1.478,-0.623,-1.585,-0.623,-1.692,-0.623,-1.799,-0.623,-1.906,-0.623,-2.012,-0.629,-2.116,-0.656,-2.219,-0.684,-2.27,-0.747,-2.256,-0.853,-2.243,-0.959,-2.229,-1.066,-2.215,-1.172,-2.201,-1.278,-2.188,-1.384,-2.174,-1.491,-2.16,-1.597,-2.147,-1.703,-2.133,-1.809,-2.119,-1.915,-2.105,-2.022,-2.092,-2.128,-1.995,-2.082,-1.898,-2.037,-1.801,-1.991,-1.704,-1.945,-1.607,-1.9,-1.51,-1.854,-1.413,-1.808,-1.316,-1.763,-1.22,-1.717,-1.123,-1.671,-1.026,-1.626,-0.929,-1.58,-0.832,-1.535,-0.735,-1.489,-0.638,-1.443,-0.541,-1.398,-0.444,-1.352,-0.348,-1.306,-0.251,-1.261,-0.154,-1.215,-0.057,-1.169,0.04,-1.124,0.137,-1.078,0.234,-1.033],"area":2.301,"initial":"M-2.092,-2.128L-2.276,-0.699L-1.991,-0.623L-0.291,-0.623L0.309,-0.923L0.334,-0.985L-2.092,-2.128Z"},{"points":[-1.884,0.779,-1.933,1.02,-2.023,1.243,-2.16,1.446,-2.391,1.531,-2.621,1.616,-2.852,1.701,-3.082,1.786,-3.313,1.871,-3.543,1.956,-3.774,2.041,-4.004,2.126,-4.226,2.061,-4.352,1.857,-4.466,1.641,-4.686,1.532,-4.876,1.396,-4.963,1.166,-5.049,0.936,-5.135,0.706,-5.21,0.472,-5.28,0.237,-5.351,0.001,-5.422,-0.234,-5.507,-0.464,-5.606,-0.689,-5.706,-0.913,-5.806,-1.138,-5.895,-1.366,-5.973,-1.599,-6.05,-1.832,-5.852,-1.977,-5.653,-2.122,-5.455,-2.266,-5.256,-2.411,-5.058,-2.556,-4.859,-2.7,-4.661,-2.845,-4.462,-2.99,-4.264,-3.134,-4.065,-3.279,-3.867,-3.424,-3.668,-3.569,-3.47,-3.713,-3.271,-3.858,-3.177,-3.69,-3.106,-3.455,-3.034,-3.22,-2.963,-2.985,-2.891,-2.75,-2.82,-2.515,-2.748,-2.28,-2.677,-2.045,-2.605,-1.81,-2.533,-1.575,-2.462,-1.34,-2.39,-1.105,-2.319,-0.87,-2.247,-0.635,-2.176,-0.4,-2.104,-0.165,-2.033,0.07,-1.961,0.306,-1.89,0.541],"area":15.179,"initial":"M-6.050,-1.832L-5.858,-1.255L-5.458,-0.355L-5.158,0.645L-4.858,1.446L-4.458,1.645L-4.258,2.045L-4.058,2.145L-2.158,1.446L-1.958,1.145L-1.858,0.645L-3.236,-3.883L-6.050,-1.832Z"},{"points":[0.575,-1.982,0.575,-1.812,0.575,-1.641,0.575,-1.471,0.575,-1.3,0.575,-1.13,0.553,-0.962,0.52,-0.794,0.486,-0.627,0.453,-0.46,0.419,-0.293,0.386,-0.126,0.352,0.041,0.319,0.208,0.286,0.376,0.252,0.543,0.219,0.71,0.185,0.877,0.152,1.044,0.119,1.211,0.085,1.378,-0.082,1.347,-0.25,1.316,-0.418,1.285,-0.585,1.254,-0.753,1.222,-0.92,1.191,-1.088,1.16,-1.255,1.129,-1.423,1.098,-1.591,1.067,-1.758,1.035,-1.926,1.004,-2.093,0.973,-2.261,0.942,-2.428,0.911,-2.596,0.88,-2.587,0.712,-2.575,0.542,-2.562,0.372,-2.55,0.202,-2.507,0.048,-2.379,-0.065,-2.25,-0.177,-2.122,-0.289,-1.994,-0.402,-1.866,-0.514,-1.738,-0.627,-1.61,-0.739,-1.482,-0.851,-1.353,-0.964,-1.225,-1.076,-1.097,-1.188,-0.969,-1.301,-0.841,-1.413,-0.713,-1.526,-0.585,-1.638,-0.456,-1.75,-0.328,-1.863,-0.2,-1.975,-0.072,-2.087,0.096,-2.069,0.266,-2.049,0.435,-2.028],"area":6.885,"initial":"M0.085,1.378L0.575,-1.073L0.575,-2.011L-0.069,-2.090L-2.541,0.078L-2.599,0.879L0.085,1.378Z"},{"points":[1.754,-0.201,1.723,0.014,1.691,0.229,1.66,0.444,1.628,0.659,1.597,0.874,1.565,1.089,1.534,1.303,1.502,1.518,1.433,1.709,1.253,1.831,1.074,1.953,0.883,2.051,0.671,2.098,0.459,2.146,0.248,2.193,0.063,2.079,-0.122,1.965,-0.306,1.85,-0.491,1.736,-0.676,1.621,-0.86,1.507,-1.045,1.393,-1.229,1.278,-1.414,1.164,-1.599,1.05,-1.783,0.935,-1.968,0.821,-2.152,0.707,-2.316,0.569,-2.443,0.394,-2.418,0.206,-2.318,0.013,-2.218,-0.179,-2.118,-0.372,-2.008,-0.495,-1.874,-0.621,-1.744,-0.795,-1.685,-0.993,-1.685,-1.21,-1.547,-1.353,-1.335,-1.399,-1.122,-1.445,-0.91,-1.491,-0.698,-1.537,-0.486,-1.583,-0.273,-1.629,-0.061,-1.675,0.151,-1.721,0.363,-1.767,0.575,-1.814,0.788,-1.86,1.0,-1.906,1.212,-1.952,1.425,-1.971,1.639,-1.935,1.706,-1.801,1.657,-1.59,1.608,-1.378,1.559,-1.166,1.518,-0.955,1.554,-0.74,1.589,-0.526,1.672,-0.35],"area":12.164,"initial":"M0.248,2.193L0.954,2.035L1.479,1.678L1.771,-0.311L1.615,-0.373L1.515,-0.973L1.733,-1.920L1.354,-1.983L-1.619,-1.337L-1.685,-1.209L-1.685,-0.873L-1.985,-0.473L-2.039,-0.526L-2.485,0.336L-2.267,0.636L0.248,2.193Z"},{"points":[1.548,-0.708,1.535,-0.565,1.466,-0.405,1.396,-0.246,1.327,-0.086,1.258,0.074,1.189,0.234,1.12,0.394,1.051,0.554,0.982,0.714,0.913,0.874,0.843,1.034,0.774,1.193,0.705,1.353,0.636,1.513,0.567,1.673,0.498,1.833,0.327,1.868,0.156,1.902,-0.014,1.937,-0.182,1.949,-0.339,1.872,-0.495,1.796,-0.651,1.719,-0.808,1.643,-0.964,1.566,-1.073,1.461,-1.067,1.287,-1.06,1.113,-1.053,0.939,-1.046,0.765,-1.039,0.591,-1.033,0.417,-1.026,0.243,-1.019,0.069,-1.012,-0.105,-1.005,-0.279,-0.999,-0.453,-0.992,-0.628,-0.985,-0.802,-0.978,-0.976,-0.971,-1.15,-0.965,-1.324,-0.958,-1.498,-0.951,-1.672,-0.944,-1.846,-0.937,-2.02,-0.931,-2.194,-0.821,-2.175,-0.673,-2.084,-0.525,-1.992,-0.377,-1.9,-0.229,-1.808,-0.081,-1.717,0.067,-1.625,0.215,-1.533,0.363,-1.442,0.511,-1.35,0.659,-1.258,0.808,-1.166,0.956,-1.075,1.104,-0.983,1.252,-0.891,1.4,-0.799],"area":7.196,"initial":"M0.498,1.833L1.586,-0.684L-0.929,-2.242L-1.075,1.512L-0.150,1.965L0.498,1.833Z"},{"points":[2.175,-0.24,2.074,-0.077,1.95,0.083,1.826,0.244,1.701,0.405,1.577,0.565,1.453,0.726,1.329,0.886,1.204,1.047,1.08,1.208,0.956,1.368,0.831,1.529,0.707,1.689,0.583,1.85,0.459,2.011,0.275,2.074,0.075,2.111,-0.125,2.148,-0.324,2.185,-0.524,2.222,-0.646,2.059,-0.767,1.897,-0.889,1.734,-1.01,1.571,-1.132,1.409,-1.254,1.246,-1.375,1.083,-1.497,0.921,-1.618,0.758,-1.74,0.596,-1.862,0.433,-1.983,0.27,-2.105,0.108,-2.204,-0.058,-2.124,-0.245,-2.045,-0.432,-1.965,-0.619,-1.886,-0.806,-1.806,-0.992,-1.727,-1.179,-1.532,-1.234,-1.336,-1.287,-1.14,-1.34,-0.944,-1.393,-0.748,-1.446,-0.552,-1.499,-0.356,-1.552,-0.16,-1.605,0.036,-1.658,0.232,-1.711,0.428,-1.765,0.624,-1.818,0.82,-1.871,1.016,-1.924,1.212,-1.977,1.335,-1.863,1.428,-1.683,1.521,-1.502,1.615,-1.322,1.708,-1.142,1.801,-0.961,1.895,-0.781,1.988,-0.601,2.081,-0.42],"area":11.545,"initial":"M-0.524,2.222L0.433,2.044L2.185,-0.220L1.268,-1.992L-1.726,-1.181L-2.212,-0.039L-2.212,-0.036L-0.524,2.222Z"},{"points":[1.979,0.948,1.822,0.993,1.665,1.038,1.508,1.083,1.351,1.12,1.189,1.102,1.027,1.083,0.865,1.064,0.703,1.045,0.541,1.027,0.379,1.008,0.217,0.989,0.055,0.971,-0.107,0.952,-0.269,0.933,-0.431,0.915,-0.593,0.896,-0.755,0.877,-0.917,0.859,-1.079,0.84,-1.241,0.821,-1.403,0.803,-1.566,0.784,-1.625,0.632,-1.685,0.481,-1.745,0.329,-1.805,0.177,-1.864,0.025,-1.845,-0.134,-1.817,-0.295,-1.788,-0.455,-1.759,-0.616,-1.73,-0.776,-1.598,-0.833,-1.438,-0.86,-1.277,-0.888,-1.116,-0.915,-0.955,-0.943,-0.795,-0.971,-0.634,-0.998,-0.473,-1.026,-0.312,-1.053,-0.152,-1.081,0.009,-1.108,0.17,-1.136,0.331,-1.163,0.491,-1.191,0.652,-1.218,0.813,-1.246,0.961,-1.249,1.031,-1.101,1.101,-0.954,1.17,-0.807,1.24,-0.659,1.31,-0.512,1.38,-0.365,1.45,-0.217,1.52,-0.07,1.59,0.077,1.66,0.225,1.729,0.372,1.799,0.52,1.869,0.667,1.939,0.814],"area":6.583,"initial":"M-1.566,0.784L1.369,1.122L2.000,0.942L0.951,-1.270L-1.724,-0.811L-1.871,0.008L-1.566,0.784Z"},{"points":[2.368,0.491,2.193,0.618,2.018,0.746,1.842,0.874,1.667,1.002,1.492,1.13,1.316,1.257,1.141,1.385,0.966,1.513,0.79,1.641,0.615,1.768,0.44,1.896,0.264,2.024,0.089,2.152,-0.086,2.28,-0.261,2.407,-0.437,2.535,-0.511,2.347,-0.58,2.141,-0.648,1.935,-0.717,1.729,-0.787,1.524,-0.86,1.32,-0.933,1.116,-1.006,0.911,-1.079,0.707,-1.152,0.503,-1.225,0.299,-1.282,0.09,-1.329,-0.122,-1.376,-0.334,-1.423,-0.546,-1.471,-0.757,-1.518,-0.969,-1.565,-1.181,-1.612,-1.393,-1.624,-1.601,-1.534,-1.798,-1.445,-1.996,-1.355,-2.193,-1.197,-2.304,-0.984,-2.344,-0.771,-2.383,-0.557,-2.423,-0.346,-2.452,-0.163,-2.336,0.02,-2.22,0.203,-2.103,0.386,-1.987,0.57,-1.871,0.753,-1.755,0.936,-1.638,1.119,-1.522,1.302,-1.406,1.485,-1.289,1.668,-1.173,1.852,-1.057,2.035,-0.941,2.173,-0.795,2.204,-0.581,2.234,-0.366,2.265,-0.151,2.296,0.064,2.326,0.278],"area":12.224,"initial":"M2.368,0.491L2.347,0.420L2.164,-0.859L-0.358,-2.460L-1.315,-2.282L-1.647,-1.551L-1.253,0.220L-0.753,1.620L-0.446,2.542L2.368,0.491Z"},{"points":[1.968,-0.814,1.868,-0.701,1.767,-0.588,1.667,-0.474,1.567,-0.361,1.467,-0.248,1.367,-0.134,1.266,-0.021,1.166,0.092,1.066,0.205,0.966,0.319,0.865,0.432,0.765,0.545,0.665,0.659,0.565,0.772,0.464,0.885,0.364,0.998,0.264,1.112,0.164,1.225,0.063,1.338,-0.037,1.452,-0.137,1.565,-0.237,1.678,-0.344,1.571,-0.451,1.464,-0.558,1.358,-0.666,1.251,-0.773,1.144,-0.88,1.037,-0.987,0.93,-1.094,0.824,-1.201,0.717,-1.308,0.61,-1.389,0.496,-1.351,0.35,-1.313,0.203,-1.274,0.057,-1.236,-0.089,-1.198,-0.236,-1.16,-0.382,-1.121,-0.528,-1.083,-0.675,-1.045,-0.821,-1.007,-0.968,-0.969,-1.114,-0.858,-1.154,-0.708,-1.137,-0.557,-1.12,-0.407,-1.102,-0.257,-1.085,-0.107,-1.068,0.044,-1.05,0.194,-1.033,0.344,-1.016,0.494,-0.999,0.645,-0.981,0.795,-0.964,0.945,-0.947,1.096,-0.929,1.246,-0.912,1.396,-0.895,1.546,-0.877,1.697,-0.86,1.847,-0.843],"area":5.284,"initial":"M-0.237,1.678L1.980,-0.827L-0.955,-1.166L-1.396,0.522L-0.237,1.678Z"},{"points":[1.284,0.55,1.278,0.677,1.168,0.778,1.057,0.879,0.947,0.98,0.836,1.081,0.726,1.183,0.615,1.284,0.505,1.385,0.394,1.486,0.284,1.587,0.173,1.689,0.044,1.613,-0.085,1.537,-0.214,1.461,-0.343,1.385,-0.473,1.309,-0.602,1.233,-0.731,1.157,-0.86,1.082,-0.989,1.006,-1.118,0.93,-1.248,0.854,-1.377,0.778,-1.375,0.659,-1.315,0.522,-1.256,0.384,-1.196,0.247,-1.137,0.109,-1.077,-0.028,-1.018,-0.166,-0.958,-0.303,-0.899,-0.441,-0.84,-0.578,-0.78,-0.716,-0.721,-0.853,-0.661,-0.991,-0.602,-1.129,-0.542,-1.266,-0.483,-1.404,-0.423,-1.541,-0.364,-1.679,-0.27,-1.775,-0.124,-1.808,0.022,-1.841,0.168,-1.873,0.314,-1.906,0.407,-1.841,0.459,-1.701,0.51,-1.56,0.562,-1.419,0.614,-1.279,0.665,-1.138,0.717,-0.997,0.768,-0.857,0.82,-0.716,0.871,-0.575,0.923,-0.435,0.975,-0.294,1.026,-0.153,1.078,-0.013,1.129,0.128,1.181,0.269,1.233,0.409],"area":5.723,"initial":"M0.173,1.689L1.317,0.641L0.378,-1.920L-0.328,-1.762L-1.416,0.755L0.173,1.689Z"},{"points":[0.337,-1.286,0.337,-1.131,0.337,-0.975,0.337,-0.819,0.337,-0.663,0.337,-0.507,0.337,-0.351,0.337,-0.195,0.337,-0.04,0.337,0.116,0.337,0.272,0.318,0.427,0.296,0.581,0.274,0.735,0.252,0.89,0.23,1.044,0.207,1.198,0.185,1.352,0.163,1.507,0.141,1.661,0.109,1.813,0.074,1.965,-0.017,2.034,-0.17,2.009,-0.324,1.983,-0.404,1.849,-0.484,1.715,-0.563,1.581,-0.643,1.447,-0.723,1.313,-0.802,1.179,-0.882,1.045,-0.962,0.911,-1.041,0.777,-1.121,0.643,-1.201,0.51,-1.28,0.376,-1.36,0.242,-1.44,0.108,-1.519,-0.026,-1.599,-0.16,-1.679,-0.294,-1.758,-0.428,-1.838,-0.562,-1.918,-0.696,-1.997,-0.83,-2.077,-0.964,-2.111,-1.091,-1.993,-1.193,-1.876,-1.295,-1.758,-1.397,-1.634,-1.479,-1.478,-1.468,-1.323,-1.457,-1.167,-1.446,-1.012,-1.434,-0.856,-1.423,-0.701,-1.412,-0.546,-1.401,-0.39,-1.389,-0.235,-1.378,-0.079,-1.367,0.076,-1.356,0.232,-1.345],"area":5.37,"initial":"M-0.324,1.983L0.055,2.046L0.137,1.693L0.337,0.293L0.337,-1.337L-1.662,-1.481L-2.138,-1.067L-0.324,1.983Z"},{"points":[1.637,0.234,1.616,0.412,1.555,0.587,1.495,0.762,1.434,0.938,1.293,1.027,1.114,1.075,0.936,1.123,0.757,1.172,0.578,1.22,0.399,1.269,0.22,1.317,0.042,1.366,-0.137,1.414,-0.316,1.462,-0.495,1.511,-0.674,1.559,-0.852,1.608,-1.031,1.656,-1.21,1.705,-1.389,1.753,-1.568,1.801,-1.642,1.643,-1.709,1.471,-1.776,1.298,-1.843,1.125,-1.91,0.952,-1.977,0.78,-2.044,0.607,-1.921,0.468,-1.798,0.329,-1.675,0.191,-1.553,0.052,-1.43,-0.087,-1.307,-0.226,-1.184,-0.364,-1.062,-0.503,-0.939,-0.642,-0.816,-0.781,-0.693,-0.919,-0.57,-1.058,-0.448,-1.197,-0.325,-1.335,-0.202,-1.474,-0.079,-1.613,0.043,-1.752,0.166,-1.89,0.341,-1.946,0.519,-1.997,0.697,-2.048,0.872,-2.05,1.043,-1.977,1.213,-1.905,1.315,-1.778,1.344,-1.596,1.373,-1.413,1.403,-1.23,1.432,-1.047,1.461,-0.864,1.49,-0.681,1.52,-0.498,1.549,-0.315,1.578,-0.132,1.608,0.051],"area":8.84,"initial":"M-2.044,0.607L-1.580,1.805L1.415,0.994L1.650,0.314L1.301,-1.868L0.804,-2.079L0.173,-1.898L-2.044,0.607Z"},{"points":[1.794,-0.905,1.787,-0.724,1.78,-0.544,1.773,-0.363,1.766,-0.183,1.759,-0.003,1.752,0.178,1.745,0.358,1.738,0.539,1.731,0.719,1.724,0.9,1.717,1.08,1.71,1.261,1.531,1.239,1.351,1.217,1.172,1.195,0.993,1.173,0.814,1.151,0.634,1.129,0.455,1.107,0.276,1.085,0.097,1.063,-0.083,1.041,-0.262,1.019,-0.441,0.997,-0.62,0.975,-0.8,0.954,-0.979,0.932,-1.158,0.91,-1.337,0.888,-1.517,0.866,-1.696,0.844,-1.875,0.822,-2.054,0.8,-2.163,0.693,-2.216,0.521,-2.27,0.348,-2.324,0.176,-2.282,0.029,-2.149,-0.093,-2.016,-0.215,-1.882,-0.337,-1.749,-0.459,-1.616,-0.581,-1.483,-0.703,-1.35,-0.825,-1.217,-0.947,-1.041,-0.978,-0.862,-1.002,-0.683,-1.026,-0.504,-1.05,-0.325,-1.074,-0.146,-1.098,0.033,-1.121,0.212,-1.145,0.391,-1.169,0.57,-1.193,0.749,-1.217,0.928,-1.241,1.107,-1.264,1.286,-1.288,1.451,-1.23,1.613,-1.15,1.775,-1.07],"area":7.946,"initial":"M1.710,1.261L1.800,-1.058L1.323,-1.293L-1.206,-0.956L-2.350,0.091L-2.133,0.790L1.710,1.261Z"},{"points":[0.53,-0.46,0.526,-0.321,0.489,-0.186,0.453,-0.05,0.416,0.086,0.38,0.222,0.343,0.357,0.307,0.493,0.27,0.629,0.234,0.764,0.093,0.775,-0.047,0.786,-0.187,0.797,-0.327,0.809,-0.467,0.82,-0.607,0.831,-0.747,0.842,-0.887,0.853,-1.027,0.864,-1.167,0.875,-1.307,0.886,-1.448,0.897,-1.588,0.908,-1.728,0.919,-1.868,0.93,-1.963,0.84,-2.048,0.728,-2.133,0.617,-2.218,0.505,-2.303,0.393,-2.388,0.281,-2.473,0.169,-2.558,0.057,-2.643,-0.055,-2.728,-0.167,-2.813,-0.279,-2.898,-0.391,-2.983,-0.503,-2.852,-0.517,-2.711,-0.526,-2.571,-0.536,-2.431,-0.546,-2.291,-0.556,-2.151,-0.566,-2.01,-0.576,-1.87,-0.586,-1.73,-0.596,-1.59,-0.606,-1.45,-0.615,-1.31,-0.625,-1.169,-0.635,-1.029,-0.645,-0.889,-0.655,-0.749,-0.665,-0.609,-0.675,-0.468,-0.685,-0.328,-0.695,-0.188,-0.704,-0.048,-0.714,0.092,-0.724,0.232,-0.734,0.373,-0.744,0.5,-0.739,0.515,-0.599],"area":4.314,"initial":"M0.234,0.764L0.539,-0.370L0.499,-0.753L-2.986,-0.507L-1.893,0.932L0.234,0.764Z"},{"points":[2.323,-0.225,2.297,-0.044,2.212,0.133,2.126,0.31,2.009,0.459,1.841,0.561,1.672,0.662,1.504,0.763,1.335,0.865,1.167,0.966,0.998,1.068,0.83,1.169,0.661,1.27,0.492,1.372,0.324,1.473,0.155,1.574,-0.013,1.676,-0.182,1.777,-0.35,1.878,-0.519,1.98,-0.7,1.903,-0.881,1.826,-1.037,1.723,-1.122,1.546,-1.206,1.368,-1.29,1.19,-1.375,1.012,-1.459,0.835,-1.543,0.657,-1.627,0.479,-1.712,0.301,-1.796,0.124,-1.88,-0.054,-1.964,-0.232,-2.049,-0.409,-2.025,-0.597,-1.976,-0.788,-1.926,-0.978,-1.877,-1.169,-1.828,-1.359,-1.761,-1.524,-1.566,-1.5,-1.371,-1.476,-1.176,-1.452,-0.98,-1.429,-0.785,-1.405,-0.59,-1.381,-0.395,-1.357,-0.199,-1.333,-0.004,-1.309,0.191,-1.285,0.386,-1.261,0.581,-1.237,0.777,-1.214,0.972,-1.19,1.167,-1.166,1.362,-1.142,1.558,-1.118,1.753,-1.094,1.948,-1.07,2.084,-0.975,2.144,-0.787,2.204,-0.6,2.263,-0.413],"area":10.19,"initial":"M-0.519,1.980L2.072,0.422L2.348,-0.149L2.058,-1.057L-1.785,-1.527L-2.065,-0.443L-1.016,1.769L-0.519,1.980Z"},{"points":[2.097,-0.264,2.072,-0.104,2.048,0.057,2.023,0.218,1.998,0.379,1.929,0.523,1.841,0.661,1.754,0.798,1.666,0.936,1.579,1.073,1.491,1.21,1.404,1.348,1.317,1.485,1.229,1.622,1.142,1.76,1.054,1.897,0.967,2.035,0.88,2.172,0.734,2.245,0.589,2.318,0.443,2.39,0.297,2.463,0.151,2.535,0.006,2.608,-0.135,2.526,-0.275,2.443,-0.415,2.36,-0.556,2.278,-0.696,2.195,-0.836,2.113,-0.977,2.03,-0.916,1.898,-0.83,1.76,-0.744,1.621,-0.658,1.483,-0.573,1.345,-0.487,1.206,-0.401,1.068,-0.315,0.93,-0.229,0.791,-0.143,0.653,-0.057,0.515,0.029,0.376,0.114,0.238,0.2,0.1,0.286,-0.039,0.372,-0.177,0.458,-0.315,0.544,-0.454,0.641,-0.584,0.749,-0.706,0.856,-0.828,0.964,-0.95,1.071,-1.073,1.179,-1.195,1.286,-1.317,1.388,-1.354,1.477,-1.218,1.567,-1.082,1.657,-0.946,1.746,-0.81,1.836,-0.674,1.926,-0.538,2.015,-0.402],"area":6.028,"initial":"M0.006,2.608L0.879,2.173L1.991,0.426L2.099,-0.275L1.358,-1.399L0.583,-0.518L-0.992,2.021L0.006,2.608Z"},{"points":[1.889,-0.078,1.84,0.07,1.722,0.198,1.604,0.327,1.486,0.456,1.367,0.585,1.249,0.713,1.131,0.842,1.013,0.971,0.895,1.1,0.777,1.229,0.658,1.357,0.54,1.486,0.422,1.615,0.304,1.744,0.186,1.873,0.067,2.001,-0.051,2.13,-0.215,2.07,-0.379,2.009,-0.543,1.949,-0.707,1.888,-0.871,1.828,-1.035,1.767,-1.199,1.707,-1.363,1.646,-1.526,1.586,-1.501,1.413,-1.476,1.24,-1.45,1.067,-1.425,0.894,-1.4,0.721,-1.374,0.548,-1.349,0.375,-1.323,0.202,-1.298,0.029,-1.273,-0.144,-1.247,-0.317,-1.153,-0.37,-0.99,-0.305,-0.828,-0.24,-0.666,-0.175,-0.504,-0.11,-0.343,-0.088,-0.188,-0.168,-0.081,-0.306,0.027,-0.444,0.134,-0.582,0.241,-0.72,0.349,-0.858,0.456,-0.996,0.556,-1.139,0.648,-1.288,0.744,-1.42,0.895,-1.331,1.045,-1.243,1.196,-1.154,1.347,-1.065,1.497,-0.977,1.648,-0.888,1.747,-0.763,1.783,-0.592,1.818,-0.421,1.854,-0.249],"area":6.784,"initial":"M-0.051,2.130L1.905,-0.001L1.732,-0.839L0.734,-1.426L0.509,-1.065L-0.191,-0.165L-0.391,-0.065L-1.235,-0.402L-1.526,1.586L-0.051,2.130Z"},{"points":[1.874,1.018,1.72,1.038,1.565,1.059,1.41,1.08,1.255,1.1,1.1,1.121,0.945,1.141,0.79,1.162,0.636,1.183,0.481,1.203,0.326,1.224,0.171,1.245,0.016,1.265,-0.139,1.286,-0.293,1.306,-0.448,1.327,-0.603,1.348,-0.657,1.201,-0.711,1.054,-0.764,0.908,-0.818,0.761,-0.872,0.614,-0.926,0.468,-0.98,0.321,-1.033,0.174,-1.087,0.028,-1.141,-0.119,-1.195,-0.266,-1.248,-0.412,-1.302,-0.559,-1.356,-0.706,-1.41,-0.852,-1.464,-0.999,-1.517,-1.146,-1.473,-1.261,-1.344,-1.349,-1.215,-1.436,-1.085,-1.524,-0.948,-1.546,-0.801,-1.491,-0.655,-1.437,-0.508,-1.383,-0.362,-1.329,-0.215,-1.275,-0.069,-1.221,0.078,-1.167,0.224,-1.113,0.371,-1.059,0.495,-0.976,0.587,-0.849,0.678,-0.722,0.769,-0.596,0.86,-0.469,0.952,-0.342,1.043,-0.215,1.134,-0.088,1.225,0.038,1.317,0.165,1.408,0.292,1.499,0.419,1.59,0.546,1.682,0.672,1.773,0.799,1.864,0.926],"area":5.704,"initial":"M-0.603,1.348L1.925,1.011L0.459,-1.027L-1.017,-1.571L-1.542,-1.214L-0.603,1.348Z"},{"points":[0.01,-0.783,-0.02,-0.672,-0.05,-0.561,-0.08,-0.449,-0.11,-0.338,-0.139,-0.227,-0.169,-0.116,-0.199,-0.004,-0.229,0.107,-0.259,0.218,-0.289,0.329,-0.319,0.441,-0.349,0.552,-0.369,0.664,-0.369,0.78,-0.369,0.895,-0.484,0.887,-0.599,0.878,-0.713,0.87,-0.828,0.862,-0.943,0.853,-1.058,0.845,-1.173,0.837,-1.288,0.828,-1.403,0.82,-1.518,0.812,-1.633,0.804,-1.748,0.795,-1.862,0.787,-1.977,0.779,-2.092,0.77,-2.207,0.762,-2.322,0.754,-2.354,0.682,-2.333,0.569,-2.312,0.455,-2.291,0.342,-2.27,0.229,-2.249,0.116,-2.227,0.002,-2.206,-0.111,-2.185,-0.224,-2.164,-0.337,-2.143,-0.451,-2.121,-0.564,-2.097,-0.673,-1.982,-0.682,-1.867,-0.691,-1.752,-0.7,-1.637,-0.709,-1.523,-0.719,-1.408,-0.728,-1.293,-0.737,-1.178,-0.746,-1.063,-0.755,-0.948,-0.764,-0.834,-0.773,-0.719,-0.782,-0.604,-0.791,-0.489,-0.8,-0.374,-0.809,-0.259,-0.818,-0.145,-0.827,-0.03,-0.836],"area":3.201,"initial":"M-0.369,0.895L-0.369,0.625L0.026,-0.841L-2.101,-0.673L-2.367,0.751L-0.369,0.895Z"},{"points":[1.499,0.363,1.463,0.522,1.38,0.677,1.296,0.831,1.213,0.986,1.05,0.97,0.877,0.935,0.705,0.899,0.533,0.864,0.361,0.828,0.188,0.793,0.016,0.757,-0.126,0.655,-0.267,0.549,-0.407,0.444,-0.548,0.338,-0.689,0.233,-0.839,0.156,-0.855,0.274,-0.803,0.442,-0.751,0.61,-0.7,0.778,-0.648,0.946,-0.596,1.114,-0.573,1.255,-0.743,1.212,-0.824,1.056,-0.905,0.9,-0.986,0.743,-1.067,0.587,-1.148,0.431,-1.228,0.275,-1.309,0.119,-1.39,-0.038,-1.471,-0.194,-1.552,-0.35,-1.632,-0.506,-1.623,-0.669,-1.565,-0.835,-1.508,-1.001,-1.45,-1.167,-1.326,-1.243,-1.15,-1.249,-0.974,-1.256,-0.799,-1.262,-0.623,-1.268,-0.447,-1.274,-0.271,-1.281,-0.096,-1.287,0.08,-1.293,0.256,-1.299,0.432,-1.306,0.607,-1.312,0.783,-1.318,0.946,-1.306,1.001,-1.139,1.057,-0.972,1.112,-0.805,1.167,-0.639,1.223,-0.472,1.278,-0.305,1.333,-0.138,1.389,0.029,1.444,0.196],"area":5.454,"initial":"M-0.743,1.212L-0.551,1.261L-0.891,0.156L-0.791,0.156L0.009,0.756L1.204,1.002L1.518,0.420L0.940,-1.324L-1.425,-1.239L-1.660,-0.560L-0.743,1.212Z"},{"points":[1.505,1.002,1.38,1.13,1.25,1.256,1.12,1.382,0.991,1.509,0.81,1.515,0.629,1.521,0.448,1.528,0.267,1.534,0.086,1.541,-0.095,1.547,-0.276,1.554,-0.456,1.56,-0.637,1.566,-0.818,1.573,-0.999,1.579,-1.18,1.586,-1.361,1.592,-1.401,1.428,-1.43,1.249,-1.459,1.07,-1.487,0.892,-1.516,0.713,-1.544,0.534,-1.573,0.356,-1.602,0.177,-1.63,-0.002,-1.659,-0.181,-1.687,-0.359,-1.716,-0.538,-1.613,-0.656,-1.458,-0.749,-1.303,-0.842,-1.148,-0.936,-0.993,-1.029,-0.838,-1.122,-0.683,-1.215,-0.528,-1.309,-0.372,-1.402,-0.217,-1.495,-0.062,-1.588,0.093,-1.682,0.248,-1.775,0.403,-1.868,0.558,-1.962,0.713,-2.055,0.868,-2.146,0.943,-1.982,1.019,-1.817,1.095,-1.653,1.17,-1.488,1.246,-1.324,1.321,-1.159,1.352,-0.983,1.366,-0.803,1.38,-0.622,1.394,-0.442,1.408,-0.261,1.422,-0.081,1.436,0.1,1.449,0.28,1.463,0.461,1.477,0.641,1.491,0.821],"area":8.819,"initial":"M0.991,1.509L1.506,1.007L1.341,-1.115L0.867,-2.147L-1.724,-0.589L-1.375,1.593L0.991,1.509Z"},{"points":[-0.433,1.456,-0.564,1.373,-0.695,1.29,-0.825,1.207,-0.956,1.124,-1.087,1.041,-1.218,0.958,-1.348,0.875,-1.479,0.792,-1.61,0.709,-1.741,0.626,-1.871,0.543,-2.002,0.46,-2.133,0.377,-2.264,0.294,-2.394,0.211,-2.525,0.128,-2.656,0.045,-2.787,-0.038,-2.917,-0.121,-2.888,-0.232,-2.793,-0.355,-2.699,-0.477,-2.604,-0.599,-2.509,-0.722,-2.414,-0.844,-2.319,-0.967,-2.225,-1.089,-2.13,-1.212,-2.035,-1.334,-1.94,-1.457,-1.845,-1.579,-1.751,-1.702,-1.656,-1.824,-1.561,-1.947,-1.466,-2.069,-1.372,-2.192,-1.277,-2.314,-1.17,-2.401,-1.02,-2.363,-0.968,-2.221,-0.937,-2.07,-0.915,-1.917,-0.893,-1.763,-0.871,-1.61,-0.849,-1.457,-0.827,-1.304,-0.806,-1.15,-0.784,-0.997,-0.762,-0.844,-0.74,-0.69,-0.718,-0.537,-0.696,-0.384,-0.674,-0.23,-0.652,-0.077,-0.63,0.076,-0.608,0.23,-0.587,0.383,-0.565,0.536,-0.543,0.69,-0.521,0.843,-0.499,0.996,-0.477,1.15,-0.455,1.303],"area":4.67,"initial":"M-0.433,1.456L-0.951,-2.166L-1.011,-2.361L-1.203,-2.410L-2.955,-0.145L-0.433,1.456Z"},{"points":[2.514,0.217,2.43,0.415,2.347,0.613,2.263,0.811,2.148,0.981,1.963,1.092,1.778,1.202,1.594,1.312,1.409,1.422,1.224,1.532,1.04,1.642,0.855,1.752,0.67,1.862,0.486,1.972,0.305,1.856,0.124,1.74,-0.057,1.623,-0.237,1.507,-0.418,1.391,-0.599,1.274,-0.78,1.158,-0.96,1.042,-1.141,0.925,-1.322,0.809,-1.503,0.692,-1.684,0.576,-1.864,0.46,-2.045,0.343,-2.226,0.227,-2.338,0.051,-2.427,-0.145,-2.517,-0.34,-2.607,-0.535,-2.697,-0.731,-2.699,-0.925,-2.606,-1.119,-2.512,-1.312,-2.355,-1.4,-2.14,-1.395,-1.925,-1.389,-1.71,-1.384,-1.495,-1.378,-1.28,-1.373,-1.065,-1.367,-0.85,-1.362,-0.635,-1.356,-0.42,-1.351,-0.205,-1.345,-0.352,-1.193,-0.333,-0.99,-0.135,-0.907,0.064,-0.825,0.262,-0.742,0.461,-0.659,0.659,-0.577,0.857,-0.494,1.056,-0.411,1.254,-0.329,1.453,-0.246,1.651,-0.163,1.85,-0.081,2.048,0.002,2.259,0.044,2.47,0.087],"area":9.937,"initial":"M0.486,1.972L2.205,0.947L2.561,0.105L2.048,0.002L-0.352,-0.998L-0.352,-1.198L-0.204,-1.345L-2.468,-1.403L-2.744,-0.833L-2.270,0.199L0.486,1.972Z"},{"points":[3.304,1.451,3.29,1.572,3.277,1.694,3.263,1.815,3.25,1.936,3.128,1.928,3.006,1.921,2.885,1.913,2.763,1.905,2.641,1.897,2.519,1.89,2.398,1.882,2.276,1.874,2.154,1.867,2.032,1.859,1.911,1.851,1.789,1.843,1.667,1.836,1.545,1.828,1.423,1.82,1.302,1.812,1.18,1.805,1.058,1.797,0.936,1.789,0.815,1.781,0.693,1.774,0.571,1.766,0.449,1.758,0.328,1.75,0.385,1.668,0.465,1.577,0.546,1.485,0.626,1.393,0.707,1.302,0.787,1.21,0.868,1.119,0.949,1.027,1.029,0.935,1.11,0.844,1.19,0.752,1.271,0.66,1.351,0.569,1.432,0.477,1.523,0.396,1.616,0.318,1.71,0.239,1.803,0.16,1.896,0.082,1.988,0.045,2.074,0.131,2.16,0.218,2.245,0.305,2.331,0.391,2.417,0.478,2.503,0.564,2.589,0.651,2.675,0.738,2.761,0.824,2.847,0.911,2.933,0.998,3.019,1.084,3.104,1.171,3.19,1.258,3.276,1.344],"area":3.193,"initial":"M3.250,1.936L3.312,1.380L1.966,0.023L1.445,0.462L0.314,1.749L3.250,1.936Z"},{"points":[1.921,0.536,1.809,0.711,1.646,0.838,1.479,0.96,1.311,1.082,1.143,1.205,0.976,1.327,0.808,1.449,0.64,1.571,0.472,1.694,0.305,1.816,0.137,1.938,-0.031,2.06,-0.217,1.968,-0.403,1.877,-0.561,1.752,-0.682,1.583,-0.804,1.415,-0.925,1.246,-1.046,1.078,-1.167,0.909,-1.289,0.741,-1.41,0.572,-1.531,0.404,-1.652,0.235,-1.773,0.067,-1.895,-0.101,-1.928,-0.265,-1.787,-0.418,-1.647,-0.571,-1.507,-0.723,-1.366,-0.876,-1.226,-1.029,-1.086,-1.182,-0.945,-1.335,-0.805,-1.488,-0.665,-1.641,-0.524,-1.794,-0.384,-1.947,-0.244,-2.1,-0.103,-2.253,0.031,-2.278,0.155,-2.112,0.279,-1.945,0.403,-1.779,0.527,-1.613,0.651,-1.446,0.775,-1.28,0.899,-1.114,1.024,-0.947,1.148,-0.781,1.272,-0.615,1.396,-0.448,1.52,-0.282,1.644,-0.116,1.673,0.041,1.517,0.177,1.365,0.319,1.241,0.485,1.116,0.651,1.239,0.667,1.443,0.633,1.648,0.598,1.841,0.524],"area":8.973,"initial":"M-0.031,2.060L1.800,0.726L1.962,0.472L1.685,0.592L1.085,0.692L1.385,0.292L1.726,-0.006L-0.019,-2.345L-1.975,-0.213L-0.508,1.825L-0.031,2.060Z"},{"points":[1.258,-0.397,1.255,-0.281,1.251,-0.165,1.248,-0.05,1.245,0.066,1.241,0.182,1.238,0.298,1.188,0.383,1.083,0.431,0.978,0.48,0.873,0.529,0.768,0.578,0.663,0.627,0.559,0.676,0.454,0.725,0.349,0.774,0.244,0.822,0.139,0.871,0.034,0.92,-0.071,0.969,-0.176,1.018,-0.281,1.067,-0.386,1.116,-0.491,1.165,-0.596,1.213,-0.632,1.104,-0.669,0.994,-0.705,0.884,-0.741,0.774,-0.778,0.664,-0.814,0.554,-0.851,0.444,-0.887,0.334,-0.924,0.225,-0.96,0.115,-0.996,0.005,-1.033,-0.105,-1.069,-0.215,-1.106,-0.325,-1.142,-0.435,-1.163,-0.541,-1.08,-0.622,-0.997,-0.702,-0.914,-0.783,-0.831,-0.864,-0.748,-0.945,-0.665,-1.025,-0.556,-1.002,-0.445,-0.97,-0.334,-0.937,-0.223,-0.905,-0.112,-0.872,-0.001,-0.84,0.11,-0.808,0.221,-0.775,0.333,-0.743,0.444,-0.71,0.555,-0.678,0.666,-0.646,0.777,-0.613,0.888,-0.581,0.999,-0.548,1.111,-0.516,1.222,-0.484],"area":3.483,"initial":"M-0.596,1.213L1.236,0.360L1.260,-0.472L-0.659,-1.032L-1.174,-0.530L-0.596,1.213Z"},{"points":[1.553,0.279,1.473,0.386,1.394,0.493,1.315,0.6,1.235,0.708,1.156,0.815,1.077,0.922,0.997,1.029,0.918,1.136,0.79,1.099,0.662,1.062,0.534,1.024,0.406,0.987,0.278,0.95,0.15,0.912,0.022,0.875,-0.106,0.838,-0.234,0.8,-0.362,0.763,-0.49,0.726,-0.618,0.688,-0.746,0.651,-0.874,0.614,-1.001,0.575,-1.011,0.442,-1.021,0.309,-1.032,0.176,-1.042,0.044,-1.052,-0.089,-1.062,-0.222,-1.073,-0.355,-1.083,-0.488,-1.093,-0.621,-1.104,-0.754,-1.114,-0.887,-1.124,-1.02,-1.134,-1.153,-1.145,-1.286,-1.155,-1.419,-1.159,-1.542,-1.047,-1.469,-0.935,-1.397,-0.823,-1.325,-0.711,-1.253,-0.599,-1.181,-0.487,-1.109,-0.374,-1.037,-0.262,-0.964,-0.15,-0.892,-0.038,-0.82,0.074,-0.748,0.186,-0.676,0.298,-0.604,0.41,-0.531,0.523,-0.459,0.635,-0.387,0.747,-0.315,0.859,-0.243,0.971,-0.171,1.083,-0.098,1.195,-0.026,1.307,0.046,1.42,0.118,1.532,0.19],"area":3.837,"initial":"M0.918,1.136L1.591,0.228L-1.165,-1.545L-1.001,0.577L0.918,1.136Z"},{"points":[0.859,-1.452,0.801,-1.418,0.682,-1.456,0.562,-1.494,0.443,-1.532,0.324,-1.57,0.204,-1.609,0.085,-1.647,-0.035,-1.685,-0.154,-1.723,-0.274,-1.762,-0.393,-1.8,-0.513,-1.838,-0.632,-1.876,-0.752,-1.915,-0.871,-1.953,-0.951,-2.026,-0.922,-2.148,-0.893,-2.27,-0.864,-2.392,-0.835,-2.514,-0.806,-2.636,-0.776,-2.758,-0.747,-2.88,-0.718,-3.002,-0.689,-3.124,-0.66,-3.246,-0.631,-3.368,-0.602,-3.49,-0.572,-3.612,-0.543,-3.734,-0.514,-3.856,-0.467,-3.964,-0.356,-4.022,-0.245,-4.08,-0.134,-4.139,-0.022,-4.197,0.089,-4.255,0.2,-4.314,0.311,-4.372,0.422,-4.431,0.44,-4.306,0.458,-4.182,0.476,-4.058,0.495,-3.934,0.513,-3.81,0.531,-3.686,0.549,-3.562,0.567,-3.438,0.586,-3.314,0.604,-3.19,0.622,-3.065,0.64,-2.941,0.659,-2.817,0.677,-2.693,0.695,-2.569,0.713,-2.445,0.732,-2.321,0.75,-2.197,0.768,-2.073,0.786,-1.949,0.804,-1.824,0.823,-1.7,0.841,-1.576],"area":3.43,"initial":"M0.422,-4.431L-0.492,-3.950L-0.958,-1.999L-0.879,-1.955L0.867,-1.396L0.422,-4.431Z"},{"points":[1.177,-1.752,1.164,-1.642,1.151,-1.532,1.138,-1.422,1.125,-1.312,1.113,-1.202,1.1,-1.092,1.087,-0.982,1.074,-0.872,1.061,-0.761,1.049,-0.651,1.036,-0.541,1.023,-0.431,1.01,-0.321,0.969,-0.266,0.868,-0.307,0.759,-0.33,0.651,-0.352,0.542,-0.374,0.434,-0.397,0.325,-0.419,0.216,-0.441,0.108,-0.464,-0.001,-0.486,-0.109,-0.509,-0.218,-0.531,-0.326,-0.553,-0.435,-0.576,-0.544,-0.598,-0.652,-0.62,-0.761,-0.643,-0.869,-0.665,-0.978,-0.687,-1.086,-0.71,-1.195,-0.732,-1.288,-0.761,-1.236,-0.859,-1.183,-0.957,-1.13,-1.054,-1.078,-1.152,-1.025,-1.249,-0.967,-1.34,-0.866,-1.387,-0.766,-1.434,-0.665,-1.481,-0.565,-1.528,-0.464,-1.574,-0.364,-1.621,-0.263,-1.668,-0.163,-1.715,-0.062,-1.762,0.038,-1.808,0.139,-1.855,0.239,-1.902,0.34,-1.949,0.44,-1.996,0.541,-2.042,0.641,-2.089,0.742,-2.136,0.842,-2.183,0.912,-2.108,0.978,-2.019,1.044,-1.93,1.111,-1.841],"area":2.834,"initial":"M1.177,-1.752L0.853,-2.188L-0.979,-1.334L-1.293,-0.752L0.911,-0.298L1.001,-0.248L1.177,-1.752Z"},{"points":[1.778,-1.001,1.626,-0.894,1.475,-0.787,1.323,-0.679,1.171,-0.572,1.029,-0.455,0.908,-0.314,0.787,-0.173,0.666,-0.032,0.545,0.109,0.425,0.25,0.304,0.391,0.183,0.532,0.062,0.673,-0.059,0.814,-0.144,0.97,-0.167,1.155,-0.19,1.339,-0.213,1.523,-0.238,1.707,-0.373,1.579,-0.508,1.452,-0.643,1.324,-0.778,1.196,-0.913,1.069,-1.047,0.941,-1.182,0.814,-1.317,0.686,-1.452,0.559,-1.587,0.431,-1.722,0.303,-1.857,0.176,-1.992,0.048,-2.127,-0.079,-2.262,-0.207,-2.397,-0.334,-2.532,-0.462,-2.62,-0.606,-2.592,-0.789,-2.563,-0.973,-2.535,-1.156,-2.434,-1.251,-2.248,-1.245,-2.063,-1.238,-1.877,-1.231,-1.692,-1.224,-1.506,-1.217,-1.321,-1.21,-1.135,-1.204,-0.949,-1.197,-0.764,-1.19,-0.578,-1.183,-0.393,-1.176,-0.207,-1.169,-0.022,-1.162,0.164,-1.156,0.349,-1.149,0.535,-1.142,0.721,-1.135,0.906,-1.128,1.092,-1.121,1.277,-1.115,1.463,-1.108,1.648,-1.101],"area":6.368,"initial":"M-0.238,1.707L-0.235,1.703L-0.136,0.903L1.065,-0.497L1.786,-1.006L1.692,-1.099L-2.520,-1.255L-2.628,-0.553L-0.238,1.707Z"},{"points":[2.032,-0.736,1.933,-0.582,1.835,-0.429,1.736,-0.276,1.638,-0.123,1.539,0.031,1.441,0.184,1.329,0.327,1.211,0.466,1.094,0.605,0.976,0.744,0.858,0.883,0.741,1.022,0.623,1.162,0.505,1.301,0.388,1.44,0.263,1.572,0.126,1.692,-0.011,1.812,-0.148,1.932,-0.257,1.786,-0.366,1.64,-0.475,1.494,-0.584,1.348,-0.693,1.202,-0.802,1.056,-0.911,0.91,-1.02,0.764,-1.129,0.618,-1.238,0.472,-1.346,0.326,-1.455,0.18,-1.564,0.034,-1.673,-0.112,-1.782,-0.258,-1.891,-0.404,-1.929,-0.582,-1.966,-0.76,-2.003,-0.939,-2.04,-1.117,-2.02,-1.268,-1.857,-1.349,-1.694,-1.43,-1.531,-1.511,-1.367,-1.592,-1.204,-1.674,-1.03,-1.635,-0.854,-1.587,-0.678,-1.539,-0.502,-1.491,-0.326,-1.444,-0.151,-1.396,0.025,-1.348,0.201,-1.3,0.377,-1.253,0.553,-1.205,0.728,-1.157,0.904,-1.109,1.08,-1.062,1.256,-1.014,1.432,-0.966,1.607,-0.918,1.783,-0.871,1.959,-0.823],"area":8.074,"initial":"M-0.148,1.932L0.311,1.530L1.411,0.230L2.069,-0.793L-1.193,-1.679L-2.067,-1.244L-1.893,-0.407L-0.148,1.932Z"},{"points":[2.235,0.726,2.085,0.823,1.875,0.876,1.696,0.996,1.519,1.122,1.343,1.248,1.166,1.374,1.012,1.526,0.859,1.68,0.705,1.833,0.488,1.827,0.272,1.822,0.055,1.816,-0.162,1.811,-0.379,1.805,-0.596,1.8,-0.812,1.794,-1.029,1.788,-1.246,1.783,-1.463,1.777,-1.596,1.66,-1.662,1.453,-1.727,1.247,-1.793,1.04,-1.847,0.832,-1.839,0.615,-1.83,0.398,-1.822,0.182,-1.814,-0.035,-1.805,-0.252,-1.797,-0.468,-1.788,-0.685,-1.78,-0.902,-1.771,-1.119,-1.763,-1.335,-1.677,-1.511,-1.502,-1.638,-1.327,-1.766,-1.151,-1.894,-0.976,-2.022,-0.801,-2.149,-0.626,-2.277,-0.45,-2.405,-0.275,-2.532,-0.1,-2.66,0.074,-2.782,0.188,-2.598,0.302,-2.413,0.416,-2.228,0.529,-2.044,0.643,-1.859,0.757,-1.674,0.87,-1.49,0.984,-1.305,1.098,-1.12,1.212,-0.936,1.325,-0.751,1.439,-0.566,1.553,-0.382,1.667,-0.197,1.78,-0.012,1.894,0.172,2.008,0.357,2.121,0.542],"area":12.432,"initial":"M0.705,1.833L1.158,1.380L1.858,0.880L2.237,0.786L2.240,0.734L0.072,-2.786L-1.758,-1.451L-1.849,0.867L-1.559,1.775L0.705,1.833Z"},{"points":[1.531,0.672,1.528,0.821,1.421,0.947,1.307,1.064,1.161,1.14,1.015,1.217,0.869,1.294,0.723,1.371,0.577,1.448,0.431,1.525,0.27,1.497,0.108,1.463,-0.053,1.43,-0.215,1.396,-0.377,1.362,-0.538,1.329,-0.7,1.295,-0.861,1.261,-1.023,1.228,-1.184,1.194,-1.328,1.132,-1.426,0.999,-1.525,0.867,-1.624,0.735,-1.619,0.57,-1.614,0.405,-1.61,0.24,-1.605,0.075,-1.6,-0.09,-1.506,-0.224,-1.408,-0.357,-1.31,-0.49,-1.212,-0.622,-1.113,-0.755,-1.015,-0.888,-0.912,-1.015,-0.77,-1.1,-0.629,-1.184,-0.487,-1.269,-0.345,-1.353,-0.203,-1.438,-0.062,-1.522,0.08,-1.607,0.222,-1.691,0.364,-1.776,0.505,-1.86,0.647,-1.945,0.789,-2.029,0.835,-1.875,0.878,-1.716,0.922,-1.557,0.965,-1.398,1.009,-1.238,1.052,-1.079,1.096,-0.92,1.139,-0.761,1.183,-0.602,1.226,-0.442,1.27,-0.283,1.313,-0.124,1.357,0.035,1.4,0.194,1.444,0.354,1.487,0.513],"area":7.47,"initial":"M-1.624,0.735L-1.299,1.170L0.422,1.529L1.336,1.049L1.561,0.782L0.792,-2.031L-0.927,-1.006L-1.600,-0.098L-1.624,0.735Z"},{"points":[1.282,-2.258,1.256,-2.153,1.231,-2.048,1.206,-1.943,1.181,-1.838,1.156,-1.732,1.131,-1.627,1.106,-1.522,1.081,-1.417,1.056,-1.312,1.03,-1.206,1.005,-1.101,0.98,-0.996,0.955,-0.891,0.93,-0.786,0.905,-0.68,0.88,-0.575,0.855,-0.47,0.829,-0.365,0.773,-0.332,0.679,-0.385,0.584,-0.438,0.49,-0.491,0.396,-0.544,0.302,-0.597,0.207,-0.65,0.113,-0.703,0.019,-0.756,-0.075,-0.809,-0.17,-0.862,-0.264,-0.915,-0.358,-0.968,-0.453,-1.021,-0.547,-1.074,-0.612,-1.142,-0.6,-1.249,-0.587,-1.356,-0.575,-1.464,-0.562,-1.571,-0.55,-1.679,-0.537,-1.786,-0.525,-1.894,-0.512,-2.001,-0.5,-2.108,-0.487,-2.216,-0.475,-2.323,-0.462,-2.431,-0.45,-2.538,-0.412,-2.611,-0.307,-2.589,-0.201,-2.567,-0.095,-2.545,0.011,-2.523,0.117,-2.501,0.223,-2.479,0.329,-2.457,0.435,-2.435,0.54,-2.413,0.646,-2.391,0.752,-2.369,0.858,-2.347,0.964,-2.325,1.07,-2.303,1.176,-2.28],"area":2.911,"initial":"M1.282,-2.258L-0.440,-2.617L-0.616,-1.113L0.816,-0.307L1.282,-2.258Z"},{"points":[1.8,0.761,1.722,0.882,1.644,1.003,1.567,1.124,1.429,1.088,1.291,1.05,1.152,1.013,1.014,0.975,0.875,0.938,0.737,0.9,0.598,0.862,0.46,0.825,0.321,0.787,0.183,0.75,0.044,0.712,-0.094,0.674,-0.233,0.637,-0.371,0.599,-0.51,0.561,-0.648,0.524,-0.787,0.486,-0.925,0.449,-1.064,0.411,-1.202,0.373,-1.341,0.336,-1.479,0.298,-1.618,0.261,-1.663,0.187,-1.586,0.066,-1.509,-0.055,-1.432,-0.176,-1.355,-0.297,-1.278,-0.418,-1.201,-0.539,-1.124,-0.661,-1.047,-0.782,-0.97,-0.903,-0.893,-1.024,-0.816,-1.145,-0.739,-1.266,-0.662,-1.387,-0.585,-1.508,-0.481,-1.409,-0.376,-1.311,-0.272,-1.212,-0.168,-1.114,-0.063,-1.015,0.041,-0.916,0.145,-0.818,0.249,-0.719,0.354,-0.621,0.458,-0.522,0.562,-0.423,0.666,-0.325,0.771,-0.226,0.875,-0.128,0.979,-0.029,1.084,0.07,1.188,0.168,1.292,0.267,1.396,0.365,1.501,0.464,1.605,0.563,1.709,0.661],"area":4.059,"initial":"M-0.585,-1.508L-1.697,0.239L1.566,1.125L1.806,0.752L-0.585,-1.508Z"},{"points":[1.471,0.067,1.442,0.182,1.412,0.296,1.382,0.41,1.352,0.524,1.322,0.638,1.292,0.753,1.262,0.867,1.232,0.981,1.202,1.095,1.172,1.209,1.142,1.324,1.112,1.438,1.082,1.552,1.052,1.666,1.022,1.78,0.907,1.755,0.792,1.73,0.676,1.705,0.561,1.68,0.446,1.654,0.33,1.629,0.215,1.604,0.1,1.579,-0.016,1.554,-0.131,1.528,-0.246,1.503,-0.362,1.478,-0.477,1.453,-0.592,1.428,-0.708,1.402,-0.823,1.377,-0.938,1.352,-1.054,1.327,-1.169,1.301,-1.284,1.276,-1.389,1.25,-1.28,1.203,-1.172,1.156,-1.064,1.109,-0.955,1.062,-0.849,1.011,-0.744,0.956,-0.64,0.901,-0.535,0.846,-0.431,0.791,-0.326,0.736,-0.222,0.681,-0.117,0.626,-0.013,0.571,0.091,0.516,0.196,0.461,0.3,0.406,0.405,0.351,0.509,0.296,0.614,0.241,0.718,0.186,0.823,0.131,0.927,0.076,1.034,0.027,1.147,-0.007,1.26,-0.041,1.373,-0.074,1.451,-0.048],"area":2.505,"initial":"M1.022,1.780L1.474,0.058L1.441,-0.094L1.005,0.035L-0.895,1.035L-1.394,1.252L1.022,1.780Z"},{"points":[0.877,-1.303,0.859,-1.228,0.753,-1.185,0.646,-1.142,0.54,-1.1,0.434,-1.057,0.327,-1.015,0.221,-0.972,0.114,-0.93,0.008,-0.887,-0.098,-0.845,-0.205,-0.802,-0.311,-0.759,-0.417,-0.717,-0.524,-0.674,-0.63,-0.632,-0.737,-0.589,-0.843,-0.547,-0.953,-0.516,-1.064,-0.488,-1.176,-0.461,-1.287,-0.433,-1.398,-0.405,-1.509,-0.377,-1.62,-0.349,-1.681,-0.383,-1.617,-0.478,-1.552,-0.572,-1.487,-0.666,-1.421,-0.761,-1.356,-0.855,-1.291,-0.949,-1.226,-1.043,-1.161,-1.138,-1.096,-1.232,-1.031,-1.326,-0.966,-1.421,-0.901,-1.515,-0.836,-1.609,-0.77,-1.703,-0.705,-1.798,-0.64,-1.892,-0.575,-1.986,-0.51,-2.081,-0.445,-2.175,-0.38,-2.269,-0.315,-2.364,-0.245,-2.452,-0.138,-2.494,-0.032,-2.536,0.075,-2.578,0.181,-2.62,0.235,-2.519,0.288,-2.417,0.342,-2.316,0.395,-2.215,0.449,-2.113,0.502,-2.012,0.556,-1.911,0.609,-1.809,0.663,-1.708,0.716,-1.607,0.77,-1.505,0.823,-1.404],"area":2.592,"initial":"M0.181,-2.620L-0.257,-2.447L-1.681,-0.385L-1.683,-0.334L-0.863,-0.539L0.907,-1.247L0.181,-2.620Z"},{"points":[1.73,-0.058,1.67,0.072,1.574,0.211,1.478,0.35,1.382,0.488,1.287,0.627,1.191,0.766,1.095,0.905,0.999,1.043,0.903,1.182,0.807,1.321,0.712,1.46,0.616,1.599,0.52,1.737,0.424,1.876,0.328,2.015,0.24,1.871,0.152,1.728,0.063,1.584,-0.025,1.441,-0.114,1.297,-0.202,1.153,-0.291,1.01,-0.379,0.866,-0.468,0.723,-0.556,0.579,-0.644,0.435,-0.733,0.292,-0.821,0.148,-0.91,0.005,-0.998,-0.139,-1.087,-0.283,-1.175,-0.426,-1.263,-0.57,-1.352,-0.713,-1.44,-0.857,-1.529,-1.001,-1.617,-1.144,-1.706,-1.288,-1.794,-1.431,-1.795,-1.574,-1.704,-1.717,-1.57,-1.752,-1.42,-1.675,-1.27,-1.598,-1.12,-1.521,-0.97,-1.444,-0.82,-1.367,-0.67,-1.29,-0.52,-1.213,-0.37,-1.136,-0.22,-1.059,-0.07,-0.982,0.08,-0.905,0.23,-0.828,0.38,-0.751,0.53,-0.674,0.68,-0.597,0.83,-0.52,0.98,-0.443,1.13,-0.366,1.28,-0.289,1.43,-0.212,1.58,-0.135],"area":5.395,"initial":"M0.328,2.015L1.752,-0.047L-1.627,-1.781L-1.677,-1.759L-1.839,-1.505L0.328,2.015Z"},{"points":[1.932,0.543,1.834,0.671,1.736,0.799,1.639,0.926,1.541,1.054,1.444,1.182,1.297,1.245,1.148,1.304,0.998,1.363,0.855,1.29,0.712,1.216,0.569,1.143,0.426,1.07,0.283,0.996,0.14,0.923,-0.003,0.849,-0.146,0.776,-0.289,0.703,-0.432,0.629,-0.575,0.556,-0.718,0.482,-0.861,0.409,-1.004,0.336,-1.147,0.262,-1.29,0.189,-1.433,0.115,-1.576,0.042,-1.719,-0.031,-1.862,-0.105,-2.005,-0.178,-2.148,-0.252,-2.291,-0.325,-2.325,-0.395,-2.177,-0.459,-2.03,-0.523,-1.882,-0.587,-1.735,-0.651,-1.588,-0.715,-1.44,-0.78,-1.293,-0.844,-1.145,-0.908,-0.998,-0.972,-0.847,-0.999,-0.69,-0.964,-0.533,-0.93,-0.376,-0.896,-0.219,-0.861,-0.062,-0.827,0.095,-0.793,0.252,-0.758,0.409,-0.724,0.566,-0.69,0.723,-0.655,0.88,-0.621,1.038,-0.587,1.195,-0.552,1.352,-0.518,1.509,-0.484,1.574,-0.337,1.638,-0.19,1.702,-0.043,1.767,0.105,1.831,0.252,1.895,0.399],"area":5.491,"initial":"M0.998,1.363L1.437,1.190L1.948,0.521L1.510,-0.483L-0.906,-1.012L-2.380,-0.371L0.998,1.363Z"},{"points":[2.784,1.247,2.589,1.24,2.395,1.233,2.2,1.226,2.006,1.218,1.811,1.211,1.617,1.204,1.422,1.197,1.228,1.19,1.033,1.183,0.839,1.175,0.644,1.168,0.45,1.161,0.255,1.154,0.061,1.147,-0.134,1.139,-0.328,1.132,-0.522,1.125,-0.717,1.118,-0.911,1.111,-1.106,1.104,-1.3,1.096,-1.465,1.036,-1.572,0.873,-1.679,0.711,-1.786,0.548,-1.894,0.386,-2.001,0.224,-2.108,0.061,-2.114,-0.094,-1.986,-0.241,-1.857,-0.387,-1.729,-0.533,-1.6,-0.679,-1.472,-0.825,-1.344,-0.972,-1.215,-1.118,-1.041,-1.154,-0.847,-1.142,-0.653,-1.129,-0.458,-1.117,-0.264,-1.105,-0.07,-1.092,0.124,-1.08,0.319,-1.068,0.513,-1.055,0.707,-1.043,0.901,-1.031,1.095,-1.018,1.29,-1.006,1.484,-0.994,1.678,-0.981,1.808,-0.874,1.889,-0.698,1.97,-0.521,2.052,-0.344,2.133,-0.167,2.214,0.01,2.296,0.186,2.377,0.363,2.458,0.54,2.54,0.717,2.621,0.894,2.702,1.07],"area":8.913,"initial":"M2.784,1.247L1.761,-0.976L-1.176,-1.163L-2.169,-0.032L-1.428,1.092L2.784,1.247Z"},{"points":[-1.672,-1.094,-1.726,-0.934,-1.779,-0.774,-1.832,-0.615,-1.886,-0.455,-1.939,-0.295,-1.992,-0.135,-2.045,0.025,-2.099,0.185,-2.152,0.345,-2.231,0.493,-2.32,0.635,-2.409,0.778,-2.499,0.921,-2.588,1.064,-2.682,1.202,-2.82,1.299,-2.958,1.396,-3.095,1.494,-3.233,1.591,-3.371,1.688,-3.508,1.785,-3.646,1.882,-3.755,1.757,-3.826,1.603,-3.896,1.45,-3.967,1.297,-4.037,1.144,-4.108,0.991,-4.178,0.838,-4.248,0.685,-4.319,0.532,-4.389,0.379,-4.46,0.226,-4.53,0.073,-4.601,-0.08,-4.671,-0.233,-4.742,-0.387,-4.75,-0.55,-4.732,-0.717,-4.713,-0.885,-4.669,-1.043,-4.58,-1.187,-4.492,-1.33,-4.404,-1.474,-4.316,-1.618,-4.208,-1.727,-4.039,-1.733,-3.871,-1.74,-3.703,-1.747,-3.534,-1.753,-3.366,-1.76,-3.197,-1.767,-3.029,-1.773,-2.861,-1.78,-2.692,-1.787,-2.524,-1.793,-2.356,-1.8,-2.187,-1.806,-2.019,-1.813,-1.905,-1.714,-1.811,-1.573,-1.746,-1.421,-1.705,-1.257],"area":7.746,"initial":"M-3.646,1.882L-2.668,1.192L-2.168,0.392L-1.668,-1.108L-1.768,-1.508L-1.972,-1.815L-4.250,-1.725L-4.701,-0.990L-4.763,-0.434L-3.740,1.790L-3.646,1.882Z"},{"points":[2.118,1.766,2.095,1.879,2.073,1.993,2.051,2.107,2.028,2.221,2.006,2.335,1.984,2.449,1.961,2.563,1.939,2.677,1.917,2.79,1.894,2.904,1.872,3.018,1.85,3.132,1.827,3.246,1.805,3.36,1.783,3.474,1.76,3.587,1.721,3.695,1.661,3.794,1.6,3.893,1.539,3.991,1.479,4.09,1.418,4.189,1.357,4.288,1.297,4.387,1.215,4.305,1.133,4.222,1.051,4.14,0.97,4.057,0.888,3.975,0.806,3.893,0.725,3.81,0.643,3.728,0.561,3.645,0.479,3.563,0.398,3.481,0.316,3.398,0.234,3.316,0.153,3.233,0.071,3.151,-0.011,3.069,-0.002,2.99,0.087,2.916,0.175,2.841,0.264,2.766,0.353,2.691,0.442,2.617,0.53,2.542,0.619,2.467,0.708,2.392,0.797,2.318,0.885,2.243,0.974,2.168,1.063,2.093,1.152,2.019,1.24,1.944,1.329,1.869,1.442,1.841,1.554,1.812,1.667,1.784,1.779,1.756,1.892,1.728,2.004,1.7,2.117,1.672],"area":3.035,"initial":"M1.297,4.387L1.748,3.652L2.136,1.671L2.130,1.669L1.730,1.768L1.330,1.869L-0.049,3.030L1.297,4.387Z"},{"points":[2.155,1.236,2.011,1.309,1.834,1.37,1.658,1.431,1.482,1.493,1.306,1.554,1.129,1.615,0.953,1.677,0.777,1.738,0.6,1.799,0.424,1.861,0.248,1.922,0.07,1.936,-0.111,1.888,-0.291,1.84,-0.472,1.792,-0.652,1.744,-0.832,1.696,-0.882,1.516,-0.931,1.336,-0.98,1.156,-1.029,0.975,-1.078,0.795,-1.128,0.615,-1.177,0.435,-1.226,0.255,-1.275,0.075,-1.324,-0.105,-1.374,-0.285,-1.423,-0.465,-1.472,-0.645,-1.521,-0.825,-1.57,-1.005,-1.574,-1.182,-1.501,-1.354,-1.428,-1.526,-1.356,-1.698,-1.283,-1.87,-1.157,-1.942,-0.974,-1.906,-0.791,-1.869,-0.613,-1.814,-0.436,-1.755,-0.259,-1.696,-0.082,-1.637,0.095,-1.578,0.272,-1.519,0.419,-1.42,0.521,-1.264,0.623,-1.107,0.725,-0.951,0.827,-0.795,0.929,-0.639,1.031,-0.482,1.134,-0.326,1.236,-0.17,1.338,-0.014,1.44,0.143,1.542,0.299,1.644,0.455,1.746,0.611,1.849,0.768,1.951,0.924,2.053,1.08],"area":8.836,"initial":"M-0.832,1.696L0.149,1.957L2.167,1.254L0.377,-1.484L-0.758,-1.862L-1.245,-1.960L-1.601,-1.117L-0.832,1.696Z"},{"points":[0.859,-1.008,0.77,-0.966,0.62,-1.041,0.471,-1.116,0.321,-1.191,0.172,-1.265,0.022,-1.34,-0.127,-1.415,-0.277,-1.489,-0.429,-1.558,-0.588,-1.609,-0.747,-1.659,-0.906,-1.71,-1.065,-1.761,-1.151,-1.874,-1.176,-2.04,-1.2,-2.205,-1.224,-2.37,-1.249,-2.536,-1.273,-2.701,-1.297,-2.866,-1.321,-3.032,-1.346,-3.197,-1.37,-3.362,-1.394,-3.528,-1.419,-3.693,-1.443,-3.858,-1.467,-4.024,-1.491,-4.189,-1.516,-4.354,-1.54,-4.52,-1.564,-4.685,-1.563,-4.843,-1.456,-4.971,-1.342,-5.081,-1.181,-5.038,-1.019,-4.995,-0.858,-4.952,-0.696,-4.909,-0.535,-4.866,-0.376,-4.82,-0.323,-4.662,-0.27,-4.503,-0.218,-4.345,-0.165,-4.186,-0.112,-4.028,-0.059,-3.869,-0.006,-3.711,0.047,-3.552,0.1,-3.394,0.153,-3.235,0.206,-3.077,0.259,-2.918,0.311,-2.76,0.364,-2.601,0.417,-2.443,0.47,-2.284,0.523,-2.126,0.576,-1.967,0.629,-1.809,0.682,-1.65,0.735,-1.492,0.788,-1.333,0.84,-1.174],"area":5.391,"initial":"M0.840,-1.174L-0.378,-4.825L-1.359,-5.085L-1.584,-4.819L-1.138,-1.785L-0.384,-1.543L0.816,-0.943L0.866,-0.943L0.840,-1.174Z"},{"points":[1.611,0.412,1.594,0.54,1.558,0.688,1.522,0.837,1.486,0.985,1.45,1.133,1.414,1.282,1.379,1.43,1.343,1.578,1.307,1.727,1.271,1.875,1.235,2.023,1.199,2.172,1.163,2.32,1.127,2.468,1.092,2.617,1.056,2.765,1.02,2.914,0.984,3.062,0.884,3.146,0.752,3.069,0.619,2.993,0.487,2.917,0.355,2.841,0.223,2.764,0.09,2.688,-0.042,2.612,-0.174,2.536,-0.306,2.459,-0.438,2.383,-0.571,2.307,-0.703,2.231,-0.835,2.154,-0.967,2.078,-1.1,2.002,-1.232,1.926,-1.364,1.849,-1.496,1.773,-1.628,1.697,-1.761,1.621,-1.83,1.498,-1.754,1.414,-1.608,1.37,-1.461,1.327,-1.315,1.283,-1.169,1.239,-1.022,1.196,-0.876,1.152,-0.73,1.109,-0.584,1.065,-0.437,1.022,-0.291,0.978,-0.145,0.934,0.001,0.891,0.148,0.847,0.294,0.804,0.44,0.76,0.587,0.717,0.733,0.673,0.879,0.629,1.025,0.586,1.172,0.542,1.318,0.499,1.464,0.455],"area":4.654,"initial":"M0.884,3.146L0.969,3.126L1.626,0.407L-1.843,1.440L-1.810,1.592L0.884,3.146Z"},{"points":[1.886,0.011,1.787,0.088,1.67,0.167,1.552,0.245,1.434,0.323,1.316,0.401,1.199,0.48,1.081,0.558,0.963,0.636,0.846,0.715,0.728,0.793,0.61,0.871,0.493,0.95,0.375,1.028,0.257,1.106,0.14,1.185,-0.002,1.186,-0.143,1.186,-0.284,1.187,-0.426,1.188,-0.567,1.189,-0.709,1.19,-0.827,1.155,-0.883,1.026,-0.94,0.896,-0.996,0.767,-1.053,0.637,-1.109,0.507,-1.166,0.378,-1.222,0.248,-1.231,0.115,-1.195,-0.022,-1.159,-0.159,-1.124,-0.295,-1.088,-0.432,-1.052,-0.569,-1.016,-0.705,-0.98,-0.842,-0.944,-0.979,-0.908,-1.116,-0.873,-1.252,-0.837,-1.389,-0.801,-1.526,-0.686,-1.473,-0.563,-1.402,-0.441,-1.331,-0.318,-1.261,-0.196,-1.19,-0.073,-1.119,0.049,-1.049,0.172,-0.978,0.294,-0.908,0.416,-0.837,0.539,-0.766,0.661,-0.696,0.784,-0.625,0.906,-0.554,1.029,-0.484,1.151,-0.413,1.274,-0.343,1.396,-0.272,1.519,-0.201,1.641,-0.131,1.763,-0.06],"area":4.839,"initial":"M0.140,1.185L1.896,0.016L-0.798,-1.537L-1.250,0.186L-0.811,1.191L0.140,1.185Z"},{"points":[-0.605,-6.71,-0.648,-6.506,-0.692,-6.303,-0.735,-6.1,-0.779,-5.896,-0.824,-5.694,-0.929,-5.514,-1.034,-5.334,-1.139,-5.155,-1.244,-4.975,-1.348,-4.795,-1.453,-4.616,-1.567,-4.442,-1.697,-4.28,-1.827,-4.117,-1.947,-3.948,-2.04,-3.762,-2.133,-3.576,-2.226,-3.39,-2.319,-3.204,-2.439,-3.034,-2.56,-2.865,-2.681,-2.696,-2.802,-2.527,-2.957,-2.39,-3.12,-2.26,-3.282,-2.131,-3.479,-2.099,-3.687,-2.099,-3.873,-2.124,-3.896,-2.33,-3.857,-2.535,-3.819,-2.739,-3.78,-2.944,-3.741,-3.148,-3.702,-3.352,-3.663,-3.557,-3.625,-3.761,-3.586,-3.965,-3.547,-4.17,-3.508,-4.374,-3.469,-4.578,-3.431,-4.783,-3.392,-4.987,-3.353,-5.191,-3.314,-5.396,-3.275,-5.6,-3.237,-5.804,-3.198,-6.009,-3.159,-6.213,-3.12,-6.418,-3.081,-6.622,-2.919,-6.687,-2.711,-6.701,-2.504,-6.716,-2.296,-6.731,-2.089,-6.745,-1.881,-6.76,-1.674,-6.775,-1.466,-6.789,-1.259,-6.804,-1.051,-6.819,-0.844,-6.833,-0.636,-6.848],"area":8.562,"initial":"M-3.896,-2.330L-3.871,-2.099L-3.321,-2.099L-2.821,-2.499L-2.321,-3.199L-1.921,-3.999L-1.521,-4.499L-0.821,-5.699L-0.574,-6.852L-3.071,-6.676L-3.896,-2.330Z"},{"points":[0.951,-1.654,0.921,-1.494,0.89,-1.334,0.86,-1.173,0.829,-1.013,0.799,-0.853,0.769,-0.693,0.738,-0.533,0.708,-0.373,0.677,-0.212,0.647,-0.052,0.617,0.108,0.586,0.268,0.556,0.428,0.525,0.588,0.495,0.749,0.464,0.909,0.434,1.069,0.404,1.229,0.373,1.389,0.343,1.549,0.312,1.71,0.282,1.87,0.252,2.03,0.221,2.19,0.191,2.35,0.16,2.51,0.13,2.671,0.078,2.516,0.027,2.361,-0.025,2.207,-0.077,2.052,-0.128,1.897,-0.18,1.743,-0.231,1.588,-0.283,1.433,-0.335,1.279,-0.386,1.124,-0.438,0.969,-0.489,0.815,-0.541,0.66,-0.593,0.506,-0.644,0.351,-0.696,0.196,-0.747,0.042,-0.799,-0.113,-0.851,-0.268,-0.902,-0.422,-0.954,-0.577,-1.006,-0.732,-1.057,-0.886,-1.027,-1.001,-0.873,-1.054,-0.719,-1.108,-0.565,-1.161,-0.411,-1.215,-0.257,-1.269,-0.103,-1.322,0.051,-1.376,0.205,-1.429,0.359,-1.483,0.513,-1.537,0.667,-1.59,0.821,-1.644],"area":4.168,"initial":"M0.130,2.671L0.955,-1.675L0.930,-1.682L-1.088,-0.979L0.130,2.671Z"},{"points":[0.48,-0.771,0.391,-0.724,0.301,-0.678,0.211,-0.631,0.121,-0.584,0.031,-0.537,-0.058,-0.49,-0.148,-0.443,-0.238,-0.397,-0.328,-0.35,-0.417,-0.303,-0.507,-0.256,-0.597,-0.209,-0.687,-0.162,-0.779,-0.12,-0.873,-0.083,-0.965,-0.05,-1.012,-0.14,-1.059,-0.229,-1.106,-0.319,-1.154,-0.408,-1.201,-0.498,-1.248,-0.588,-1.296,-0.677,-1.343,-0.767,-1.39,-0.856,-1.437,-0.946,-1.485,-1.035,-1.532,-1.125,-1.579,-1.214,-1.626,-1.304,-1.674,-1.393,-1.644,-1.477,-1.583,-1.557,-1.521,-1.637,-1.46,-1.718,-1.398,-1.798,-1.337,-1.879,-1.275,-1.959,-1.214,-2.04,-1.137,-2.089,-1.036,-2.09,-0.934,-2.09,-0.833,-2.091,-0.732,-2.091,-0.631,-2.092,-0.529,-2.093,-0.428,-2.093,-0.327,-2.094,-0.226,-2.095,-0.177,-2.006,-0.128,-1.917,-0.079,-1.828,-0.031,-1.74,0.018,-1.651,0.067,-1.562,0.116,-1.474,0.164,-1.385,0.213,-1.296,0.262,-1.207,0.311,-1.119,0.359,-1.03,0.408,-0.941,0.457,-0.852],"area":2.807,"initial":"M-0.226,-2.095L-1.176,-2.089L-1.688,-1.420L-0.963,-0.047L-0.732,-0.139L0.497,-0.780L-0.226,-2.095Z"},{"points":[0.107,1.578,0.107,1.756,0.107,1.934,0.107,2.112,0.083,2.287,0.014,2.424,-0.164,2.437,-0.341,2.449,-0.518,2.462,-0.696,2.474,-0.873,2.487,-1.05,2.499,-1.228,2.512,-1.405,2.524,-1.582,2.537,-1.76,2.549,-1.937,2.562,-2.114,2.574,-2.292,2.587,-2.468,2.591,-2.565,2.442,-2.663,2.293,-2.76,2.144,-2.857,1.995,-2.955,1.847,-3.052,1.698,-3.149,1.549,-3.246,1.4,-3.344,1.251,-3.441,1.103,-3.538,0.954,-3.635,0.805,-3.733,0.656,-3.83,0.507,-3.927,0.359,-4.025,0.21,-4.122,0.061,-4.219,-0.088,-4.157,-0.114,-3.989,-0.058,-3.82,-0.002,-3.651,0.055,-3.483,0.111,-3.314,0.167,-3.145,0.223,-2.977,0.28,-2.808,0.336,-2.639,0.392,-2.471,0.448,-2.302,0.504,-2.133,0.561,-1.965,0.617,-1.796,0.673,-1.627,0.729,-1.463,0.794,-1.315,0.893,-1.167,0.991,-1.019,1.09,-0.871,1.189,-0.723,1.287,-0.573,1.38,-0.402,1.429,-0.231,1.478,-0.06,1.526],"area":5.775,"initial":"M-2.468,2.591L-2.443,2.597L0.054,2.421L0.107,2.174L0.107,1.574L-0.593,1.374L-1.493,0.774L-4.258,-0.148L-2.468,2.591Z"},{"points":[-2.618,3.025,-2.728,3.029,-2.837,3.033,-2.947,3.038,-3.056,3.042,-3.166,3.046,-3.276,3.051,-3.385,3.055,-3.495,3.059,-3.604,3.063,-3.714,3.068,-3.823,3.072,-3.933,3.076,-4.042,3.081,-4.152,3.085,-4.261,3.089,-4.371,3.094,-4.48,3.098,-4.59,3.102,-4.7,3.107,-4.809,3.111,-4.892,3.092,-4.871,2.985,-4.85,2.877,-4.829,2.77,-4.807,2.662,-4.786,2.554,-4.765,2.447,-4.744,2.339,-4.723,2.232,-4.702,2.124,-4.681,2.016,-4.66,1.909,-4.639,1.801,-4.618,1.694,-4.597,1.586,-4.576,1.479,-4.554,1.371,-4.533,1.263,-4.512,1.156,-4.43,1.173,-4.332,1.222,-4.234,1.271,-4.136,1.32,-4.05,1.388,-3.968,1.461,-3.886,1.534,-3.804,1.606,-3.722,1.679,-3.64,1.752,-3.558,1.825,-3.477,1.898,-3.395,1.971,-3.313,2.043,-3.231,2.116,-3.166,2.204,-3.105,2.295,-3.044,2.386,-2.983,2.477,-2.922,2.569,-2.862,2.66,-2.801,2.751,-2.74,2.842,-2.679,2.933],"area":2.588,"initial":"M-2.618,3.025L-3.214,2.131L-4.114,1.331L-4.508,1.134L-4.896,3.114L-2.618,3.025Z"},{"points":[-0.746,0.843,-0.746,1.006,-0.746,1.169,-0.791,1.317,-0.893,1.444,-0.995,1.572,-1.096,1.699,-1.216,1.808,-1.352,1.898,-1.487,1.989,-1.623,2.079,-1.759,2.17,-1.895,2.26,-2.03,2.351,-2.159,2.451,-2.286,2.553,-2.412,2.605,-2.533,2.495,-2.654,2.385,-2.774,2.275,-2.895,2.166,-3.016,2.056,-3.137,1.946,-3.258,1.836,-3.378,1.727,-3.499,1.617,-3.461,1.458,-3.422,1.3,-3.384,1.141,-3.346,0.983,-3.307,0.824,-3.269,0.665,-3.231,0.507,-3.192,0.348,-3.154,0.189,-3.116,0.031,-3.077,-0.128,-3.039,-0.286,-3.001,-0.445,-2.962,-0.604,-2.924,-0.762,-2.885,-0.921,-2.847,-1.079,-2.707,-1.142,-2.551,-1.188,-2.394,-1.235,-2.238,-1.282,-2.082,-1.328,-1.92,-1.339,-1.757,-1.339,-1.638,-1.231,-1.523,-1.115,-1.426,-0.988,-1.367,-0.836,-1.308,-0.684,-1.249,-0.531,-1.19,-0.379,-1.131,-0.227,-1.072,-0.075,-1.012,0.077,-0.953,0.229,-0.894,0.381,-0.835,0.533,-0.776,0.685],"area":7.328,"initial":"M-3.499,1.617L-2.383,2.631L-2.046,2.361L-1.146,1.761L-0.746,1.261L-0.746,0.761L-1.446,-1.039L-1.746,-1.339L-2.046,-1.339L-2.842,-1.102L-3.499,1.617Z"},{"points":[-0.14,-1.964,-0.208,-1.886,-0.304,-1.809,-0.4,-1.732,-0.497,-1.655,-0.593,-1.578,-0.69,-1.501,-0.786,-1.424,-0.882,-1.346,-0.979,-1.269,-1.075,-1.192,-1.172,-1.115,-1.268,-1.038,-1.375,-0.977,-1.484,-0.919,-1.594,-0.862,-1.703,-0.805,-1.813,-0.748,-1.922,-0.691,-2.032,-0.634,-2.141,-0.577,-2.25,-0.52,-2.36,-0.463,-2.419,-0.571,-2.479,-0.679,-2.538,-0.787,-2.598,-0.895,-2.657,-1.004,-2.717,-1.112,-2.776,-1.22,-2.836,-1.328,-2.895,-1.436,-2.954,-1.545,-3.014,-1.653,-3.073,-1.761,-2.995,-1.835,-2.892,-1.904,-2.789,-1.972,-2.687,-2.041,-2.584,-2.109,-2.481,-2.177,-2.378,-2.246,-2.275,-2.314,-2.173,-2.383,-2.07,-2.451,-1.967,-2.519,-1.864,-2.588,-1.762,-2.656,-1.659,-2.725,-1.556,-2.793,-1.453,-2.861,-1.35,-2.93,-1.236,-2.961,-1.145,-2.878,-1.053,-2.795,-0.962,-2.712,-0.871,-2.629,-0.779,-2.546,-0.688,-2.463,-0.596,-2.38,-0.505,-2.297,-0.414,-2.213,-0.322,-2.13,-0.231,-2.047],"area":3.808,"initial":"M-2.360,-0.463L-1.289,-1.021L-0.126,-1.952L-1.242,-2.966L-1.326,-2.946L-3.082,-1.777L-2.360,-0.463Z"}];
+  const pathEls = pieces.map(el=>el.querySelector('.paper-cut'));
+  const blurNode = document.getElementById('liquid-blur');
+  const alphaNode = document.getElementById('liquid-alpha');
+  const smooth = x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
+  const out = x=>{x=Math.max(0,Math.min(1,x));return 1-(1-x)**2.45;};
+  const FINAL_RADIUS=4.8;
+  const scene2Duration=1.35;
+  const CIRCLE_PATH=(()=>{
+    const r=FINAL_RADIUS, k=.552284749831*r;
+    return `M${r} 0C${r} ${k} ${k} ${r} 0 ${r}C${-k} ${r} ${-r} ${k} ${-r} 0C${-r} ${-k} ${-k} ${-r} 0 ${-r}C${k} ${-r} ${r} ${-k} ${r} 0Z`;
+  })();
+  let melting=false;
+
+  function renderMelt(p, prepared){
+    p=Math.max(0,Math.min(1,p));
+    if(!melting){
+      melting=true;
+      frame.dataset.state='melting';
+      stack.setAttribute('filter','url(#paper-liquid-filter)');
+    }
+    const peak=Math.pow(Math.sin(Math.PI*p),1.2);
+    const blur=0.56*peak;
+    const alpha=1+11*peak;
+    blurNode.setAttribute('stdDeviation',blur.toFixed(3));
+    alphaNode.setAttribute('values',
+      `1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 ${alpha.toFixed(3)} ${(-.5*(alpha-1)).toFixed(3)}`);
+    for(let i=0;i<pieces.length;i++){
+      const paper=prepared[i], shape=morphGeometry[i], path=pathEls[i];
+      const stagger=(i%9)*.0065;
+      const q=Math.max(0,Math.min(1,(p-stagger)/(1-stagger)));
+      const travel=out(q);
+      const round=smooth(Math.min(1,q/.88));
+      const swell=smooth((q-.29)/.71);
+      const blobRadius=Math.max(.57,Math.min(1.42,Math.sqrt(shape.area/Math.PI)*.60));
+      const radius=blobRadius+(FINAL_RADIUS-blobRadius)*swell;
+      const tx=paper.fx+(20-paper.cx-paper.fx)*travel;
+      const ty=paper.fy+(20-paper.cy-paper.fy)*travel;
+      const rot=paper.fr*(1-travel);
+      const size=paper.fs+(1-paper.fs)*travel;
+      pieces[i].setAttribute('transform',
+        `translate(${tx.toFixed(3)} ${ty.toFixed(3)}) rotate(${rot.toFixed(3)}) scale(${size.toFixed(4)})`);
+      // A local fluid bulge travels through the boundary, then attenuates to zero.
+      const wave=.10*Math.sin(Math.PI*q)*Math.sin(q*6.0+paper.phase);
+      const values=shape.points;
+      let d='';
+      for(let j=0;j<values.length;j+=2){
+        const theta=Math.PI*2*(j/2)/(values.length/2);
+        const r=radius*(1+wave*Math.sin(theta*3+paper.phase));
+        const targetX=r*Math.cos(theta), targetY=r*Math.sin(theta);
+        const x=values[j]+(targetX-values[j])*round;
+        const y=values[j+1]+(targetY-values[j+1])*round;
+        d+=(j?'L':'M')+x.toFixed(3)+','+y.toFixed(3);
+      }
+      path.setAttribute('d',d+'Z');
+    }
+    if(p>=1){
+      // True mathematical circle, still drawn by the original 118 paths.
+      prepared.forEach((item,i)=>{
+        pieces[i].setAttribute('transform',`translate(${(20-item.cx).toFixed(4)} ${(20-item.cy).toFixed(4)})`);
+        pathEls[i].setAttribute('d',CIRCLE_PATH);
+      });
+      stack.removeAttribute('filter');
+      frame.dataset.state='circle';
+    }
+  }
+
+  function start() {
+    if(reduce.matches){staticLogo();return;}
+    if(tween){tween.kill();tween=null;}
+    melting=false;
+    stack.removeAttribute('filter');
+    blurNode.setAttribute('stdDeviation','0');
+    alphaNode.setAttribute('values','1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0');
+    pathEls.forEach((path,i)=>path.setAttribute('d',morphGeometry[i].initial));
+    const {sw,sh,ox,oy,scale}=layout();
+    const rand=randomGenerator(117031);
+    const prepared=[];
+    let scene2Start=0;
+    for(const [i,el] of pieces.entries()){
+      const cx=Number(el.dataset.cx), cy=Number(el.dataset.cy);
+      const tx=ox+cx*scale, ty=oy+cy*scale;
+      const edge=i%4, margin=170+rand()*230;
+      let sx,sy;
+      if(edge===0){sx=-margin;sy=rand()*(sh+250)-125;}
+      else if(edge===1){sx=sw+margin;sy=rand()*(sh+250)-125;}
+      else if(edge===2){sx=rand()*(sw+250)-125;sy=-margin;}
+      else{sx=rand()*(sw+250)-125;sy=sh+margin;}
+      const dx=(sx-tx)/scale, dy=(sy-ty)/scale;
+      const length=Math.hypot(dx,dy)||1;
+      const perpX=-dy/length,perpY=dx/length;
+      const bend=(rand()-.5)*24*(.7+rand()*.6);
+      const x1=dx*.65+perpX*bend,y1=dy*.65+perpY*bend;
+      const x2=dx*.19-perpX*bend*.62,y2=dy*.19-perpY*bend*.62;
+      const angle=(rand()-.5)*320, small=.74+rand()*.24;
+      const wave=((i*7)%5)*.075;
+      const delay=.035+wave+rand()*.27;
+      const phase=rand()*Math.PI*2;
+      const finalX=(rand()-.5)*.72, finalY=(rand()-.5)*.72;
+      const finalRot=(rand()-.5)*8.5, finalScale=.985+rand()*.04;
+      const fingerTilt=(rand()-.5)*18;
+      const points=makeHandPlacedFrames(rand,{dx,dy,x1,y1,x2,y2,angle,phase,small,finalX,finalY,finalRot,finalScale,fingerTilt});
+      const depth=el.querySelector('.paper-depth');
+      if(depth){
+        depth.style.setProperty('--paper-delay',`${delay.toFixed(3)}s`);
+        depth.style.setProperty('--paper-duration',`${points.duration.toFixed(3)}s`);
+      }
+      el.setAttribute('transform',points.keyframes[0].transform);
+      prepared.push({el,cx,cy,delay,keyframes:points.keyframes,lastIndex:0,
+        finalTransform:points.finalTransform,fx:finalX,fy:finalY,fr:finalRot,fs:finalScale,phase});
+      scene2Start=Math.max(scene2Start,delay+points.duration);
+    }
+    const totalDuration=scene2Start+scene2Duration;
+    frame.dataset.state='assembling';
+    still.style.opacity='0';
+    stack.style.visibility='visible';
+    const clock={time:0};
+    let assembled=false;
+    let cardsStarted=false;
+    // Single continuous GSAP clock, one stateful group of 118 paper paths.
+    tween=createClockTween(clock,{
+      time:totalDuration,duration:totalDuration,ease:'none',
+      onUpdate:()=>{
+        // Cards join while the SVG fragments are still assembling, not after the circle.
+        if(!cardsStarted && clock.time>=scene2Start*.45){
+          cardsStarted=true;
+          frame.dispatchEvent(new CustomEvent('ryze:cards-start'));
+        }
+        if(clock.time<scene2Start){
+          for(const paper of prepared){
+            const local=clock.time-paper.delay;
+            if(local<=0)continue;
+            let index=paper.lastIndex;
+            while(index+1<paper.keyframes.length && local>=paper.keyframes[index+1].time-0.000001)index++;
+            if(index!==paper.lastIndex){
+              paper.lastIndex=index;
+              paper.el.setAttribute('transform',paper.keyframes[index].transform);
+            }
+          }
+          return;
+        }
+        if(!assembled){
+          assembled=true;
+          prepared.forEach(paper=>paper.el.setAttribute('transform',paper.finalTransform));
+          frame.dispatchEvent(new CustomEvent('ryze:assembled'));
+        }
+        renderMelt((clock.time-scene2Start)/scene2Duration,prepared);
+      },
+      onComplete:()=>{
+        renderMelt(1,prepared);
+        tween=null;
+        frame.dispatchEvent(new CustomEvent('ryze:circle'));
+      }
+    });
+  }
+  window.addEventListener('resize',()=>{
+    cancelAnimationFrame(geometryFrame);
+    geometryFrame=requestAnimationFrame(()=>{layout();});
+  },{passive:true});
+  const preferenceChanged=()=>reduce.matches?staticLogo():start();
+  if(reduce.addEventListener) reduce.addEventListener('change',preferenceChanged);
+  else if(reduce.addListener) reduce.addListener(preferenceChanged);
+  document.addEventListener('visibilitychange',()=>{
+    if(!tween)return;
+    if(document.hidden)tween.pause(); else if(frame.dataset.state==='assembling' || frame.dataset.state==='melting')tween.resume();
+  });
+  window.__ryzeStartSequence = start;
+  if(reduce.matches) staticLogo();
+  else start();
+})();
+</script>
+<script type="module" src="./src/main.js"></script>
+</body></html>
