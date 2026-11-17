@@ -347,7 +347,9 @@ export function SiteHeader({
         </a>
 
         {mode === "static" ? (
-          <nav className={styles.staticNavigation} aria-label="Primary navigation">
+          <details className={styles.nativeMenu}>
+            <summary aria-label="Open site navigation">Menu</summary>
+            <nav className={styles.staticNavigation} aria-label="Primary navigation">
             {navigationGroups.map((group) => (
               <details className={styles.staticGroup} key={group.id}>
                 <summary>{group.label}<span aria-hidden="true">⌄</span></summary>
@@ -360,7 +362,8 @@ export function SiteHeader({
               </details>
             ))}
             {headerLinks.map((destination) => destinationAnchor(destination, styles.directLink))}
-          </nav>
+            </nav>
+          </details>
         ) : (
           <nav ref={desktopNavRef} className={styles.desktopNavigation}
                data-preview-part="header-navigation" aria-label="Primary navigation"
@@ -464,10 +467,15 @@ export function SiteHeader({
         </nav>
       )}
 
-      <noscript><nav aria-label="All destinations" className={styles.noScriptLinks}>
-        {mobileSiteSections.flatMap((group) => group.links).concat(headerLinks, [bookingLink, { id: "start-nojs", label: "Get started", href: shopifyStartHref }])
-          .map((link) => <a key={link.id} href={link.href}>{link.label}</a>)}
-      </nav></noscript>
+      <noscript>
+        <details className={styles.nativeMenu}>
+          <summary aria-label="Open site navigation">Menu</summary>
+          <nav aria-label="All destinations" className={styles.noScriptLinks}>
+            {mobileSiteSections.flatMap((group) => group.links).concat(headerLinks, [bookingLink, { id: "start-nojs", label: "Get started", href: shopifyStartHref }])
+              .map((link) => <a key={link.id} href={link.href}>{link.label}</a>)}
+          </nav>
+        </details>
+      </noscript>
 
       {notice && !onPreviewDestination && (
         <div key={notice.id} className={styles.notice} data-preview-part="destination-notice"
