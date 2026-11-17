@@ -256,9 +256,15 @@
     .headline { grid-column: 1 / 10; grid-row: 2 / 4; inline-size: calc(100% - 60px); --type-heading-size: clamp(100px, 5.7vw, 160px); }
     .lead { grid-column: 10 / 13; grid-row: 3; align-self: start; margin-block-start: 0; --type-lead-size: 19px; }
     .description { grid-column: 10 / 13; grid-row: 3; margin-block-start: 40px; --type-paragraph-size: 19px; }
-    .mascot { grid-column: 8 / 10; grid-row: 4; inline-size: 100%; margin: 0; }
-    .action { grid-column: 10 / 12; grid-row: 4; margin: 0; }
-    .integration { grid-column: 12 / 13; grid-row: 4; inline-size: clamp(290px, 13vw, 320px); margin: 20px 0 0 20px; }
+    .mascot { grid-column: 7 / 9; grid-row: 4; inline-size: 100%; margin: 0; }
+    .action { grid-column: 9 / 11; grid-row: 4; margin: 0; }
+    .integration {
+      grid-column: 11 / 13;
+      grid-row: 4;
+      justify-self: start;
+      inline-size: min(100%, 210px);
+      margin: 20px 0 0 12px;
+    }
   }
 
 
@@ -565,16 +571,6 @@
     .integration { margin-block-start: 0; }
   }
 
-
-  @media (width >= 2400px) {
-    .integration {
-      position: absolute;
-      grid-area: auto;
-      inset: auto 16px 200px auto;
-      inline-size: min(100%, 320px);
-      margin: 0;
-    }
-  }
 
   /* Very small CSS viewports may result from 200% zoom or text enlargement:
      permit document scrolling, never an inner scrolling Hero or hidden content. */

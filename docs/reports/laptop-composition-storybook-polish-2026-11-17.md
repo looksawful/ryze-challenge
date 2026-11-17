@@ -68,3 +68,11 @@ The earlier claim of a *fully* finished laptop composition was premature. Hero c
 **Private Titan evidence:** `http://100.110.158.49:3090/_qa/p1-1023x800.png`, `/_qa/p1-1024x800.png`, `/_qa/p1-1366x768.png`, `/_qa/p1-1920x960.png`, `/_qa/p1-result-1366x768.png`, `/_qa/p1-result-1920x960.png`. All paths are temporary preview copies in `out/_qa`, not committed binaries. The preview-only measurement Grid (G toggle) was restored after build.
 
 **Not claimed:** user-approved final optical design; automated Safari QA; completion of product mockup P0, explicitly postponed by the user.
+
+## Ultrawide CTA / morphing-logo collision fix · 2026-11-17
+
+- **Cause:** the former `width >= 2400px` absolute `.integration` rule (`inset: auto 16px 200px auto`) overrode its Grid placement. Before: CTA and logos intersected by ~159×30 CSS px at 2400×960 and ~132×30 px at 2803×1024.
+- **Correction:** removed the absolute override. The single ultrawide Grid row now places Rizzie at columns 7–9, CTA at 9–11 and IntegrationLogos at 11–13. Logos retain their WebGL/static fallback and caption; width is capped to fit between CTA and the existing bottom-right cookie panel. No position-dependent JavaScript, no new branches or packages.
+- **Verified in Titan Chrome:** 1920×960 and 2399×960 remain non-overlapping; at 2400×960 CTA right ~1793, logos left ~1812 (gap ~19px), Rizzie poster right ~1460 versus CTA left 1500 (gap ~40px). At 2803×1024 CTA right ~2013, logos left ~2049 (~37px); Rizzie poster right ~1662 versus CTA left ~1720 (~58px). Also inspected 2560×1000, 3000×1200 and 3440×1440, with zero CTA/logo bounding-box intersection. Final visual screenshot inspected at 2803×1024.
+- **Checks:** `npm run build` PASS including Next TypeScript; `git diff --check` PASS. No full tests or CI under the express-mode instruction. Product mockup P0 remains deferred.
+- **Preview-only evidence:** `http://100.110.158.49:3090/_qa/ultrawide-2803-logos-fixed.png` (temporary on Titan, private Tailscale).
