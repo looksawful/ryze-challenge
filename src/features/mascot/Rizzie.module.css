@@ -175,6 +175,14 @@
   @media (min-width: 700px) and (max-width: 1023px) {
     .zone { --rizzie-width: 150px; --sprite-scale: .74; }
   }
+  /* Keep the actual interactive hit area clear of the notice on short phones. */
+  @media (min-width: 360px) and (max-width: 699px) and (min-height: 568px) and (max-height: 760px) {
+    .zone[data-compact="true"] { --rizzie-width: 68px; --sprite-scale: .33; }
+  }
+  /* Narrow landscape puts the pet in the free track to the left of the CTA. */
+  @media (min-width: 700px) and (max-width: 1023px) and (orientation: landscape) {
+    .zone[data-compact="true"] { --rizzie-width: 72px; --sprite-scale: .35; }
+  }
   @media (min-width: 1024px) and (max-width: 1599px) {
     .zone { --rizzie-width: 180px; --sprite-scale: .88; }
   }

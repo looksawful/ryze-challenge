@@ -63,3 +63,9 @@
   .wideLabel { display: none; }
   .shortLabel { display: inline; }
 }
+
+/* There is no room for two floating interactive layers in very short phones.
+   Keep consent in normal document flow rather than cover the mascot or CTA. */
+@media (max-width: 699px) and (max-height: 567px) {
+  .notice { position: static; max-block-size: none; margin-block: var(--space-4); }
+}
