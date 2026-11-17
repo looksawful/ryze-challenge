@@ -40,12 +40,12 @@ test("top mobile navigation floats above the Hero's own safe inset", async () =>
   assert.match(hero, /padding-block-start:\s*max\(96px,\s*calc\(84px\s*\+/s);
 });
 
-test("top mobile navigation hides on downward scroll and returns on upward scroll", async () => {
+test("top mobile navigation stays fixed and the desktop nav shrinks without moving", async () => {
   const css = await read("src/features/site-shell/SiteHeader.module.css");
   const code = await read("src/features/site-shell/SiteHeader.tsx");
-  assert.match(css, /\.header\[data-variant="dock"\]\[data-scroll-hidden="true"\] \.mobileDock/);
-  assert.match(code, /data-scroll-hidden/);
-  assert.match(code, /window\.scrollY/);
+  assert.match(css, /\.header\[data-variant="dock"\]\[data-docked="true"\] \.inner/);
+  assert.doesNotMatch(css, /\[data-scroll-hidden="true"\] \.mobileDock/);
+  assert.match(code, /window\.scrollY >= 120/);
 });
 
 test("bottom Cookies ignore a mobile dock that is now at the top of the screen", async () => {

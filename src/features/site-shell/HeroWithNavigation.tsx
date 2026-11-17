@@ -13,6 +13,7 @@ export function HeroWithNavigation() {
           variant="dock"
           enhancement="auto"
           previewMode={false}
+          showMobileCookieSettings={false}
           onPreviewDestination={(destination) => {
             window.dispatchEvent(new CustomEvent("rizzie:message", {
               detail: { text: destination.id.startsWith("shopify-")

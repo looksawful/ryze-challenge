@@ -351,60 +351,55 @@
     border-bottom: 1px solid var(--nav-line);
   }
 
-  /* Original full-bleed bottom navigation, with compact floating state. */
+  /* Fixed at the same top coordinate in every scroll state.
+     Only the inner pill changes size; never move or hide the navigation. */
   .header[data-variant="dock"] {
     position: fixed;
-    inset: auto 0 0;
+    inset: max(12px, env(safe-area-inset-top)) 0 auto;
     z-index: 90;
     isolation: auto;
     width: 100%;
+    padding-inline: var(--gutter);
     background: transparent;
     color: var(--nav-foreground);
     pointer-events: none;
   }
   .header[data-variant="dock"] .inner {
     min-height: 4.75rem;
-    width: 100%;
+    width: min(calc(100% - 2 * var(--gutter)), 59rem);
     max-width: none;
     margin-inline: auto;
-    padding-inline: var(--gutter);
+    padding-inline: clamp(.75rem, 2vw, 1.5rem);
     justify-content: center;
     border: 1px solid var(--nav-line);
-    border-radius: 0;
+    border-radius: 20px;
     background: var(--nav-surface);
-    box-shadow: 0 -4px 25px rgb(0 0 0 / 12%);
+    box-shadow: 0 9px 32px rgb(0 0 0 / 18%);
     pointer-events: auto;
+    transition: width 280ms ease, min-height 280ms ease, border-radius 280ms ease;
   }
   .header[data-variant="dock"] .brand,
   .header[data-variant="dock"] .actions {
     display: none;
   }
   .header[data-variant="dock"] .desktopNavigation {
-    flex: 0 1 69rem;
+    flex: 1 1 auto;
     justify-content: space-between;
     gap: clamp(.5rem, 2vw, 2rem);
     position: static;
   }
   .header[data-variant="dock"][data-docked="true"] {
-    inset: 12px 0 auto;
+    inset: max(12px, env(safe-area-inset-top)) 0 auto;
     padding-inline: var(--gutter);
   }
   .header[data-variant="dock"][data-docked="true"] .inner {
     min-height: 3.65rem;
-    width: min(calc(100% - 11rem), 35rem);
+    width: min(calc(100% - 2 * var(--gutter)), 45rem);
     padding-inline: .9rem;
     border-radius: 18px;
-    box-shadow: 0 9px 32px rgb(0 0 0 / 18%);
   }
   .header[data-variant="dock"][data-docked="true"] .brand {
-    display: inline-flex;
-    position: fixed;
-    inset-block-start: 19px;
-    inset-inline-end: var(--gutter);
-    align-items: center;
-    pointer-events: auto;
-    width: 126px;
-    height: 40px;
+    display: none;
   }
   .header[data-variant="dock"][data-docked="true"] .desktopNavigation {
     gap: .4rem;
@@ -463,9 +458,9 @@
     transform-origin: top left;
   }
   .header[data-variant="dock"] .megaPanel {
-    inset-block-start: auto;
-    inset-block-end: calc(100% + 10px);
-    transform-origin: bottom left;
+    inset-block-start: calc(100% + 10px);
+    inset-block-end: auto;
+    transform-origin: top left;
   }
   .header[data-variant="dock"][data-docked="true"] .megaPanel {
     inset-block-start: calc(100% + 10px);
@@ -666,12 +661,12 @@
   }
   @media (width < 64rem) {
     .header[data-variant="dock"] {
-      inset: auto 0 0;
+      inset: 0 0 auto;
       padding: 0;
       background: transparent;
     }
     .header[data-variant="dock"][data-docked="true"] {
-      inset: auto 0 0;
+      inset: 0 0 auto;
       padding: 0;
     }
     .header[data-variant="dock"] .inner,
@@ -723,7 +718,7 @@
       inset-block-end: auto;
       width: min(420px, calc(100% - 100px));
       margin-inline: 0;
-      transition: transform 200ms ease, opacity 200ms ease, visibility 200ms;
+      transition: width 200ms ease;
       padding: 5px;
       color: var(--nav-foreground);
       background: var(--nav-surface);
@@ -733,14 +728,7 @@
       pointer-events: auto;
     }
     .header[data-variant="dock"] .inner {
-      transition: transform 200ms ease, opacity 200ms ease, visibility 200ms;
-    }
-    .header[data-variant="dock"][data-scroll-hidden="true"] .mobileDock,
-    .header[data-variant="dock"][data-scroll-hidden="true"] .inner {
-      transform: translateY(calc(-100% - 24px));
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
+      transition: border-radius 200ms ease;
     }
 
     .mobileDockItem {
@@ -987,6 +975,80 @@
     .header[data-variant="dock"] .mobileToggle {
       width: 56px;
       height: 56px;
+    }
+  }
+  /* Mobile only: reuse the same verified four product cards as desktop
+     without changing the approved desktop 2x2 product grid. */
+  @media (width < 64rem) {
+    .header[data-variant="dock"] .mobileProductShelf {
+      min-inline-size: 0;
+      margin-block: 1.25rem;
+    }
+    .header[data-variant="dock"] .mobileProductShelf > .mobileSectionTitle {
+      margin: 0 0 .6rem;
+      color: var(--nav-muted);
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .header[data-variant="dock"] .mobileProductRail {
+      display: flex;
+      gap: 12px;
+      max-inline-size: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      overscroll-behavior-inline: contain;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 2px;
+      padding: 2px 2px 14px;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+    .header[data-variant="dock"] .mobileProductCard {
+      flex: 0 0 min(220px, 68vw);
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+      min-inline-size: 0;
+      padding: 10px;
+      border: 1px solid var(--nav-line);
+      border-radius: 14px;
+      background: color-mix(in oklab, var(--nav-foreground) 4%, var(--nav-inside));
+      color: var(--nav-foreground);
+      text-decoration: none;
+      scroll-snap-align: start;
+    }
+    .header[data-variant="dock"] .mobileProductCard:hover {
+      background: color-mix(in oklab, var(--nav-foreground) 9%, var(--nav-inside));
+    }
+    .header[data-variant="dock"] .mobileProductCard:focus-visible,
+    .header[data-variant="dock"] .mobileProductRail:focus-visible {
+      outline: 2px solid var(--nav-foreground);
+      outline-offset: 2px;
+    }
+    .header[data-variant="dock"] .mobileProductMedia {
+      display: grid;
+      place-items: center;
+      aspect-ratio: 1.8;
+      padding: 5%;
+      overflow: hidden;
+      border-radius: 10px;
+      background: var(--nav-panel);
+    }
+    .header[data-variant="dock"] .mobileProductMedia img {
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: contain;
+    }
+    .header[data-variant="dock"] .mobileProductTitle {
+      font-size: .875rem;
+      line-height: 1.3;
+    }
+    .header[data-variant="dock"] .mobileProductDescription {
+      font-size: .75rem;
+      line-height: 1.4;
+      color: var(--nav-muted);
     }
   }
   @media (prefers-reduced-motion: reduce) {

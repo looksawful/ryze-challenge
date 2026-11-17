@@ -22,6 +22,7 @@ type SiteHeaderProps = {
   enhancement?: NavigationMode;
   onPreviewDestination?: (destination: SiteDestination) => void;
   onDockChange?: (docked: boolean) => void;
+  showMobileCookieSettings?: boolean;
 };
 
 function useNavigationMode(requested: NavigationMode): Exclude<NavigationMode, "auto"> {
@@ -86,6 +87,7 @@ export function SiteHeader({
   enhancement = "lightweight",
   onPreviewDestination,
   onDockChange,
+  showMobileCookieSettings = true,
 }: SiteHeaderProps) {
   const mode = useNavigationMode(enhancement);
   const premium = mode === "full" || mode === "no-webgl";
@@ -233,76 +235,29 @@ export function SiteHeader({
     else animation.reverse();
   }, [desktopGroup, renderedGroup, premium]);
 
-  // The Homework nav crosses at the end of the dark showcase, not after
-  // an arbitrary number of scroll pixels. Relocate while briefly invisible:
-  // the dock must never fly across the content.
+  // An agreed top-fixed navigation: scroll changes only its width, not its Y position.
   useEffect(() => {
     if (variant !== "dock") return;
     const node = rootRef.current;
     if (!node) return;
-    let disposed = false;
-    let gsapApi: typeof import("gsap").gsap | null = null;
-    let lastDocked: boolean | null = null;
-    const position = (force = false) => {
-      const darkEnd = document.querySelector<HTMLElement>("[data-ryze-dark-end]");
-      const docked = darkEnd
-        ? darkEnd.getBoundingClientRect().bottom <= 80
-        : window.scrollY >= Math.max(160, window.innerHeight * 0.7);
-      if (docked === lastDocked && !force) return;
-      const changed = docked !== lastDocked;
-      lastDocked = docked;
-      const settle = () => {
-        node.dataset.docked = String(docked);
-        onDockChange?.(docked);
-      };
-      if (changed && docked) openGroup(null);
-      if (gsapApi && premium && changed && !force) {
-        gsapApi.killTweensOf(node);
-        gsapApi.timeline()
-          .to(node, { autoAlpha: 0, duration: 0.12, ease: "power2.in" })
-          .call(settle)
-          .to(node, { autoAlpha: 1, duration: 0.42, ease: "power3.out" });
-      } else {
-        gsapApi?.killTweensOf(node);
-        settle();
-        node.style.removeProperty("opacity");
-        node.style.removeProperty("visibility");
-      }
-    };
-    position(true);
-    let lastScrollY = Math.max(0, window.scrollY);
-    node.dataset.scrollHidden = "false";
-    const trackScrollDirection = () => {
-      const scrollY = Math.max(0, window.scrollY);
-      const change = scrollY - lastScrollY;
-      const focused = node.contains(document.activeElement);
-      if (scrollY < 32 || change < -5 || focused || dialogRef.current?.open) {
-        node.dataset.scrollHidden = "false";
-      } else if (scrollY > 96 && change > 5) {
-        node.dataset.scrollHidden = "true";
-      }
-      lastScrollY = scrollY;
-    };
-    if (premium) import("gsap").then(({ gsap }) => {
-      if (!disposed) gsapApi = gsap;
-    }).catch(() => { /* Position and content remain usable without GSAP. */ });
-    const onScroll = () => { position(); trackScrollDirection(); };
-    const onResize = () => {
-      position(true);
-      lastScrollY = Math.max(0, window.scrollY);
+    let lastCompact: boolean | null = null;
+    const updateCompact = () => {
+      const compact = window.scrollY >= 120;
+      node.dataset.docked = String(compact);
       node.dataset.scrollHidden = "false";
+      if (compact !== lastCompact) {
+        lastCompact = compact;
+        onDockChange?.(compact);
+      }
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize);
+    updateCompact();
+    window.addEventListener("scroll", updateCompact, { passive: true });
+    window.addEventListener("resize", updateCompact);
     return () => {
-      disposed = true;
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
-      gsapApi?.killTweensOf(node);
-      node.style.removeProperty("opacity");
-      node.style.removeProperty("visibility");
+      window.removeEventListener("scroll", updateCompact);
+      window.removeEventListener("resize", updateCompact);
     };
-  }, [variant, premium, openGroup, onDockChange]);
+  }, [variant, onDockChange]);
 
   function closeMobile() {
     setMobileOpen(false);
@@ -464,7 +419,27 @@ export function SiteHeader({
                 {group.links.map((destination) => destinationAnchor(destination, styles.mobileLink))}
               </section>
             ))}
-            <HomeworkCookieSettingsButton className={styles.mobileLink} />
+            <section className={styles.mobileProductShelf} aria-label="Other Ryze products">
+              <h2 className={styles.mobileSectionTitle}>Other products</h2>
+              <div className={styles.mobileProductRail} tabIndex={0}
+                   role="region" aria-label="Swipe to browse Ryze products"
+                   data-preview-part="mobile-products">
+                {navigationProductCards.map((destination) => (
+                  <a key={destination.id} className={styles.mobileProductCard}
+                     href={destination.href}
+                     onClick={(event) => selectDestination(event, destination)}>
+                    <span className={styles.mobileProductMedia}>
+                      <Image src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}${destination.image}`}
+                             alt="" width={destination.width} height={destination.height}
+                             sizes="(max-width: 420px) 64vw, 220px" unoptimized />
+                    </span>
+                    <strong className={styles.mobileProductTitle}>{destination.label}</strong>
+                    <span className={styles.mobileProductDescription}>{destination.description}</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+            {showMobileCookieSettings && <HomeworkCookieSettingsButton className={styles.mobileLink} />}
           </nav>
         </dialog>
       )}
