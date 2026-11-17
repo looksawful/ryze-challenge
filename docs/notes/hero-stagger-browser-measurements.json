@@ -1,0 +1,972 @@
+{
+  "results": [
+    {
+      "name": "desktop",
+      "motion": "no-preference",
+      "problems": [],
+      "samples": [
+        {
+          "label": "0ms after assembled",
+          "v": {
+            "phase": "revealing",
+            "h1": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0s",
+              "computedFont": "Karrik, \"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 933.609375,
+              "height": 190.0625
+            },
+            "lead": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.22s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 311.609375,
+              "height": 28.15625
+            },
+            "desc": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 596.25,
+              "height": 51.09375
+            },
+            "mascot": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 168,
+              "height": 176
+            },
+            "action": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 270.015625,
+              "height": 63
+            },
+            "integration": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 288,
+              "height": 70
+            },
+            "nav": {
+              "opacity": "0",
+              "visibility": "hidden",
+              "animation": "LShPzW_ryze-nav-reveal",
+              "delay": "0.9s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 1440,
+              "height": 0
+            },
+            "cookie": {
+              "opacity": "1",
+              "visibility": "hidden",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "system-ui, sans-serif",
+              "width": 384,
+              "height": 159.59375
+            },
+            "cookieLayer": {
+              "opacity": "0",
+              "visibility": "hidden",
+              "animation": "_8aEwW_ryze-cookie-reveal",
+              "delay": "1.14s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 1440,
+              "height": 900
+            },
+            "scrollOverflow": false,
+            "events": [
+              {
+                "type": "phase:playing",
+                "at": 1176
+              },
+              {
+                "type": "ryze:assembled",
+                "at": 5724.5
+              },
+              {
+                "type": "phase:revealing",
+                "at": 5726.70000000298
+              }
+            ]
+          }
+        },
+        {
+          "label": "550ms after assembled",
+          "v": {
+            "phase": "revealing",
+            "h1": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0s",
+              "computedFont": "Karrik, \"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 933.609375,
+              "height": 190.0625
+            },
+            "lead": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.22s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 311.609375,
+              "height": 28.15625
+            },
+            "desc": {
+              "opacity": "0.999815",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 596.25,
+              "height": 51.09375
+            },
+            "mascot": {
+              "opacity": "0.999815",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 168,
+              "height": 175.99996948242188
+            },
+            "action": {
+              "opacity": "0.951897",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 270.015625,
+              "height": 63
+            },
+            "integration": {
+              "opacity": "0.951897",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 288,
+              "height": 70
+            },
+            "nav": {
+              "opacity": "0.0520285",
+              "visibility": "visible",
+              "animation": "LShPzW_ryze-nav-reveal",
+              "delay": "0.9s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 1440,
+              "height": 0
+            },
+            "cookie": {
+              "opacity": "1",
+              "visibility": "hidden",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "system-ui, sans-serif",
+              "width": 384,
+              "height": 159.59375
+            },
+            "cookieLayer": {
+              "opacity": "0",
+              "visibility": "hidden",
+              "animation": "_8aEwW_ryze-cookie-reveal",
+              "delay": "1.14s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 1440,
+              "height": 900
+            },
+            "scrollOverflow": false,
+            "events": [
+              {
+                "type": "phase:playing",
+                "at": 1176
+              },
+              {
+                "type": "ryze:assembled",
+                "at": 5724.5
+              },
+              {
+                "type": "phase:revealing",
+                "at": 5726.70000000298
+              }
+            ]
+          }
+        },
+        {
+          "label": "1450ms after assembled",
+          "v": {
+            "phase": "ready",
+            "h1": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0s",
+              "computedFont": "Karrik, \"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 933.609375,
+              "height": 190.0625
+            },
+            "lead": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.22s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 311.609375,
+              "height": 28.15625
+            },
+            "desc": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 596.25,
+              "height": 51.09375
+            },
+            "mascot": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 168,
+              "height": 176
+            },
+            "action": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 270.015625,
+              "height": 63
+            },
+            "integration": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 288,
+              "height": 70
+            },
+            "nav": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LShPzW_ryze-nav-reveal",
+              "delay": "0.9s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 1440,
+              "height": 0
+            },
+            "cookie": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "system-ui, sans-serif",
+              "width": 384,
+              "height": 159.59375
+            },
+            "cookieLayer": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "_8aEwW_ryze-cookie-reveal",
+              "delay": "1.14s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 1440,
+              "height": 900
+            },
+            "scrollOverflow": false,
+            "events": [
+              {
+                "type": "phase:playing",
+                "at": 1176
+              },
+              {
+                "type": "ryze:assembled",
+                "at": 5724.5
+              },
+              {
+                "type": "phase:revealing",
+                "at": 5726.70000000298
+              },
+              {
+                "type": "ryze:intro-complete",
+                "at": 7860.30000000447
+              },
+              {
+                "type": "phase:ready",
+                "at": 7861.80000000447
+              }
+            ]
+          }
+        },
+        {
+          "label": "final",
+          "v": {
+            "phase": "ready",
+            "h1": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0s",
+              "computedFont": "Karrik, \"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 933.609375,
+              "height": 190.0625
+            },
+            "lead": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.22s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 311.609375,
+              "height": 28.15625
+            },
+            "desc": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 596.25,
+              "height": 51.09375
+            },
+            "mascot": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 168,
+              "height": 176
+            },
+            "action": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 270.015625,
+              "height": 63
+            },
+            "integration": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 288,
+              "height": 70
+            },
+            "nav": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LShPzW_ryze-nav-reveal",
+              "delay": "0.9s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 1440,
+              "height": 0
+            },
+            "cookie": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "system-ui, sans-serif",
+              "width": 384,
+              "height": 159.59375
+            },
+            "cookieLayer": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "_8aEwW_ryze-cookie-reveal",
+              "delay": "1.14s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 1440,
+              "height": 900
+            },
+            "scrollOverflow": false,
+            "events": [
+              {
+                "type": "phase:playing",
+                "at": 1176
+              },
+              {
+                "type": "ryze:assembled",
+                "at": 5724.5
+              },
+              {
+                "type": "phase:revealing",
+                "at": 5726.70000000298
+              },
+              {
+                "type": "ryze:intro-complete",
+                "at": 7860.30000000447
+              },
+              {
+                "type": "phase:ready",
+                "at": 7861.80000000447
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mobile",
+      "motion": "no-preference",
+      "problems": [],
+      "samples": [
+        {
+          "label": "0ms after assembled",
+          "v": {
+            "phase": "revealing",
+            "h1": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0s",
+              "computedFont": "Karrik, \"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 94.96875
+            },
+            "lead": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.22s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 46.0625
+            },
+            "desc": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 45.4375
+            },
+            "mascot": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 173,
+              "height": 168.796875
+            },
+            "action": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 340,
+              "height": 76
+            },
+            "integration": {
+              "opacity": "0",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 173,
+              "height": 70
+            },
+            "nav": {
+              "opacity": "0",
+              "visibility": "hidden",
+              "animation": "LShPzW_ryze-nav-reveal",
+              "delay": "0.9s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 390,
+              "height": 0
+            },
+            "cookie": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "system-ui, sans-serif",
+              "width": 0,
+              "height": 0
+            },
+            "cookieLayer": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "_8aEwW_ryze-cookie-reveal",
+              "delay": "1.14s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 0,
+              "height": 0
+            },
+            "scrollOverflow": false,
+            "events": [
+              {
+                "type": "phase:playing",
+                "at": 1006.1000000014901
+              },
+              {
+                "type": "ryze:assembled",
+                "at": 5452.20000000298
+              },
+              {
+                "type": "phase:revealing",
+                "at": 5453.60000000149
+              }
+            ]
+          }
+        },
+        {
+          "label": "550ms after assembled",
+          "v": {
+            "phase": "revealing",
+            "h1": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0s",
+              "computedFont": "Karrik, \"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 94.96875
+            },
+            "lead": {
+              "opacity": "0.999998",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.22s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 46.0625
+            },
+            "desc": {
+              "opacity": "0.975217",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 45.4375
+            },
+            "mascot": {
+              "opacity": "0.975217",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 173,
+              "height": 168.79684448242188
+            },
+            "action": {
+              "opacity": "0.49772",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 340,
+              "height": 76
+            },
+            "integration": {
+              "opacity": "0.49772",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 173,
+              "height": 70
+            },
+            "nav": {
+              "opacity": "0",
+              "visibility": "hidden",
+              "animation": "LShPzW_ryze-nav-reveal",
+              "delay": "0.9s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 390,
+              "height": 0
+            },
+            "cookie": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "system-ui, sans-serif",
+              "width": 0,
+              "height": 0
+            },
+            "cookieLayer": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "_8aEwW_ryze-cookie-reveal",
+              "delay": "1.14s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 0,
+              "height": 0
+            },
+            "scrollOverflow": false,
+            "events": [
+              {
+                "type": "phase:playing",
+                "at": 1006.1000000014901
+              },
+              {
+                "type": "ryze:assembled",
+                "at": 5452.20000000298
+              },
+              {
+                "type": "phase:revealing",
+                "at": 5453.60000000149
+              }
+            ]
+          }
+        },
+        {
+          "label": "1450ms after assembled",
+          "v": {
+            "phase": "ready",
+            "h1": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0s",
+              "computedFont": "Karrik, \"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 94.96875
+            },
+            "lead": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.22s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 46.0625
+            },
+            "desc": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 45.4375
+            },
+            "mascot": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 173,
+              "height": 168.796875
+            },
+            "action": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 340,
+              "height": 76
+            },
+            "integration": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 173,
+              "height": 70
+            },
+            "nav": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LShPzW_ryze-nav-reveal",
+              "delay": "0.9s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 390,
+              "height": 0
+            },
+            "cookie": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "system-ui, sans-serif",
+              "width": 0,
+              "height": 0
+            },
+            "cookieLayer": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "_8aEwW_ryze-cookie-reveal",
+              "delay": "1.14s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 0,
+              "height": 0
+            },
+            "scrollOverflow": false,
+            "events": [
+              {
+                "type": "phase:playing",
+                "at": 1006.1000000014901
+              },
+              {
+                "type": "ryze:assembled",
+                "at": 5452.20000000298
+              },
+              {
+                "type": "phase:revealing",
+                "at": 5453.60000000149
+              },
+              {
+                "type": "ryze:intro-complete",
+                "at": 7539.10000000149
+              },
+              {
+                "type": "phase:ready",
+                "at": 7540.89999999851
+              }
+            ]
+          }
+        },
+        {
+          "label": "final",
+          "v": {
+            "phase": "ready",
+            "h1": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0s",
+              "computedFont": "Karrik, \"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 94.96875
+            },
+            "lead": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.22s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 46.0625
+            },
+            "desc": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 346,
+              "height": 45.4375
+            },
+            "mascot": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.44s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 173,
+              "height": 168.796875
+            },
+            "action": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 340,
+              "height": 76
+            },
+            "integration": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LeQebW_ryze-hero-item-reveal",
+              "delay": "0.66s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 173,
+              "height": 70
+            },
+            "nav": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "LShPzW_ryze-nav-reveal",
+              "delay": "0.9s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 390,
+              "height": 0
+            },
+            "cookie": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "system-ui, sans-serif",
+              "width": 0,
+              "height": 0
+            },
+            "cookieLayer": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "_8aEwW_ryze-cookie-reveal",
+              "delay": "1.14s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 0,
+              "height": 0
+            },
+            "scrollOverflow": false,
+            "events": [
+              {
+                "type": "phase:playing",
+                "at": 1006.1000000014901
+              },
+              {
+                "type": "ryze:assembled",
+                "at": 5452.20000000298
+              },
+              {
+                "type": "phase:revealing",
+                "at": 5453.60000000149
+              },
+              {
+                "type": "ryze:intro-complete",
+                "at": 7539.10000000149
+              },
+              {
+                "type": "phase:ready",
+                "at": 7540.89999999851
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reduced",
+      "motion": "reduce",
+      "problems": [],
+      "samples": [
+        {
+          "label": "final",
+          "v": {
+            "phase": "ready",
+            "h1": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "Karrik, \"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 933.609375,
+              "height": 190.0625
+            },
+            "lead": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 311.609375,
+              "height": 28.15625
+            },
+            "desc": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 596.25,
+              "height": 51.09375
+            },
+            "mascot": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 168,
+              "height": 176
+            },
+            "action": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 270.015625,
+              "height": 63
+            },
+            "integration": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 288,
+              "height": 70
+            },
+            "nav": {
+              "opacity": "0",
+              "visibility": "hidden",
+              "animation": "LShPzW_ryze-nav-reveal",
+              "delay": "0.9s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 1440,
+              "height": 0
+            },
+            "cookie": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "system-ui, sans-serif",
+              "width": 384,
+              "height": 159.59375
+            },
+            "cookieLayer": {
+              "opacity": "1",
+              "visibility": "visible",
+              "animation": "none",
+              "delay": "0s",
+              "computedFont": "\"Micro Grotesk\", \"Segoe UI\", system-ui, sans-serif",
+              "width": 1440,
+              "height": 900
+            },
+            "scrollOverflow": false,
+            "events": [
+              {
+                "type": "phase:ready",
+                "at": 995.6000000014901
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "nojs": {
+    "h1": "1",
+    "main": "1",
+    "nav": "1"
+  }
+}

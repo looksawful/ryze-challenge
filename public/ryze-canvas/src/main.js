@@ -459,6 +459,13 @@ if(renderer){
     window.location.origin==='null'?'*':window.location.origin);
   }
  }
+ // The 118 SVG fragments have joined: reveal copy before the circle finishes.
+ frame.addEventListener('ryze:assembled',()=>{
+  if(window.parent!==window){
+   window.parent.postMessage({type:'ryze:assembled',version:1},
+    window.location.origin==='null'?'*':window.location.origin);
+  }
+ });
  frame.addEventListener('ryze:circle',()=>{
   circleFadeTween?.kill();
   circleFadeComplete=false;

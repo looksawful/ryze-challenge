@@ -170,19 +170,18 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
       setTouchPoints(navigator.maxTouchPoints ?? 0);
       setViewportWidth(window.innerWidth);
     };
-    const initialFrame = window.requestAnimationFrame(() => {
-      setSupported(hasMatchMedia && hasObserver && hasPointerSupport);
-      if (!hasObserver) setVisible(true);
-      sync();
-      setHydrated(true);
-    });
+    // Hydration must not wait for rAF: background tabs can suspend it entirely,
+    // leaving Rizzie absent even though the rest of the Hero has rendered.
+    setSupported(hasMatchMedia && hasObserver && hasPointerSupport);
+    if (!hasObserver) setVisible(true);
+    sync();
+    setHydrated(true);
     motionQuery?.addEventListener?.("change", sync);
     desktopQuery?.addEventListener?.("change", sync);
     coarseQuery?.addEventListener?.("change", sync);
     document.addEventListener("visibilitychange", sync);
     window.addEventListener("resize", sync, { passive: true });
     return () => {
-      window.cancelAnimationFrame(initialFrame);
       motionQuery?.removeEventListener?.("change", sync);
       desktopQuery?.removeEventListener?.("change", sync);
       coarseQuery?.removeEventListener?.("change", sync);

@@ -23,16 +23,24 @@
   .desktopCookies { display: none; }
 }
 
-/* Cookie layer is a sibling of Hero, so it participates in the same
-   cinematic intro via the stable stage state rather than an extra timer. */
-.desktopCookies { transition: opacity .68s cubic-bezier(.22, 1, .36, 1); }
+/* Cookie layer is a sibling of Hero; it appears last, after the Dock. */
 :global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="playing"])) .desktopCookies {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
+:global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="revealing"])) .desktopCookies,
+:global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="ready"])) .desktopCookies {
+  animation: ryze-cookie-reveal .48s 1.14s cubic-bezier(.22, 1, .36, 1) both;
+}
+@keyframes ryze-cookie-reveal {
+  from { opacity: 0; visibility: hidden; }
+  to { opacity: 1; visibility: visible; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .desktopCookies { transition: none; }
+  :global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="ready"])) .desktopCookies {
+    animation: none;
+  }
   :global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="playing"])) .desktopCookies {
     opacity: 1;
     visibility: visible;

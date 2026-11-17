@@ -1,5 +1,30 @@
 @layer reset, tokens, base, layouts, components, states, utilities;
 
+/* Micro Grotesk by Eli Heuer, SIL OFL 1.1. Self-hosted variable font. */
+@font-face {
+  font-family: "Micro Grotesk";
+  src: url("/fonts/micro-grotesk/MicroGrotesk-variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* Local typography preview. Karrik by Morizot and Le Bihan, Velvetyne, OFL 1.1. */
+@font-face {
+  font-family: "Karrik";
+  src: url("/fonts/karrik/Karrik-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Karrik";
+  src: url("/fonts/karrik/Karrik-Italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
 @layer reset {
   :where(*, *::before, *::after) { box-sizing: border-box; }
   :where(body, h1, h2, h3, p) { margin: 0; }
@@ -9,8 +34,9 @@
 
 @layer tokens {
   :root {
-    font-family: "Segoe UI", system-ui, sans-serif;
-    --font-body: "Segoe UI", system-ui, sans-serif;
+    font-family: "Micro Grotesk", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Micro Grotesk", "Segoe UI", system-ui, sans-serif;
+    --font-heading: "Karrik", "Micro Grotesk", "Segoe UI", system-ui, sans-serif;
     --accent-current: #ff5af1;
     --space-1: 0.25rem;
     --space-2: 0.5rem;
@@ -47,7 +73,7 @@
 @layer base {
   html { font-family: var(--font-body); }
   body { background: var(--color-background, #fff); color: var(--color-foreground, #111); }
-  :where(h1, h2, h3) { text-wrap: balance; }
+  :where(h1, h2, h3) { font-family: var(--font-heading); font-weight: 400; font-synthesis: none; text-wrap: balance; }
   :where(p) { text-wrap: pretty; }
   :where(a, button, input, select, textarea, [tabindex]):focus-visible {
     outline: 2px solid currentColor;

@@ -1,0 +1,114 @@
+{
+  "parent": {
+    "url": "http://100.110.158.49:8793/?timeline=1",
+    "events": [
+      {
+        "t": 1794955015460,
+        "name": "dom:ready",
+        "extra": {
+          "url": "/"
+        }
+      },
+      {
+        "t": 1794955015460,
+        "name": "state:init",
+        "extra": {
+          "value": "playing"
+        }
+      },
+      {
+        "t": 1794955022245,
+        "name": "parent:ryze:intro-complete",
+        "extra": null
+      },
+      {
+        "t": 1794955022246.9,
+        "name": "state:change",
+        "extra": {
+          "value": "ready"
+        }
+      },
+      {
+        "t": 1794955022841.4,
+        "name": "transitionend:DIV# LShPzW_motionBackdrop",
+        "extra": null
+      },
+      {
+        "t": 1794955023040.5,
+        "name": "transitionend:DIV# LShPzW_navigation",
+        "extra": null
+      },
+      {
+        "t": 1794955023040.5999,
+        "name": "transitionend:DIV# _8aEwW_desktopCookies",
+        "extra": null
+      }
+    ],
+    "intro": "ready",
+    "mainAlpha": "1",
+    "navAlpha": "1",
+    "heading": "AI autopilot for your Shopify"
+  },
+  "inner": {
+    "url": "http://100.110.158.49:8793/ryze-canvas/index.html",
+    "events": [
+      {
+        "t": 1794955016055.1,
+        "name": "dom:ready",
+        "extra": {
+          "url": "/ryze-canvas/index.html"
+        }
+      },
+      {
+        "t": 1794955016055.1,
+        "name": "state:init",
+        "extra": {
+          "value": "assembling"
+        }
+      },
+      {
+        "t": 1794955017705.1,
+        "name": "dispatch:ryze:cards-start",
+        "extra": {
+          "state": "assembling"
+        }
+      },
+      {
+        "t": 1794955020123.6,
+        "name": "dispatch:ryze:assembled",
+        "extra": {
+          "state": "assembling"
+        }
+      },
+      {
+        "t": 1794955020128.4001,
+        "name": "state:change",
+        "extra": {
+          "value": "melting"
+        }
+      },
+      {
+        "t": 1794955021514.2,
+        "name": "dispatch:ryze:circle",
+        "extra": {
+          "state": "circle"
+        }
+      },
+      {
+        "t": 1794955021514.3,
+        "name": "state:change",
+        "extra": {
+          "value": "circle"
+        }
+      }
+    ],
+    "scene": "circle",
+    "state": {
+      "cardCount": 0,
+      "orbitFinished": true,
+      "circleFadeComplete": true,
+      "introEventSent": true
+    }
+  },
+  "errors": []
+}

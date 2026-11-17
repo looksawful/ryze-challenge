@@ -7,28 +7,33 @@ import { SiteHeader } from "./SiteHeader";
 import { previewNotice } from "./link-model";
 import styles from "./HeroWithNavigation.module.css";
 
+type IntroPhase = "playing" | "revealing" | "ready";
+
 export function HeroWithNavigation() {
-  // SSR begins in the cinematic intro; reduced-motion and no-JS remain usable.
-  const [introReady, setIntroReady] = useState(false);
+  // SSR starts with the cinematic intro; reveal content as soon as its 118 pieces assemble.
+  const [introPhase, setIntroPhase] = useState<IntroPhase>("playing");
   const stageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (reduced.matches) {
-      setIntroReady(true);
+      setIntroPhase("ready");
       return;
     }
     let finished = false;
     const finish = () => {
       if (finished) return;
       finished = true;
-      setIntroReady(true);
+      setIntroPhase("ready");
     };
     const onMessage = (event: MessageEvent) => {
       const frame = stageRef.current?.querySelector<HTMLIFrameElement>(
         'iframe[title="Ryze motion canvas"]'
       );
       if (event.origin !== window.location.origin || event.source !== frame?.contentWindow) return;
+      if (event.data?.type === "ryze:assembled" && !finished) {
+        setIntroPhase(current => current === "playing" ? "revealing" : current);
+      }
       if (event.data?.type === "ryze:intro-complete") finish();
     };
     const onPreferenceChange = () => { if (reduced.matches) finish(); };
@@ -50,12 +55,12 @@ export function HeroWithNavigation() {
       stage.querySelector<HTMLElement>("main#main"),
       stage.querySelector<HTMLElement>(`.${styles.navigation}`),
     ];
-    regions.forEach(region => { if (region) region.inert = !introReady; });
+    regions.forEach(region => { if (region) region.inert = introPhase === "playing"; });
     return () => regions.forEach(region => { if (region) region.inert = false; });
-  }, [introReady]);
+  }, [introPhase]);
 
   return (
-    <div ref={stageRef} className={styles.stage} data-ryze-dark-end data-intro={introReady ? "ready" : "playing"}>
+    <div ref={stageRef} className={styles.stage} data-ryze-dark-end data-intro={introPhase}>
       <noscript>
         <style>{`
           .${styles.stage}[data-intro="playing"] > main,

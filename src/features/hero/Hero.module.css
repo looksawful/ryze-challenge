@@ -771,3 +771,113 @@
     }
   }
 }
+
+/* Hero typography study: Karrik display + Micro Grotesk interface.
+   Change only typography: retain every device's approved composition. */
+@layer components {
+  .hero .headline {
+    --type-heading-size: clamp(39px, 12.3vw, 50px);
+    font-weight: 400;
+    line-height: 0.99;
+    letter-spacing: -0.02em;
+  }
+  .hero .lead {
+    --type-lead-size: 18px;
+    font-weight: 400;
+    line-height: 1.28;
+    letter-spacing: -0.01em;
+  }
+  .hero .description {
+    --type-paragraph-size: 16px;
+    font-weight: 400;
+    line-height: 1.42;
+  }
+  .hero .action summary,
+  .hero .action button {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  /* Landscape phones and Duo: smaller text in tight, art-directed regions. */
+  @media (width >= 700px) and (width < 1024px) and (orientation: landscape) {
+    .hero .headline { --type-heading-size: clamp(34px, 4.7vw, 46px); }
+    .hero .description { --type-paragraph-size: 16px; }
+  }
+  @media (width >= 900px) and (width < 1024px)
+    and (min-height: 600px) and (min-aspect-ratio: 4/3) {
+    .hero .headline { --type-heading-size: clamp(39px, 5vw, 52px); }
+    .hero .lead { --type-lead-size: 18px; }
+  }
+
+  /* Standard laptop/desktop composition: bold scale, not bold font weight. */
+  @media (width >= 1024px) and (width < 2400px)
+    and (min-aspect-ratio: 5/4) and (min-height: 608px) {
+    .hero .headline {
+      --type-heading-size: clamp(72px, 6.667vw, 108px);
+      line-height: 0.99;
+      letter-spacing: -0.02em;
+    }
+    .hero .lead { --type-lead-size: 22px; }
+    .hero .description { --type-paragraph-size: 18px; }
+    .hero .action summary,
+    .hero .action button { font-size: 16px; }
+  }
+  /* Tall laptop/iPad: let the copy fit the available rows. */
+  @media (width >= 1024px) and (width < 2400px)
+    and (max-aspect-ratio: 5/4) and (min-height: 608px) {
+    .hero .headline { --type-heading-size: clamp(56px, 5.3vw, 72px); }
+    .hero .lead { --type-lead-size: 20px; }
+    .hero .description { --type-paragraph-size: 18px; }
+  }
+  @media (width >= 2400px) {
+    .hero .headline { --type-heading-size: clamp(100px, 5.7vw, 160px); }
+    .hero .lead { --type-lead-size: 22px; }
+    .hero .description { --type-paragraph-size: 18px; }
+    .hero .action summary,
+    .hero .action button { font-size: 16px; }
+  }
+  @media (width < 700px) and (max-height: 650px) {
+    .hero .headline { --type-heading-size: clamp(34px, 10vw, 42px); }
+    .hero .lead { --type-lead-size: 16px; line-height: 1.16; }
+    .hero .description { --type-paragraph-size: 14px; line-height: 1.24; }
+  }
+  @media (width >= 700px) and (width < 1024px)
+    and (orientation: landscape) and (max-height: 500px) {
+    .hero .headline { --type-heading-size: clamp(34px, 4.5vw, 42px); }
+    .hero .lead { --type-lead-size: 16px; }
+    .hero .description { --type-paragraph-size: 15px; }
+  }
+  @media (width >= 1024px) and (max-height: 607px) {
+    .hero .headline { --type-heading-size: clamp(40px, 4.4vw, 58px); }
+    .hero .lead { --type-lead-size: 16px; }
+    .hero .description { --type-paragraph-size: 14px; }
+  }
+}
+
+
+/* Choreographed entrance begins on ryze:assembled, not on intro-complete.
+   These rules only apply inside the cinematic stage; Storybook and no-JS
+   render the same approved static composition. */
+@layer components {
+  .brand { --hero-enter-delay: 0s; }
+  .headline { --hero-enter-delay: 0s; }
+  .lead { --hero-enter-delay: .22s; }
+  .description { --hero-enter-delay: .44s; }
+  .mascot { --hero-enter-delay: .44s; }
+  .action, .integration { --hero-enter-delay: .66s; }
+
+  :global([data-intro="revealing"]) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration),
+  :global([data-intro="ready"]) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration) {
+    animation: ryze-hero-item-reveal .52s cubic-bezier(.22, 1, .36, 1) both;
+    animation-delay: var(--hero-enter-delay);
+  }
+  @keyframes ryze-hero-item-reveal {
+    from { opacity: 0; translate: 0 12px; }
+    to { opacity: 1; translate: 0 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global([data-intro="ready"]) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration) {
+      animation: none;
+    }
+  }
+}
