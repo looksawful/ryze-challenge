@@ -446,6 +446,20 @@
     inset-block-end: auto;
     transform-origin: top left;
   }
+  /* Keep the pointer inside desktop navigation while crossing the visual gap.
+     The invisible bridge sits below the real panel and only exists when it is open. */
+  @media (min-width: 75rem) {
+    .header[data-variant="dock"] .desktopNavigation:has(.megaPanel)::after {
+      content: "";
+      position: absolute;
+      inset-block-start: calc(100% - 12px);
+      inset-inline-start: max(16px, calc((100% - 59rem) / 2));
+      width: min(calc(100vw - 2rem), 59rem);
+      height: 28px;
+      z-index: 95;
+      pointer-events: auto;
+    }
+  }
   .header .megaPanel[data-open="false"] { pointer-events: none; }
   .header[data-enhancement="full"] .megaPanel,
   .header[data-enhancement="no-webgl"] .megaPanel,
