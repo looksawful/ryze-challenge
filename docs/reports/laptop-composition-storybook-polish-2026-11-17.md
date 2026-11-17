@@ -76,3 +76,14 @@ The earlier claim of a *fully* finished laptop composition was premature. Hero c
 - **Verified in Titan Chrome:** 1920×960 and 2399×960 remain non-overlapping; at 2400×960 CTA right ~1793, logos left ~1812 (gap ~19px), Rizzie poster right ~1460 versus CTA left 1500 (gap ~40px). At 2803×1024 CTA right ~2013, logos left ~2049 (~37px); Rizzie poster right ~1662 versus CTA left ~1720 (~58px). Also inspected 2560×1000, 3000×1200 and 3440×1440, with zero CTA/logo bounding-box intersection. Final visual screenshot inspected at 2803×1024.
 - **Checks:** `npm run build` PASS including Next TypeScript; `git diff --check` PASS. No full tests or CI under the express-mode instruction. Product mockup P0 remains deferred.
 - **Preview-only evidence:** `http://100.110.158.49:3090/_qa/ultrawide-2803-logos-fixed.png` (temporary on Titan, private Tailscale).
+
+## Desktop: move Rizzie and CTA group left · 17.11.2026
+
+- User explicitly requested **"Девчонку и кнопку слева на десктопе"**. The earlier assistant response inaccurately claimed Titan access was unavailable; the Primary RDK connection works, and this change was made on the canonical Titan `D:\inwork\ryze-challenge` in the sole private `main` branch.
+- Only six CSS Grid placements were changed in `src/features/hero/Hero.module.css`; no new media queries, duplicate layout components, JS, copy changes or dependencies.
+- Laptop/workstation landscape (1024–2399 CSS px, minimum 5:4 ratio, height >=608px): Rizzie moved to columns 2–5 (row 4), CTA to columns 2–5 (row 5), Integrations to columns 5–9 (row 5), following the group's new left alignment. The existing open-form span remains unchanged.
+- Ultrawide (>=2400px): Rizzie 2–4, CTA 4–6, Integrations 6–8 on the existing row 4. This keeps the character and action in the **left part of the Hero**, with the animated logos beside the button. Existing brand headline/navigation, phone, Duo and tall iPad media rules were not modified.
+- Titan Chrome evidence: 1366×768 Rizzie x≈216 and CTA x≈216 (previous ~406); 1920×960 Rizzie/CTA x≈498 (previous ~686); 2803×1024 Rizzie x≈607 and CTA x≈925 (previous ~1402 and 1720). On 2803 CTA ends x≈1218, Integrations begin x≈1255: ~37 CSS px gap. The painted Rizzie sprite ends x≈867, before CTA begins x≈925. No CTA/Integration bounding-box intersections in the observed laptop/ultrawide viewports.
+- Screenshots captured using the **actual exported page in Titan Chrome** at 1366×768, 1920×960 and 2803×1024. No new visual acceptance is claimed, only implementation and geometry review.
+- `npm run typecheck` PASS; `npm run build` PASS (Next, TypeScript); `git diff --check` PASS. Full test suite/CI intentionally not run (express workflow).
+- Private Tailscale screenshot previews (temporary, untracked in `out/_qa`): `http://100.110.158.49:3090/_qa/left-1366x768.png`, `/_qa/left-1920x960.png`, `/_qa/left-2803x1024.png`.

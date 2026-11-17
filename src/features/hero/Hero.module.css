@@ -256,10 +256,10 @@
     .headline { grid-column: 1 / 10; grid-row: 2 / 4; inline-size: calc(100% - 60px); --type-heading-size: clamp(100px, 5.7vw, 160px); }
     .lead { grid-column: 10 / 13; grid-row: 3; align-self: start; margin-block-start: 0; --type-lead-size: 19px; }
     .description { grid-column: 10 / 13; grid-row: 3; margin-block-start: 40px; --type-paragraph-size: 19px; }
-    .mascot { grid-column: 7 / 9; grid-row: 4; inline-size: 100%; margin: 0; }
-    .action { grid-column: 9 / 11; grid-row: 4; margin: 0; }
+    .mascot { grid-column: 2 / 4; grid-row: 4; inline-size: 100%; margin: 0; }
+    .action { grid-column: 4 / 6; grid-row: 4; margin: 0; }
     .integration {
-      grid-column: 11 / 13;
+      grid-column: 6 / 8;
       grid-row: 4;
       justify-self: start;
       inline-size: min(100%, 210px);
@@ -722,7 +722,7 @@
     .mascot {
       position: relative;
       inset: auto;
-      grid-area: 4 / 4 / 5 / 7;
+      grid-area: 4 / 2 / 5 / 5;
       justify-self: start;
       align-self: end;
       inline-size: min(100%, 10.5rem);
@@ -737,7 +737,7 @@
     .action {
       position: relative;
       inset: auto;
-      grid-area: 5 / 4 / 6 / 7;
+      grid-area: 5 / 2 / 6 / 5;
       justify-self: stretch;
       align-self: center;
       inline-size: 100%;
@@ -752,7 +752,7 @@
     .integration {
       position: static;
       inset: auto;
-      grid-area: 5 / 7 / 6 / 11;
+      grid-area: 5 / 5 / 6 / 9;
       justify-self: start;
       align-self: center;
       inline-size: min(100%, 18rem);
