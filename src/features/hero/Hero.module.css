@@ -308,4 +308,10 @@
     }
   }
 
+  /* The approved single-row shelf follows CTA. On short phones, both elements
+     scroll into view below the persistent Dock instead of sitting under it. */
+  @media (max-width: 699px) {
+    .action { margin-block-start: clamp(145px, calc(65px + 25vw), 205px); }
+    .integration { margin-block-start: 12px; padding-block-start: 0; }
+  }
 }

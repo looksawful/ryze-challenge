@@ -1,6 +1,6 @@
 @layer components {
   .root {
-    --integration-logo-size: clamp(50px, 3.2vw, 56px);
+    --integration-logo-size: clamp(45px, 3.6vw, 59px);
     --integration-gap: clamp(8px, 0.8vw, 14px);
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(8ch, max-content);
@@ -49,10 +49,12 @@
     font-size: clamp(13px, 1vw, 18px);
     line-height: 1.3;
     font-weight: 400;
-    color: #999ba4;
+    color: #c3c3c3;
     text-align: right;
     white-space: nowrap;
   }
+
+  :global([data-theme="dawn"]) .root .caption { color: #4d4d4d; }
 
   .canvas {
     display: none;
@@ -63,13 +65,13 @@
   }
 
   @media (min-width: 1024px) and (max-width: 1599px) {
-    .root { --integration-logo-size: 56px; --integration-gap: 8px; }
+    .root { --integration-logo-size: clamp(45px, 3.6vw, 58px); --integration-gap: 8px; }
     .staticList { gap: 2px; }
     .caption { font-size: 14px; }
   }
 
   @media (min-width: 1600px) {
-    .root { --integration-logo-size: 42px; --integration-gap: 6px; }
+    .root { --integration-logo-size: 59px; --integration-gap: 6px; }
     .staticList { gap: 3px; }
     .caption { font-size: 14px; }
   }
