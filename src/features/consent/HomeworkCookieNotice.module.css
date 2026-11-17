@@ -69,3 +69,14 @@
 @media (max-width: 699px) and (max-height: 567px) {
   .notice { position: static; max-block-size: none; margin-block: var(--space-4); }
 }
+
+/* On tablet-sized canvases the Hero fills the lower viewport, so a floating
+   notice would obscure its CTA. Keep consent after Hero in the page flow. */
+@media (min-width: 700px) and (max-width: 1199px) {
+  .notice {
+    position: static;
+    max-block-size: none;
+    margin-block: var(--space-4) var(--space-6);
+    margin-inline-start: auto;
+  }
+}

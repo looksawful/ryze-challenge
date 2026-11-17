@@ -41,7 +41,7 @@ test("Hero preserves reflow rather than clipping oversized text", () => {
 test("Homework Cookies are JS-only and retain a choice until changed", () => {
   const consent = readFileSync("src/features/consent/HomeworkCookieNotice.tsx", "utf8");
   assert.match(page(), /<HomeworkCookieNotice\s*\/>/);
-  assert.match(page(), /<HomeworkCookieSettingsButton\s*\/>/);
+  assert.match(readFileSync("src/features/site-shell/SiteHeader.tsx", "utf8"), /<HomeworkCookieSettingsButton\b/);
   assert.match(consent, /if \(!mounted \|\| !visible\) return null/);
   assert.match(consent, /localStorage\.setItem/);
   assert.match(consent, /ryze:cookie-settings/);
@@ -116,4 +116,10 @@ test("portrait tablet in the 700-899 width interval has protected CTA layout", (
 
 test("Duo Open is a genuinely wide layout, not a near-square tablet", () => {
   assert.match(heroStyles(), /min-aspect-ratio:\s*4\/3/);
+});
+
+test("tablet Cookie notice stays after Hero so CTA remains accessible while scrolling", () => {
+  const styles = readFileSync("src/features/consent/HomeworkCookieNotice.module.css", "utf8");
+  assert.match(styles, /@media \(min-width: 700px\) and \(max-width: 1199px\) \{\s*\.notice\s*\{\s*position:\s*static;/);
+  assert.doesNotMatch(styles, /margin-block:\s*25svh/);
 });

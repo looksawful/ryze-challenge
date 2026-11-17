@@ -17,4 +17,11 @@
       position: relative;
     }
   }
+  /* The mobile quick menu occupies its own top row, never covering Hero copy. */
+  @media (width < 64rem) {
+    .navigation {
+      position: absolute;
+      inset-block-start: 0;
+    }
+  }
 }

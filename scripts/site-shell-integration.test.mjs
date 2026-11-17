@@ -29,3 +29,24 @@ test("Storybook previews the very same assembled first-screen component", async 
   assert.match(story, /import\s+\{\s*HeroWithNavigation\s*\}/);
   assert.match(story, /component:\s*HeroWithNavigation/);
 });
+
+
+test("top mobile quick navigation reserves space for Hero without overlapping its heading", async () => {
+  const css = await read("src/features/site-shell/SiteHeader.module.css");
+  const stage = await read("src/features/site-shell/HeroWithNavigation.module.css");
+  assert.match(css, /\.header\[data-variant="dock"\] \.mobileDock\s*\{[^}]*inset-block-start:/s);
+  assert.match(stage, /@media\s*\(width < 64rem\)[^}]*\.navigation\s*\{[^}]*min-block-size:/s);
+});
+
+test("top mobile navigation hides on downward scroll and returns on upward scroll", async () => {
+  const css = await read("src/features/site-shell/SiteHeader.module.css");
+  const code = await read("src/features/site-shell/SiteHeader.tsx");
+  assert.match(css, /\.header\[data-variant="dock"\]\[data-scroll-hidden="true"\] \.mobileDock/);
+  assert.match(code, /data-scroll-hidden/);
+  assert.match(code, /window\.scrollY/);
+});
+
+test("bottom Cookies ignore a mobile dock that is now at the top of the screen", async () => {
+  const cookie = await read("src/features/consent/HomeworkCookieNotice.tsx");
+  assert.match(cookie, /navigationRect\.top\s*>\s*window\.innerHeight\s*\/\s*2/);
+});

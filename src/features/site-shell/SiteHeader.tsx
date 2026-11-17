@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
 import Image from "next/image";
+import { HomeworkCookieSettingsButton } from "../consent/HomeworkCookieNotice";
 import {
   bookingLink, headerLinks, mobileSiteSections, navigationGroups, navigationProductCards,
   previewNotice, shopifyDockSections, shopifyPricingHref, shopifyStartHref,
@@ -124,7 +125,7 @@ export function SiteHeader({
     if (!dialog) return;
     if (mobileOpen) {
       if (!dialog.open) dialog.showModal();
-      dialog.querySelector<HTMLButtonElement>("button")?.focus();
+      dialog.querySelector<HTMLHeadingElement>("[data-mobile-heading]")?.focus();
     } else {
       if (dialog.open) dialog.close();
       if (wasMobileOpen.current) {
@@ -269,11 +270,28 @@ export function SiteHeader({
       }
     };
     position(true);
+    let lastScrollY = Math.max(0, window.scrollY);
+    node.dataset.scrollHidden = "false";
+    const trackScrollDirection = () => {
+      const scrollY = Math.max(0, window.scrollY);
+      const change = scrollY - lastScrollY;
+      const focused = node.contains(document.activeElement);
+      if (scrollY < 32 || change < -5 || focused || dialogRef.current?.open) {
+        node.dataset.scrollHidden = "false";
+      } else if (scrollY > 96 && change > 5) {
+        node.dataset.scrollHidden = "true";
+      }
+      lastScrollY = scrollY;
+    };
     if (premium) import("gsap").then(({ gsap }) => {
       if (!disposed) gsapApi = gsap;
     }).catch(() => { /* Position and content remain usable without GSAP. */ });
-    const onScroll = () => position();
-    const onResize = () => position(true);
+    const onScroll = () => { position(); trackScrollDirection(); };
+    const onResize = () => {
+      position(true);
+      lastScrollY = Math.max(0, window.scrollY);
+      node.dataset.scrollHidden = "false";
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
     return () => {
@@ -335,7 +353,7 @@ export function SiteHeader({
 
   return (
     <header ref={rootRef} className={styles.header} data-theme={theme}
-            data-variant={variant} data-enhancement={mode} data-docked="false">
+            data-variant={variant} data-enhancement={mode} data-docked="false" data-scroll-hidden="false">
       <div className={styles.inner}>
         <a ref={brandRef} href="https://www.get-ryze.ai/" className={styles.brand}
            data-preview-part="header-brand"
@@ -357,6 +375,7 @@ export function SiteHeader({
                   {group.id === "products" && <FeaturedProducts onSelect={selectDestination} />}
                   <div className={styles.megaGrid}>
                     {group.links.map((destination) => destinationAnchor(destination, styles.megaLink, true))}
+                    {group.id === "resources" && <HomeworkCookieSettingsButton className={styles.megaLink} />}
                   </div>
                 </div>
               </details>
@@ -403,6 +422,7 @@ export function SiteHeader({
                     <p className={styles.megaSectionName} data-mega-heading>{panelGroup.label}</p>
                     <div className={styles.megaGrid}>
                       {panelGroup.links.map((destination) => destinationAnchor(destination, styles.megaLink, true))}
+                      {panelGroup.id === "resources" && <HomeworkCookieSettingsButton className={styles.megaLink} />}
                     </div>
                   </div>
                 </div>
@@ -430,7 +450,7 @@ export function SiteHeader({
                 onCancel={(event) => { event.preventDefault(); closeMobile(); }}
                 onClose={closeMobile}>
           <div className={styles.mobileBar}>
-            <span className={styles.mobileHeading}>Explore Ryze</span>
+            <h2 className={styles.mobileHeading} data-mobile-heading tabIndex={-1}>Explore Ryze</h2>
             <button className={styles.mobileClose} type="button" aria-label="Close navigation"
                     onClick={closeMobile}><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"
                       fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -444,6 +464,7 @@ export function SiteHeader({
                 {group.links.map((destination) => destinationAnchor(destination, styles.mobileLink))}
               </section>
             ))}
+            <HomeworkCookieSettingsButton className={styles.mobileLink} />
           </nav>
         </dialog>
       )}
