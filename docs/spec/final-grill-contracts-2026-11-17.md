@@ -84,3 +84,15 @@ Source branch: fix/approved-hero-nav-contracts-20261117, base origin/dev at ec11
 - WebGL integration morph + caption grouped in a compact flex row with a bounded 70–90px animated visual and 4–8px gap; static logo grid remains unchanged.
 - CI workflow removed per user request; local quality gate is only `npm run build` plus `npm run typecheck`. No public deployment.
 - Migration intent: one active `main` branch locally and on private GitHub; archive old branch histories before cleanup; do not discard dirty parallel worktrees without saving their changes.
+
+## Express implementation · 17.11.2026 · mobile/tablet navigation and products
+
+- Scope: approved items **2.1, 2.2, 2.3, 2.4** only. Executed directly on the existing clean local **main** at `D:\inwork\ryze-challenge`, no new branch or worktree.
+- **Mobile Dock:** removed decorative SVG icons and removed Start from the four-item primary Dock; preserved Ads, SEO / AI, CRO, Pricing destinations. Pricing no longer inherits the old Start accent styling.
+- **Hamburger:** moved the existing Start destination (`shopifyStartHref`) to the top of the existing right-hand menu; retained it in native Static/no-JS menu. No change to the Hero Start For Free CTA.
+- **iPad/tablet:** navigation between 700–1199px uses a centred four-item text Dock with adjacent hamburger; same existing native dialog, no new navigation component.
+- **Duo Open:** 900–1000px short landscape composition places Dock on left panel, hamburger on right; **Duo Closed** short portrait uses a narrower four-item Dock. Existing Hero layout untouched.
+- **Product content:** desktop MegaMenu remains 2×2; existing mobile swipe/snap shelf unchanged. Both now share **AI Marketer / MCP / Muse / SEO** from the existing `navigationProductCards` data. Asset filenames/dimensions and links copied from the established Homework `RyzeCatalogShelf`, with four existing images in `public/ryze-media/product-shelf/`.
+- **Implementation files:** `src/features/site-shell/{SiteHeader.tsx,SiteHeader.module.css,link-model.ts}`; four static product images. No new components, dependencies, branches, CI configuration, or public preview.
+- **Verification (express mode only):** `npm run typecheck` PASS; `npm run build` PASS; `git diff --check` PASS. No automated browser visual tests or full test suite per instruction. Physical iPad/Duo/Safari fit **not yet visually accepted**.
+- **Out of scope:** four *new* bespoke product cover designs (R6.5) are separate from the four *existing* approved Homework mockups used in this update. Other pending Grill decisions unchanged.

@@ -66,19 +66,6 @@ function FeaturedProducts({ onSelect }: { onSelect: (event: MouseEvent<HTMLAncho
   );
 }
 
-type DockIconName = "ads" | "seo" | "cro" | "pricing" | "start";
-function DockIcon({ name }: { name: DockIconName }) {
-  const common = { fill: "none", stroke: "currentColor", strokeWidth: 1.8,
-    strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-  return <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true" {...common}>
-    {name === "ads" && <><path d="M3 10h4l12-6v16L7 14H3z"/><path d="M7 14l2 6h4l-3-5"/></>}
-    {name === "seo" && <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></>}
-    {name === "cro" && <path d="m5 3 14 10-7 1.5-2 6L5 3z"/>}
-    {name === "pricing" && <><path d="M13 3H5a2 2 0 0 0-2 2v8l8 8a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8L13 3Z"/><circle cx="8" cy="8" r="1.3"/></>}
-    {name === "start" && <path d="M4 12h15m-6-6 6 6-6 6"/>}
-  </svg>;
-}
-
 export function SiteHeader({
   brand,
   previewMode = true,
@@ -147,7 +134,7 @@ export function SiteHeader({
   }, [mobileOpen]);
 
   useEffect(() => {
-    const desktop = window.matchMedia("(min-width: 64rem)");
+    const desktop = window.matchMedia(variant === "dock" ? "(min-width: 75rem)" : "(min-width: 64rem)");
     const handle = () => {
       if (desktop.matches) {
         setMobileOpen(false);
@@ -155,7 +142,7 @@ export function SiteHeader({
     };
     desktop.addEventListener("change", handle);
     return () => desktop.removeEventListener("change", handle);
-  }, []);
+  }, [variant]);
 
   useEffect(() => {
     if (!desktopGroup) return;
@@ -336,6 +323,7 @@ export function SiteHeader({
               </details>
             ))}
             {headerLinks.map((destination) => destinationAnchor(destination, styles.directLink))}
+            {variant === "dock" && <a className={styles.mobileStart} href={shopifyStartHref}>Start</a>}
             </nav>
           </details>
         ) : (
@@ -413,6 +401,7 @@ export function SiteHeader({
                 </svg></button>
           </div>
           <nav className={styles.mobileList} aria-label="Site destinations">
+            {variant === "dock" && <a className={styles.mobileStart} href={shopifyStartHref}>Start</a>}
             {mobileSiteSections.map((group) => (
               <section key={group.id} className={styles.mobileSiteSection}>
                 <h2 className={styles.mobileSectionTitle}>{group.label}</h2>
@@ -447,19 +436,13 @@ export function SiteHeader({
       {variant === "dock" && (
         <nav className={styles.mobileDock} aria-label="Shopify quick navigation"
              data-preview-part="mobile-dock">
-          {shopifyDockSections.map((section, index) => (
+          {shopifyDockSections.map((section) => (
             <a key={section.id} className={styles.mobileDockItem} href={section.href}
                onClick={(event) => selectShopifySection(event, section)}>
-              <DockIcon name={index === 0 ? "ads" : index === 1 ? "seo" : "cro"} />
               <span>{section.label}</span>
             </a>
           ))}
-          <a className={styles.mobileDockItem} href={shopifyPricingHref}>
-            <DockIcon name="pricing" /><span>Pricing</span>
-          </a>
-          <a className={styles.mobileDockItem} href={shopifyStartHref} aria-label="Get started with Ryze">
-            <DockIcon name="start" /><span>Start</span>
-          </a>
+          <a className={styles.mobileDockItem} href={shopifyPricingHref}>Pricing</a>
         </nav>
       )}
 

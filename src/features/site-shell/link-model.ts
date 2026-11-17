@@ -206,31 +206,31 @@ export type NavigationProduct = SiteDestination & Readonly<{
 // Reused by desktop MegaMenu and mobile product navigation.
 export const navigationProductCards: readonly NavigationProduct[] = [
   {
-    id: "paid-ads-card",
-    label: "Paid Ads",
+    id: "ai-marketer-card",
+    label: "AI Marketer",
     href: "https://www.get-ryze.ai/",
-    description: "Campaigns, creatives and budget optimization.",
-    image: "/ryze-media/navigation/paid-ads-walkthrough.webp", width: 1920, height: 1080,
+    description: "AI-powered advertising and store growth.",
+    image: "/ryze-media/product-shelf/muse.webp", width: 1448, height: 1086,
+  },
+  {
+    id: "mcp-card",
+    label: "MCP",
+    href: "https://www.get-ryze.ai/how-to-connect-claude-to-google-meta-ads-mcp",
+    description: "Connect Claude to your ad platforms.",
+    image: "/ryze-media/product-shelf/mcp.webp", width: 1086, height: 1448,
+  },
+  {
+    id: "muse-card",
+    label: "Muse",
+    href: "https://www.get-ryze.ai/muse",
+    description: "Creative AI for your marketing.",
+    image: "/ryze-media/product-shelf/mascot.png", width: 1448, height: 1086,
   },
   {
     id: "seo-card",
-    label: "SEO & AI Visibility",
+    label: "SEO",
     href: "https://www.get-ryze.ai/seo",
-    description: "Search rankings, content and AI citations.",
-    image: "/ryze-media/navigation/seo.png", width: 1920, height: 1080,
-  },
-  {
-    id: "cro-card",
-    label: "CRO",
-    href: "https://www.get-ryze.ai/shopify-claude-ai-for-paid-ads-geo-cro",
-    description: "Product pages, experiments and conversion.",
-    image: "/ryze-media/navigation/site-audit.png", width: 1920, height: 1080,
-  },
-  {
-    id: "reporting-card",
-    label: "Reporting",
-    href: "https://help.get-ryze.ai/agent/reports",
-    description: "Performance, attribution and weekly summaries.",
-    image: "/ryze-media/navigation/reporting.png", width: 1920, height: 1080,
+    description: "Organic traffic and AI search visibility.",
+    image: "/ryze-media/product-shelf/seo.webp", width: 1448, height: 1086,
   },
 ];

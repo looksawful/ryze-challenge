@@ -625,7 +625,7 @@
     border-color: var(--nav-line);
   }
 
-  /* The original mobile five-tab dock and right-edge detail sheet. */
+  /* Text-only four-item Dock and right-edge product navigation. */
   .mobileDock { display: none; }
   .header .mobileDialog {
     color: var(--nav-foreground);
@@ -659,7 +659,7 @@
       width: auto;
     }
   }
-  @media (width < 64rem) {
+  @media (width < 75rem) {
     .header[data-variant="dock"] {
       inset: 0 0 auto;
       padding: 0;
@@ -709,7 +709,7 @@
     }
     .header[data-variant="dock"] .mobileDock {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       min-height: 66px;
       position: fixed;
       inset-block-start: max(10px, env(safe-area-inset-top));
@@ -733,18 +733,18 @@
 
     .mobileDockItem {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 4px;
       min-width: 0;
       min-height: 55px;
-      padding: 5px 1px;
+      padding: 7px 5px;
       border: 0;
       border-radius: 16px;
       color: inherit;
       background: transparent;
-      font: 600 11px/1.2 system-ui, sans-serif;
+      font: 500 clamp(10px, 1.5vw, 13px)/1.2 "Ryze Satoshi", Arial, sans-serif;
+      white-space: nowrap;
       text-decoration: none;
       cursor: pointer;
       touch-action: manipulation;
@@ -755,15 +755,6 @@
       background: color-mix(in oklab, var(--nav-foreground) 12%, transparent);
       color: var(--nav-foreground);
     }
-    .mobileDockItem:last-child {
-      background: var(--accent-current);
-      color: #18171d;
-    }
-    .mobileDockItem:last-child:is(:hover, :focus-visible) {
-      background: color-mix(in oklab, var(--accent-current) 85%, white);
-      color: #18171d;
-    }
-    .mobileDockItem svg { flex: 0 0 auto; }
     .header[data-variant="dock"] .mobileDialog {
       pointer-events: auto;
       position: fixed;
@@ -902,7 +893,7 @@
   }
   .header button.megaLink { border: 0; }
   /* Dense, scan-friendly global navigation without a second visual system. */
-  @media (width < 64rem) {
+  @media (width < 75rem) {
     .header[data-variant="dock"] .mobileDialog {
       padding-inline: clamp(14px, 4vw, 24px);
     }
@@ -979,7 +970,7 @@
   }
   /* Mobile only: reuse the same verified four product cards as desktop
      without changing the approved desktop 2x2 product grid. */
-  @media (width < 64rem) {
+  @media (width < 75rem) {
     .header[data-variant="dock"] .mobileProductShelf {
       min-inline-size: 0;
       margin-block: 1.25rem;
@@ -1051,6 +1042,78 @@
       color: var(--nav-muted);
     }
   }
+  /* The existing hamburger drawer is the only location for Start on mobile/tablet. */
+  .header[data-variant="dock"] .mobileStart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    margin-block: 16px 6px;
+    border-radius: 14px;
+    color: #18171d;
+    background: var(--accent-current);
+    font-size: .95rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .header[data-variant="dock"] .mobileStart:hover {
+    background: color-mix(in oklab, var(--accent-current) 88%, white);
+  }
+  .header[data-variant="dock"] .mobileStart:focus-visible {
+    outline: 2px solid var(--nav-foreground);
+    outline-offset: 3px;
+  }
+
+  /* Tablet/iPad: one centred compact navigation group, four text links + hamburger. */
+  @media (min-width: 700px) and (max-width: 1199px) {
+    .header[data-variant="dock"] .mobileDock {
+      inset-inline-start: max(16px, calc((100% - 720px) / 2));
+      width: min(650px, calc(100% - 98px));
+      min-height: 58px;
+      border-radius: 17px;
+    }
+    .header[data-variant="dock"] .inner,
+    .header[data-variant="dock"][data-docked="true"] .inner {
+      inset: max(10px, env(safe-area-inset-top)) max(16px, calc((100% - 720px) / 2)) auto auto;
+      width: 56px;
+      height: 58px;
+      min-height: 58px;
+      border-radius: 17px;
+    }
+    .header[data-variant="dock"] .mobileToggle {
+      width: 54px;
+      height: 54px;
+    }
+    .header[data-variant="dock"] .mobileDockItem {
+      font-size: .85rem;
+    }
+    .header[data-variant="dock"] .mobileDialog {
+      width: min(75vw, 460px);
+    }
+  }
+
+  /* Duo Open: controls sit on opposite panels, clear of the central hinge. */
+  @media (min-width: 900px) and (max-width: 1000px) and (max-height: 760px) and (orientation: landscape) {
+    .header[data-variant="dock"] .mobileDock {
+      inset-inline-start: 14px;
+      width: min(400px, calc(50% - 52px));
+    }
+    .header[data-variant="dock"] .inner,
+    .header[data-variant="dock"][data-docked="true"] .inner {
+      inset-inline-end: 14px;
+    }
+    .header[data-variant="dock"] .mobileDialog {
+      width: min(46vw, 430px);
+    }
+  }
+
+  /* Duo Closed: preserve text readability without touching the Hero geometry. */
+  @media (min-width: 440px) and (max-width: 510px) and (max-height: 720px) and (orientation: portrait) {
+    .header[data-variant="dock"] .mobileDock {
+      width: min(350px, calc(100% - 85px));
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .header, .header *, .header *::before, .header *::after {
       transition: none;
