@@ -269,11 +269,28 @@ export function SiteHeader({
       }
     };
     position(true);
+    let lastScrollY = Math.max(0, window.scrollY);
+    node.dataset.scrollHidden = "false";
+    const trackScrollDirection = () => {
+      const scrollY = Math.max(0, window.scrollY);
+      const change = scrollY - lastScrollY;
+      const focused = node.contains(document.activeElement);
+      if (scrollY < 32 || change < -5 || focused || dialogRef.current?.open) {
+        node.dataset.scrollHidden = "false";
+      } else if (scrollY > 96 && change > 5) {
+        node.dataset.scrollHidden = "true";
+      }
+      lastScrollY = scrollY;
+    };
     if (premium) import("gsap").then(({ gsap }) => {
       if (!disposed) gsapApi = gsap;
     }).catch(() => { /* Position and content remain usable without GSAP. */ });
-    const onScroll = () => position();
-    const onResize = () => position(true);
+    const onScroll = () => { position(); trackScrollDirection(); };
+    const onResize = () => {
+      position(true);
+      lastScrollY = Math.max(0, window.scrollY);
+      node.dataset.scrollHidden = "false";
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
     return () => {
@@ -335,7 +352,7 @@ export function SiteHeader({
 
   return (
     <header ref={rootRef} className={styles.header} data-theme={theme}
-            data-variant={variant} data-enhancement={mode} data-docked="false">
+            data-variant={variant} data-enhancement={mode} data-docked="false" data-scroll-hidden="false">
       <div className={styles.inner}>
         <a ref={brandRef} href="https://www.get-ryze.ai/" className={styles.brand}
            data-preview-part="header-brand"

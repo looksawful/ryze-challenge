@@ -94,7 +94,10 @@ export function HomeworkCookieNotice({ onSave, rememberChoice = true, initialVie
       const dock = noticeRef.current;
       if (!dock) return;
       const navigationRect = navigation?.getBoundingClientRect();
-      const clearance = navigationRect && navigationRect.height > 0
+      const bottomDock = navigationRect && navigationRect.height > 0
+        && navigationRect.top > window.innerHeight / 2
+        && navigationRect.bottom >= window.innerHeight - 32;
+      const clearance = bottomDock
         ? Math.max(16, Math.ceil(window.innerHeight - navigationRect.top + 12))
         : 16;
       dock.style.setProperty("--cookie-bottom", `${clearance}px`);

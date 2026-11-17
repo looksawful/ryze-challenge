@@ -83,3 +83,10 @@ test("Homework cookie visual matches the borderless, intrinsically sized referen
   assert.match(styles, /flex-wrap:\s*wrap/);
   assert.match(styles, /max-block-size:\s*calc\(100svh/);
 });
+
+
+test("tablet Cookie notice stays after Hero so CTA remains accessible while scrolling", () => {
+  const styles = readFileSync("src/features/consent/HomeworkCookieNotice.module.css", "utf8");
+  assert.match(styles, /@media \(min-width: 700px\) and \(max-width: 1199px\) \{\s*\.notice\s*\{\s*position:\s*static;/);
+  assert.doesNotMatch(styles, /margin-block:\s*25svh/);
+});
