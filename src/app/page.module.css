@@ -1,0 +1,24 @@
+/* Prototype Cookie UI: separate overlay layer, desktop only.
+   Keep the Hero layout untouched and allow clicks through empty layer space. */
+.desktopCookies {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  pointer-events: none;
+}
+
+.desktopCookies :global(aside) {
+  position: absolute;
+  inset-block-start: auto;
+  inset-block-end: max(16px, env(safe-area-inset-bottom));
+  inset-inline-start: auto;
+  inset-inline-end: 16px;
+  inline-size: min(24rem, calc(100vw - 32px));
+  max-block-size: calc(100svh - 32px);
+  transform: none;
+  pointer-events: auto;
+}
+
+@media (width < 75rem) {
+  .desktopCookies { display: none; }
+}

@@ -32,7 +32,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Original Homework/Lovable navigation. Choose the progressive enhancement mode and theme in Controls; use Storybook Viewport for desktop, tablet or mobile. On phones, the global Ryze menu is at the top and the Shopify Dock stays at the bottom. Pricing and Start use their verified destinations; Storybook intercepts global links for safe preview. The no-JavaScript control is a simulation because Storybook itself requires JavaScript.",
+          "Original Homework/Lovable navigation. Choose the progressive enhancement mode and theme in Controls; use Storybook Viewport for desktop, tablet or mobile. The navigation stays fixed at the top on all devices. The desktop menu is centred and narrows in place after scroll; the mobile quick navigation stays visible at the top without translating offscreen. Pricing and Start use their verified destinations; Storybook intercepts global links for safe preview. The no-JavaScript control is a simulation because Storybook itself requires JavaScript.",
       },
     },
   },
