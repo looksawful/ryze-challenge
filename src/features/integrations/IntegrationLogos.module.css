@@ -9,6 +9,23 @@
     min-inline-size: 0;
   }
 
+  /* The particle animation and caption form one compact unit.
+     Only WebGL mode changes this geometry; static logos keep their existing grid. */
+  .root:has(.visual[data-mode="webgl"]) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(4px, .65vw, 8px);
+  }
+  .root:has(.visual[data-mode="webgl"]) .visual {
+    flex: 0 0 clamp(70px, 7vw, 90px);
+    inline-size: clamp(70px, 7vw, 90px);
+  }
+  .root:has(.visual[data-mode="webgl"]) .caption {
+    flex: 0 1 auto;
+    text-align: start;
+  }
+
   .visual {
     position: relative;
     inline-size: 100%;

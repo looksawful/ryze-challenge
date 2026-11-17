@@ -77,3 +77,10 @@ Source branch: fix/approved-hero-nav-contracts-20261117, base origin/dev at ec11
 - OPEN: exact Dock labels/links; tablet nav layout; relationship between old AI Marketer/MCP/Muse/SEO product shelf and current Paid Ads/SEO/CRO/Reporting; rounds 4–8. No speculative change of unapproved details.
 
 - Cookie overlay correction: desktop prototype notice is now a separate fixed full-screen pointer-transparent layer (z-index 110), with interactive notice bottom-right (16px from right/bottom + safe area). Removed the former viewport-centred and bottom-centred rules. Integrations on affected desktop layouts use a separate row so they remain uncovered. Browser geometry PASS 19/19 viewports and source tests PASS 47/47. Mobile/tablet prototype still hides Cookie notice.
+
+## Express mode / single trunk · 17.11.2026
+- Approved latest visual is the current Hero/Navigation build (PR #82 merged into private `dev`), not any older `prod` variant.
+- Fixed CTA hover: Dusk variable `--hero-action-background` no longer self-references; normal and hover background now use one valid semantic token and retain foreground contrast.
+- WebGL integration morph + caption grouped in a compact flex row with a bounded 70–90px animated visual and 4–8px gap; static logo grid remains unchanged.
+- CI workflow removed per user request; local quality gate is only `npm run build` plus `npm run typecheck`. No public deployment.
+- Migration intent: one active `main` branch locally and on private GitHub; archive old branch histories before cleanup; do not discard dirty parallel worktrees without saving their changes.
