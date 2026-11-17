@@ -715,11 +715,15 @@
     .header[data-variant="dock"] .mobileDock {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
-      width: min(420px, calc(100% - 24px));
       min-height: 66px;
       position: fixed;
-      inset: auto 12px max(10px, env(safe-area-inset-bottom));
-      margin-inline: auto;
+      inset-block-start: max(10px, env(safe-area-inset-top));
+      inset-inline-start: 12px;
+      inset-inline-end: auto;
+      inset-block-end: auto;
+      width: min(420px, calc(100% - 100px));
+      margin-inline: 0;
+      transition: transform 200ms ease, opacity 200ms ease, visibility 200ms;
       padding: 5px;
       color: var(--nav-foreground);
       background: var(--nav-surface);
@@ -728,6 +732,17 @@
       box-shadow: 0 16px 38px rgb(0 0 0 / 20%), inset 0 1px rgb(255 255 255 / 6%);
       pointer-events: auto;
     }
+    .header[data-variant="dock"] .inner {
+      transition: transform 200ms ease, opacity 200ms ease, visibility 200ms;
+    }
+    .header[data-variant="dock"][data-scroll-hidden="true"] .mobileDock,
+    .header[data-variant="dock"][data-scroll-hidden="true"] .inner {
+      transform: translateY(calc(-100% - 24px));
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
     .mobileDockItem {
       display: flex;
       flex-direction: column;
