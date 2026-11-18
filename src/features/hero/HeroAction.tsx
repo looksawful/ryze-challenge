@@ -59,7 +59,6 @@ export default function HeroAction({ ref, onOpenChange }: HeroActionProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputId = useId();
-  const helpId = useId();
   const errorId = useId();
 
   function availableMode(): Mode {
@@ -194,7 +193,7 @@ export default function HeroAction({ ref, onOpenChange }: HeroActionProps) {
             onBlur={() => setFocused(false)}
             placeholder={focused ? "Store domain or URL" : ""}
             aria-invalid={Boolean(error)}
-            aria-describedby={error ? `${helpId} ${errorId}` : helpId}
+            aria-describedby={error ? errorId : undefined}
           />
           {!value && !focused && (
             <span key={exampleIndex} className={styles.example} aria-hidden="true">
@@ -204,7 +203,6 @@ export default function HeroAction({ ref, onOpenChange }: HeroActionProps) {
         </div>
         <Button type="submit" className={styles.submit} disabled={stage === "thinking"}>{stage === "thinking" ? "Preparing…" : "Continue"}</Button>
       </form>
-      <p id={helpId} className={styles.help}>Demo only. No data is sent.</p>
       {error && <p id={errorId} role="alert" className={styles.feedback}>{error}</p>}
       {stage === "thinking" && (
         <p role="status" className={styles.feedback}>Preparing an example response for {accepted}…</p>

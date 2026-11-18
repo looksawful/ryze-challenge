@@ -50,13 +50,6 @@
     pointer-events: none;
   }
   .submit { flex: none; }
-  .help {
-    margin-block-start: 8px;
-    color: #b5b6be;
-    font-size: 12px;
-    line-height: 1.4;
-    text-align: start;
-  }
   .feedback {
     margin-block-start: 6px;
     color: #f3f3f5;
@@ -179,16 +172,16 @@
 
 @media (prefers-reduced-motion: no-preference) {
   @layer components {
-    .inline { animation: action-reveal 240ms ease-out both; }
-    .example { animation: sample-reveal 300ms ease-out both; }
-    .result { animation: response-reveal 220ms ease-out both; }
+    .inline { animation: action-reveal var(--motion-surface) var(--motion-ease-enter) both; }
+    .example { animation: sample-reveal var(--motion-state) var(--motion-ease-enter) both; }
+    .result { animation: response-reveal var(--motion-surface) var(--motion-ease-enter) both; }
     @keyframes response-reveal {
-      from { opacity: 0; translate: 0 6px; }
+      from { opacity: 0; translate: 0 10px; }
       to { opacity: 1; translate: 0 0; }
     }
     @keyframes action-reveal {
-      from { opacity: 0; transform: scaleX(.86); transform-origin: left center; }
-      to { opacity: 1; transform: scaleX(1); transform-origin: left center; }
+      from { opacity: 0; transform: translateY(10px) scale(.985); transform-origin: center bottom; }
+      to { opacity: 1; transform: translateY(0) scale(1); transform-origin: center bottom; }
     }
     @keyframes sample-reveal {
       from { opacity: 0; }
