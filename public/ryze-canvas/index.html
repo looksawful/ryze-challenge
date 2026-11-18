@@ -33,14 +33,14 @@
     78%, 100%{ transform: perspective(420px) rotateX(var(--rx)) rotateY(var(--ry)) skewX(var(--shear)); }
   }
 
-  #frame[data-state="melting"] .paper-depth,
-  #frame[data-state="circle"] .paper-depth {
+  #frame[data-state="blowing"] .paper-depth,
+  #frame[data-state="blown"] .paper-depth {
     animation:none;
     transform:none;
     transition:transform .22s ease-out;
   }
-  #frame[data-state="melting"] .paper-cut,
-  #frame[data-state="circle"] .paper-cut { stroke:none; }
+  #frame[data-state="blowing"] .paper-cut,
+  #frame[data-state="blown"] .paper-cut { stroke:none; }
   @media(prefers-reduced-motion:reduce) {#paper-stack {display:none!important;}#finished-mark{opacity:1!important;}}
 
   #canvas-3d{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none;z-index:2;background:transparent}
@@ -50,7 +50,7 @@
   </style>
 </head>
 <body>
-<main id="frame" role="img" aria-label="Эмблема Ryze из розовых бумажных фрагментов на чёрном фоне. Фрагменты собираются в логотип, затем плавно превращаются в круг без подмены слоя.">
+<main id="frame" role="img" aria-label="Эмблема Ryze из розовых бумажных фрагментов. Фрагменты собираются в логотип и затем сдуваются ветром с плавным исчезновением.">
 <svg id="scene" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 <defs>
 <path id="ryze-shape" d="M22,1.1L22.8,1.5L23,1.9L22.7,3.1L22.9,5L22.2,7.6L22.2,9.5L22,10.9L21.7,12.2L21.8,12.8L22.8,13.2L23,13.1L23.7,12.2L25.5,9.3L28.4,6L30.3,4.4L30.7,4.3L31.1,4.2L31.5,4.4L32.4,5.2L33.2,6.4L33.3,6.8L32.8,8.3L32.3,9.1L30.6,10.3L29.4,11.7L29.3,12.5L28.4,13.9L27.3,15.2L26.5,15.9L26.2,16.3L26.8,16.2L29.1,15.2L31,14.2L35.7,12.8L36,12.8L36.3,13.1L37,14.9L37,15.4L36.6,15.9L35.7,16.5L34.2,17.7L31.9,18.9L29.9,19.7L28.7,20L28,20.5L27.4,21.1L27.4,21.3L29.8,22.3L30.8,22.5L34.7,23.8L35.6,24.4L36.3,24.6L36.3,25.2L36,26.6L35.3,27.8L34.9,28.3L34.5,29.1L34,29.8L33.5,30.2L32.9,30.2L31.7,29.6L29.2,28.8L27.6,27.9L24.2,27.2L23.4,26.6L23.3,26.6L23.7,27.9L24.4,32.8L25.8,37.4L25.7,37.9L25.5,38.2L23.6,38.9L23.4,38.8L23.2,38.4L22.8,38.2L22.5,37.4L22.2,36.4L21.8,35.5L21.3,34L20.8,32.6L20.2,29.9L20.1,29.7L19.9,29.7L19.4,31.7L19.4,33.2L18.9,35.7L18.4,36.5L18.3,37.5L18.1,38L17.5,38.3L15.8,38.3L14.3,37.9L13.9,37.6L13.8,37.1L14,35.3L14.4,34.2L14.7,32.6L15.5,29.9L15.7,27.4L15.9,26.5L15.5,26.3L15.3,26.5L15.2,27.6L14.4,30.3L12.7,33.3L11.3,36.3L10.8,36.7L10.2,36.8L9.5,36.6L8.2,35.7L8,35.3L8.1,34.3L9.7,30.9L11,28.6L11.2,27.5L12.1,25.8L12.4,24.9L12.4,24.4L11.9,23.8L11.8,23.8L10.9,24.7L8.9,26.4L6.9,28.6L5.2,29.5L4.6,29.5L4.2,29.2L3.4,28L3.3,27.4L3.5,27L4.5,26L5.3,25.4L7.6,22.9L9.7,21.5L10.7,20.6L10.9,20.3L7.9,20.1L5.7,20.4L1.7,20.5L1.2,20.3L1,20L1,18.1L1.2,17.6L1.6,17.4L3.5,17L6,17L8,16.7L9.8,16.7L7.3,14.6L6.6,14.3L5.6,14.1L4.2,13.5L3.5,13.1L2.7,12.2L2,11.8L1.9,11.2L2.1,10.4L2.6,9.6L2.7,8.9L3.3,8.1L3.8,8.1L4.3,8.6L5.2,9L6.5,9.8L7.9,10.4L9.2,11.2L12.1,12.9L14.1,14.6L14.3,14.5L14.2,14.3L12,11.5L11.1,10L9.5,7.9L8.3,6L7.2,4.4L7.1,4L7.4,3.6L7.9,3.3L8.3,2.9L9.8,2.2L10.4,2.1L11.1,2.4L11.8,3.2L13.6,5.5L14.1,6.8L16.7,9.9L17.5,11.4L17.9,12.4L18.2,12.7L18.5,12.3L18.5,9.2L19.4,6.1L19.3,4.2L19.7,1.7L19.9,1.2L20.2,1.1L21.5,1L22,1.1Z"/>
@@ -819,64 +819,34 @@
   const alphaNode = document.getElementById('liquid-alpha');
   const smooth = x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
   const out = x=>{x=Math.max(0,Math.min(1,x));return 1-(1-x)**2.45;};
-  const FINAL_RADIUS=4.8;
-  const scene2Duration=1.35;
-  const CIRCLE_PATH=(()=>{
-    const r=FINAL_RADIUS, k=.552284749831*r;
-    return `M${r} 0C${r} ${k} ${k} ${r} 0 ${r}C${-k} ${r} ${-r} ${k} ${-r} 0C${-r} ${-k} ${-k} ${-r} 0 ${-r}C${k} ${-r} ${r} ${-k} ${r} 0Z`;
-  })();
-  let melting=false;
-
-  function renderMelt(p, prepared){
-    p=Math.max(0,Math.min(1,p));
-    if(!melting){
-      melting=true;
-      frame.dataset.state='melting';
-      stack.setAttribute('filter','url(#paper-liquid-filter)');
-    }
-    const peak=Math.pow(Math.sin(Math.PI*p),1.2);
-    const blur=0.56*peak;
-    const alpha=1+11*peak;
-    blurNode.setAttribute('stdDeviation',blur.toFixed(3));
-    alphaNode.setAttribute('values',
-      `1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 ${alpha.toFixed(3)} ${(-.5*(alpha-1)).toFixed(3)}`);
-    for(let i=0;i<pieces.length;i++){
-      const paper=prepared[i], shape=morphGeometry[i], path=pathEls[i];
-      const stagger=(i%9)*.0065;
-      const q=Math.max(0,Math.min(1,(p-stagger)/(1-stagger)));
-      const travel=out(q);
-      const round=smooth(Math.min(1,q/.88));
-      const swell=smooth((q-.29)/.71);
-      const blobRadius=Math.max(.57,Math.min(1.42,Math.sqrt(shape.area/Math.PI)*.60));
-      const radius=blobRadius+(FINAL_RADIUS-blobRadius)*swell;
-      const tx=paper.fx+(20-paper.cx-paper.fx)*travel;
-      const ty=paper.fy+(20-paper.cy-paper.fy)*travel;
-      const rot=paper.fr*(1-travel);
-      const size=paper.fs+(1-paper.fs)*travel;
-      pieces[i].setAttribute('transform',
-        `translate(${tx.toFixed(3)} ${ty.toFixed(3)}) rotate(${rot.toFixed(3)}) scale(${size.toFixed(4)})`);
-      // A local fluid bulge travels through the boundary, then attenuates to zero.
-      const wave=.10*Math.sin(Math.PI*q)*Math.sin(q*6.0+paper.phase);
-      const values=shape.points;
-      let d='';
-      for(let j=0;j<values.length;j+=2){
-        const theta=Math.PI*2*(j/2)/(values.length/2);
-        const r=radius*(1+wave*Math.sin(theta*3+paper.phase));
-        const targetX=r*Math.cos(theta), targetY=r*Math.sin(theta);
-        const x=values[j]+(targetX-values[j])*round;
-        const y=values[j+1]+(targetY-values[j+1])*round;
-        d+=(j?'L':'M')+x.toFixed(3)+','+y.toFixed(3);
-      }
-      path.setAttribute('d',d+'Z');
-    }
-    if(p>=1){
-      // True mathematical circle, still drawn by the original 118 paths.
-      prepared.forEach((item,i)=>{
-        pieces[i].setAttribute('transform',`translate(${(20-item.cx).toFixed(4)} ${(20-item.cy).toFixed(4)})`);
-        pathEls[i].setAttribute('d',CIRCLE_PATH);
-      });
-      stack.removeAttribute('filter');
-      frame.dataset.state='circle';
+  // A left-to-right gust scatters the SAME original 118 cut-paper polygons.
+  // Keep each paper contour intact; no circle morph, texture swap or new geometry.
+  const windDuration = 1.88;
+  function renderWind(progress, prepared) {
+    const p = Math.max(0, Math.min(1, progress));
+    frame.dataset.state = 'blowing';
+    stack.removeAttribute('filter');
+    blurNode.setAttribute('stdDeviation','0');
+    prepared.forEach((paper, i) => {
+      const delay = paper.windDelay;
+      const q = Math.max(0, Math.min(1, (p - delay)/(1 - delay)));
+      const push = q * q * (3 - 2 * q);
+      const gust = Math.pow(q, 1.45);
+      const wobble = Math.sin(q * 13 + paper.phase) * (1-q) * q * paper.windWobble;
+      const driftX = paper.windDX * gust;
+      const driftY = paper.windDY * push + wobble;
+      const x = paper.fx + driftX;
+      const y = paper.fy + driftY;
+      const spin = paper.fr + paper.windSpin * push;
+      const scale = Math.max(0.035, paper.fs * (1 - 0.96 * Math.pow(q, .78)));
+      paper.el.setAttribute('transform',
+        `translate(${x.toFixed(3)} ${y.toFixed(3)}) rotate(${spin.toFixed(2)}) scale(${scale.toFixed(4)})`);
+      // Fade starts with the gust, not after every fragment has exited.
+      paper.el.style.opacity = String(Math.max(0, 1 - Math.pow(q, .72)));
+    });
+    if (p >= 1) {
+      stack.style.visibility = 'hidden';
+      frame.dataset.state = 'blown';
     }
   }
 
@@ -887,7 +857,7 @@
     stack.removeAttribute('filter');
     blurNode.setAttribute('stdDeviation','0');
     alphaNode.setAttribute('values','1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0');
-    pathEls.forEach((path,i)=>path.setAttribute('d',morphGeometry[i].initial));
+    pathEls.forEach((path,i)=>{path.setAttribute('d',morphGeometry[i].initial);pieces[i].style.opacity='1';});
     const {sw,sh,ox,oy,scale}=layout();
     const rand=randomGenerator(117031);
     const prepared=[];
@@ -922,10 +892,13 @@
       }
       el.setAttribute('transform',points.keyframes[0].transform);
       prepared.push({el,cx,cy,delay,keyframes:points.keyframes,lastIndex:0,
-        finalTransform:points.finalTransform,fx:finalX,fy:finalY,fr:finalRot,fs:finalScale,phase});
+        finalTransform:points.finalTransform,fx:finalX,fy:finalY,fr:finalRot,fs:finalScale,phase,
+        windDelay:.025+(cx/40)*.26+rand()*.12,
+        windDX:36+rand()*58,windDY:-8-rand()*24,
+        windSpin:(rand()-.5)*350,windWobble:1.6+rand()*2.6});
       scene2Start=Math.max(scene2Start,delay+points.duration);
     }
-    const totalDuration=scene2Start+scene2Duration;
+    const totalDuration=scene2Start+windDuration;
     frame.dataset.state='assembling';
     still.style.opacity='0';
     stack.style.visibility='visible';
@@ -936,7 +909,7 @@
     tween=createClockTween(clock,{
       time:totalDuration,duration:totalDuration,ease:'none',
       onUpdate:()=>{
-        // Cards join while the SVG fragments are still assembling, not after the circle.
+        // Cards join while paper fragments are still assembling, before the gust.
         if(!cardsStarted && clock.time>=scene2Start*.45){
           cardsStarted=true;
           frame.dispatchEvent(new CustomEvent('ryze:cards-start'));
@@ -958,13 +931,14 @@
           assembled=true;
           prepared.forEach(paper=>paper.el.setAttribute('transform',paper.finalTransform));
           frame.dispatchEvent(new CustomEvent('ryze:assembled'));
+          frame.dispatchEvent(new CustomEvent('ryze:wind-start'));
         }
-        renderMelt((clock.time-scene2Start)/scene2Duration,prepared);
+        renderWind((clock.time-scene2Start)/windDuration,prepared);
       },
       onComplete:()=>{
-        renderMelt(1,prepared);
+        renderWind(1,prepared);
         tween=null;
-        frame.dispatchEvent(new CustomEvent('ryze:circle'));
+        frame.dispatchEvent(new CustomEvent('ryze:blown'));
       }
     });
   }
