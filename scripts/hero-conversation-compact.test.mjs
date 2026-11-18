@@ -9,7 +9,7 @@ test("email-first Hero starts with a single chat-like field, not a transcript ca
   assert.doesNotMatch(component, /className=\{styles\.topline\}/);
   assert.doesNotMatch(component, /className=\{styles\.transcript\}/);
   assert.match(component, /type="email"/);
-  assert.match(component, /<form className=\{styles\.composer\}/);
+  assert.match(component, /<form\b[^>]*className=\{styles\.composer\}/);
   assert.match(component, /type="submit"/);
 });
 
