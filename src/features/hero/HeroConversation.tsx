@@ -11,47 +11,126 @@ const capabilities = [
   { id: "cro", label: "CRO", title: "Conversion opportunities", detail: "Review the customer journey and next steps.", image: "/ryze-media/product-shelf/mcp.webp" },
 ] as const;
 
+// User-tested interaction pattern: type, pause, erase, repeat. This is a
+// decorative overlay, never the value of the real email input.
+export const placeholderPhrases = [
+  "Enter your email…",
+  "See what Ryze can do…",
+  "Get your growth preview…",
+  "Grow your Shopify store…",
+] as const;
+
 export default function HeroConversation() {
-  const [ready, setReady] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [selected, setSelected] = useState(0);
   const field = useRef<HTMLInputElement>(null);
   const composer = useRef<HTMLFormElement>(null);
+  const hint = useRef<HTMLSpanElement>(null);
   const interacted = useRef(false);
-  const timeline = useRef<{ progress: (v: number) => unknown; kill: () => unknown } | null>(null);
+  const activeAnimation = useRef<{ progress: (v: number) => unknown; kill: () => unknown } | null>(null);
+  const typedAnimation = useRef<{ kill: () => unknown } | null>(null);
 
-  useEffect(() => { setReady(true); }, []);
+  const stopPresentation = () => {
+    interacted.current = true;
+    activeAnimation.current?.progress(1);
+    activeAnimation.current?.kill();
+    activeAnimation.current = null;
+    typedAnimation.current?.kill();
+    typedAnimation.current = null;
+    if (hint.current) hint.current.textContent = "";
+  };
+
   useEffect(() => {
-    let alive = true;
-    let mm: { revert: () => void } | null = null;
-    void import("gsap").then(({ gsap }) => {
-      if (!alive || interacted.current || !composer.current) return;
-      const media = gsap.matchMedia();
-      media.add({ animate: "(prefers-reduced-motion: no-preference)", narrow: "(max-width: 699px)" }, ({ conditions }) => {
-        if (!conditions?.animate || !composer.current || interacted.current) return;
-        const intro = gsap.fromTo(composer.current,
-          { opacity: 0.85, y: conditions.narrow ? 5 : 9 },
-          { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", clearProps: "opacity,transform" });
-        timeline.current = intro;
-        return () => { intro.progress(1); intro.kill(); timeline.current = null; };
-      });
-      mm = media;
-    }).catch(() => { /* The native input stays usable. */ });
-    return () => { alive = false; timeline.current?.progress(1); mm?.revert(); };
+    setHydrated(true);
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReducedMotion(preference.matches);
+    sync();
+    preference.addEventListener("change", sync);
+    return () => preference.removeEventListener("change", sync);
   }, []);
 
-  function stopIntro() {
-    interacted.current = true;
-    timeline.current?.progress(1);
-    timeline.current?.kill();
-    timeline.current = null;
-  }
+  useEffect(() => {
+    let alive = true;
+    let media: { revert: () => void } | null = null;
+    void import("gsap").then(({ gsap }) => {
+      if (!alive || !composer.current || interacted.current) return;
+      const mm = gsap.matchMedia();
+      mm.add(
+        { animate: "(prefers-reduced-motion: no-preference)", compact: "(max-width: 799px)" },
+        ({ conditions }) => {
+          if (!conditions?.animate || !composer.current || interacted.current) {
+            if (hint.current) hint.current.textContent = "";
+            return;
+          }
+
+          // Reveals the entire form from the original button's position at right.
+          // No layout property changes and no transform on the fixed navigation.
+          const reveal = gsap.fromTo(composer.current,
+            { clipPath: "inset(0 0 0 calc(100% - 134px) round 999px)" },
+            {
+              clipPath: "inset(0 0 0 0 round 999px)",
+              duration: conditions.compact ? 0.7 : 0.9,
+              ease: "power3.inOut",
+              clearProps: "clipPath",
+              onComplete: () => {
+                if (!alive || interacted.current || !hint.current) return;
+                const cycle = gsap.timeline({ repeat: -1 });
+                for (const phrase of placeholderPhrases) {
+                  const counter = { characters: 0 };
+                  cycle.call(() => { counter.characters = 0; if (hint.current) hint.current.textContent = ""; });
+                  cycle.to(counter, {
+                    characters: phrase.length,
+                    duration: phrase.length * 0.031,
+                    ease: "none",
+                    snap: { characters: 1 },
+                    onUpdate: () => {
+                      if (hint.current && !interacted.current)
+                        hint.current.textContent = phrase.slice(0, Math.round(counter.characters));
+                    },
+                  });
+                  cycle.to({}, { duration: 1.5 });
+                  cycle.to(counter, {
+                    characters: 0,
+                    duration: phrase.length * 0.018,
+                    ease: "none",
+                    snap: { characters: 1 },
+                    onUpdate: () => {
+                      if (hint.current && !interacted.current)
+                        hint.current.textContent = phrase.slice(0, Math.round(counter.characters));
+                    },
+                  });
+                  cycle.to({}, { duration: 0.18 });
+                }
+                typedAnimation.current = cycle;
+              },
+            });
+          activeAnimation.current = reveal;
+          return () => {
+            typedAnimation.current?.kill();
+            typedAnimation.current = null;
+            reveal.progress(1);
+            reveal.kill();
+            activeAnimation.current = null;
+          };
+        },
+      );
+      media = mm;
+    }).catch(() => { /* Static native input remains usable if GSAP is unavailable. */ });
+    return () => {
+      alive = false;
+      typedAnimation.current?.kill();
+      activeAnimation.current?.progress(1);
+      media?.revert();
+    };
+  }, []);
 
   function submitEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    stopIntro();
+    stopPresentation();
     if (!field.current?.checkValidity() || email.trim().length > 254) {
       setError("Enter a valid email address.");
       field.current?.focus();
@@ -62,19 +141,28 @@ export default function HeroConversation() {
   }
 
   const active = capabilities[selected];
+  const overlayVisible = hydrated && !reducedMotion && !interacted.current && !email;
 
   return (
     <section id="hero-conversation" className={styles.chat} aria-label="Ryze AI preview">
       <form ref={composer} className={styles.composer} onSubmit={submitEmail} noValidate>
         <label className={styles.screenReader} htmlFor="ryze-preview-email">Email address</label>
-        <input id="ryze-preview-email" ref={field} type="email" name="email"
-          autoComplete="email" inputMode="email" required maxLength={254}
-          placeholder="Enter your email…" value={email} onFocus={stopIntro}
-          onChange={(event) => { setEmail(event.target.value); setError(""); setSubmitted(false); }}
-          aria-invalid={Boolean(error)} aria-describedby={error ? "ryze-email-error" : "ryze-email-note"} />
-        <button type="submit" disabled={!ready} aria-label="Show preview">
-          <span aria-hidden="true">↗</span>
-        </button>
+        <div className={styles.fieldArea}>
+          <input id="ryze-preview-email" ref={field} type="email" name="email"
+            autoComplete="email" inputMode="email" required maxLength={254}
+            placeholder={overlayVisible ? "" : "Enter your email…"}
+            value={email}
+            onFocus={stopPresentation}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              setError("");
+              setSubmitted(false);
+            }}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "ryze-email-error" : "ryze-email-note"} />
+          {overlayVisible && <span className={styles.animatedPlaceholder} data-animated-placeholder aria-hidden="true" ref={hint}>Enter your email…</span>}
+        </div>
+        <button type="submit" disabled={!hydrated} aria-label="Start for free">Start for free</button>
       </form>
       {error && <p id="ryze-email-error" className={styles.error} role="alert">{error}</p>}
       <p className={styles.screenReader} id="ryze-email-note">Local preview: no email is sent or stored.</p>
@@ -83,16 +171,16 @@ export default function HeroConversation() {
           <div className={styles.choices}>
             {capabilities.map((item, index) => (
               <button className={styles.choice} type="button" key={item.id}
-                aria-pressed={selected === index} onClick={() => setSelected(index)}>{item.label}</button>
+                aria-pressed={selected === index}
+                onClick={() => { stopPresentation(); setSelected(index); }}>{item.label}</button>
             ))}
           </div>
           <div className={styles.preview} key={active.id}>
-            <div className={styles.previewText}>
-              <strong>{active.title}</strong><p>{active.detail}</p>
-            </div>
+            <div className={styles.previewText}><strong>{active.title}</strong><p>{active.detail}</p></div>
             <div className={styles.previewImage}>
               <Image src={basePath + active.image} width={720} height={540}
-                alt={active.label + " illustrative visual"} sizes="(max-width: 640px) 80vw, 230px" unoptimized />
+                alt={active.label + " illustrative visual"}
+                sizes="(max-width: 640px) 80vw, 230px" unoptimized />
             </div>
           </div>
           <p className={styles.honesty} role="status">Demo only. No email has been sent and no store has been analyzed.</p>
