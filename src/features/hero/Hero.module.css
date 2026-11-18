@@ -931,7 +931,7 @@
     /* The original desktop type, copy and mascot remain in their main grid
        areas. The enlarged form spans its own bottom row, logos alongside it. */
     .hero[data-conversational-hero] > .action {
-      grid-area: 5 / 2 / 6 / 10;
+      grid-area: 5 / 3 / 6 / 11;
       inline-size: 100%;
       min-inline-size: 0;
       justify-self: center;
@@ -939,7 +939,7 @@
       margin: clamp(6px, 1.2svh, 16px) 0 0;
     }
     .hero[data-conversational-hero] > .integration {
-      grid-area: 5 / 10 / 6 / 13;
+      grid-area: 5 / 11 / 6 / 13;
       inline-size: min(100%, 290px);
       margin: 0;
       justify-self: stretch;
