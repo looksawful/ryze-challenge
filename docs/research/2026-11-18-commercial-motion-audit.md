@@ -170,3 +170,28 @@
 
 ### Первоисточники для исполнения
 GSAP timeline https://gsap.com/docs/v3/GSAP/Timeline/ ; GSAP context https://gsap.com/docs/v3/GSAP/gsap.context()/ ; matchMedia https://gsap.com/docs/v3/GSAP/gsap.matchMedia()/ ; GSAP React https://gsap.com/resources/React ; Flip https://gsap.com/docs/v3/Plugins/Flip/ ; SplitText https://gsap.com/docs/v3/Plugins/SplitText/ ; React flushSync https://react.dev/reference/react-dom/flushSync .
+
+
+## CSS-first review: подход Кевина Пауэлла для Ryze (18.11.2026)
+
+**Источник интерпретации:** это наш вывод на основе публичных материалов Кевина Пауэлла, а не его личное ревью Ryze. Он подчёркивает responsive layout, предсказуемость каскада, поиск корневой причины вместо CSS-заплаток и progressive enhancement:
+- https://www.kevinpowell.co/article/dealing-with-the-webiness-of-css/
+- https://www.kevinpowell.co/article/jumping-the-shark/
+- https://www.w3.org/WAI/WCAG22/Techniques/css/C39
+
+### Standards / CSS-first
+1. **Базовое состояние без движения:** Hero, H1, CTA, меню и пояснения доступны с первого кадра. Отказ от \`main.inert\` и hiding CSS \`[data-intro="playing"]\` как механизма ожидания WebGL. Сначала отрисовка, после неё необязательный эффект; JS никогда не владеет доступностью смысла.
+2. **CSS — раскладка и простой отклик:** flex/grid/intrinsic \`minmax\`, \`clamp\`, \`svh/dvh\`, @container для локальных размеров, \`transition\` на \`transform/opacity\`. Не задавать responsive-сдвиги через GSAP там, где их естественно решает CSS. Вписывать новые правила в существующие @layer и custom properties, без \`!important\`, лишних outline/shadow и нового визуального языка.
+3. **GSAP — только сложная хореография:** текущие \`timeline\` и \`context\` сохранить; \`gsap.matchMedia\` ограничить созданием/cleanup GSAP эффектов по условиям viewport/reduced. Один motion driver на область, без одновременного CSS и GSAP tween одного свойства.
+4. **Flip — условный:** сначала реальная широкая CTA и её устойчивое состояние на CSS/React; затем сравнить с GSAP Flip для геометрического морфа. Реакция на изменение размера контейнера определяется его размером, а не типом устройства. Состояние поля, focus, Escape и keyboard первичнее визуальной трансформации.
+5. **SplitText — скорее отказаться:** H1 уже содержит две утверждённые span-строки. Сначала CSS masking + текущий stagger; SplitText только если отдельный Storybook POC докажет улучшение при font-load/resize/zoom без переписывания DOM или потери accessible name.
+6. **Не добавлять новое ради примера:** \`@gsap/react\` можно обойти \`gsap.context\` и существующим cleanup. Отдельный plugin и абстракция допустимы лишь после воспроизводимой потребности.
+
+### Spec / поведение и QA
+- Проверить JS-off, WebGL error/slow/disabled, forced reduced-motion, переключение preference во время tween и интерактивность CTA до сборки логотипа.
+- Проверить 320, 390, Duo 490/951, 699→700, 799→800, 1024, 1440, 1920 и короткий landscape; менять **ширину контейнера**, а не только viewport. На 200% zoom не должны возникать горизонтальные скроллы, недоступная CTA, переполнение текста.
+- Проверить CTA по цепочке open→input→submit→result→edit→close, быстрые повторения и переход 799↔800 без потери введённого домена или фокуса.
+- Сравнивать исходный CSS вариант и новые POC side-by-side в Storybook; реальный режим без JS тестировать отдельно, так как Storybook сам нуждается в JS.
+- Не менять внешний вид утверждённой верстки, не мешать исходные motion-изменения других исполнителей. При одинаковом визуальном и UX-качестве выбрать меньшую и более предсказуемую реализацию.
+
+**Итог решения:** first paint и доступность через семантику+CSS, координация через уже существующий GSAP timeline, matchMedia для cleanup, Flip/SplitText только после сравнительных тестов. ScrollTrigger и другие плагины вне этапа. Этот раздел — предварительное design/engineering review, никаких тестов и изменений кода им не подтверждено.
