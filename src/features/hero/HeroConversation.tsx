@@ -72,7 +72,7 @@ export default function HeroConversation() {
           // Reveals the entire form from the original button's position at right.
           // No layout property changes and no transform on the fixed navigation.
           const reveal = gsap.fromTo(composer.current,
-            { clipPath: "inset(0 0 0 calc(100% - 134px) round 999px)" },
+            { clipPath: `inset(0 0 0 calc(100% - ${conditions.compact ? 150 : 200}px) round 999px)` },
             {
               clipPath: "inset(0 0 0 0 round 999px)",
               duration: conditions.compact ? 0.7 : 0.9,
