@@ -26,6 +26,10 @@ export default function HeroConversation() {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [reply, setReply] = useState<{ kind: "error" | "processing" | "ready"; text: string } | null>(null);
+  const replyTextRef = useRef<HTMLSpanElement>(null);
+  const replyTweenRef = useRef<{ kill: () => unknown } | null>(null);
+  const processingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [selected, setSelected] = useState(0);
   const field = useRef<HTMLInputElement>(null);
@@ -130,16 +134,64 @@ export default function HeroConversation() {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (processingTimer.current) clearTimeout(processingTimer.current);
+      replyTweenRef.current?.kill();
+    };
+  }, []);
+
+  // The visible AI message types above the field, separate from its real value.
+  // Screen readers receive the completed reply once instead of every character.
+  useEffect(() => {
+    replyTweenRef.current?.kill();
+    const node = replyTextRef.current;
+    if (!node || !reply) return;
+    node.textContent = reply.text;
+    if (reducedMotion) return;
+    let live = true;
+    void import("gsap").then(({ gsap }) => {
+      if (!live || !node) return;
+      const count = { value: 0 };
+      node.textContent = "";
+      replyTweenRef.current = gsap.to(count, {
+        value: reply.text.length,
+        duration: Math.min(2.4, Math.max(0.36, reply.text.length * .035)),
+        snap: { value: 1 },
+        ease: "none",
+        onUpdate: () => { if (live) node.textContent = reply.text.slice(0, Math.round(count.value)); },
+        onComplete: () => { if (live) node.textContent = reply.text; },
+      });
+    }).catch(() => { if (live) node.textContent = reply.text; });
+    return () => {
+      live = false;
+      replyTweenRef.current?.kill();
+      replyTweenRef.current = null;
+      node.textContent = reply.text;
+    };
+  }, [reply, reducedMotion]);
+
   function submitEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     stopPresentation();
+    if (processingTimer.current) clearTimeout(processingTimer.current);
     if (!field.current?.checkValidity() || email.trim().length > 254) {
-      setError("Enter a valid email address.");
-      field.current?.focus();
+      const message = !email.trim()
+        ? "I'll need your email address to get started."
+        : "That email address doesn't look right. Could you check it?";
+      setError(message);
+      setReply({ kind: "error", text: message });
+      setSubmitted(false);
       return;
     }
     setError("");
-    setSubmitted(true);
+    setSubmitted(false);
+    setReply({ kind: "processing", text: "Starting your preview. Let's explore what Ryze can do." });
+    processingTimer.current = setTimeout(() => {
+      setSubmitted(true);
+      setReply({ kind: "ready", text: "Here is a sample of what your AI marketing workspace could explore." });
+      processingTimer.current = null;
+    }, reducedMotion ? 100 : 2100);
   }
 
   const active = capabilities[selected];
@@ -147,27 +199,14 @@ export default function HeroConversation() {
 
   return (
     <section id="hero-conversation" className={styles.chat} aria-label="Ryze AI preview">
-      <form ref={composer} className={styles.composer} onSubmit={submitEmail} noValidate>
-        <label className={styles.screenReader} htmlFor="ryze-preview-email">Email address</label>
-        <div className={styles.fieldArea}>
-          <input id="ryze-preview-email" ref={field} type="email" name="email"
-            autoComplete="email" inputMode="email" required maxLength={254}
-            placeholder={overlayVisible ? "" : "Enter your email…"}
-            value={email}
-            onFocus={stopPresentation}
-            onChange={(event) => {
-              setEmail(event.target.value);
-              setError("");
-              setSubmitted(false);
-            }}
-            aria-invalid={Boolean(error)}
-            aria-describedby={error ? "ryze-email-error" : "ryze-email-note"} />
-          {overlayVisible && <span className={styles.animatedPlaceholder} data-animated-placeholder aria-hidden="true" ref={hint}>Enter your email…</span>}
+      {reply && (
+        <div className={styles.reply} data-ai-reply={reply.kind}>
+          <p className={styles.assistantReply} aria-hidden="true"><span ref={replyTextRef}>{reply.text}</span><span className={styles.replyCursor} aria-hidden="true" /></p>
+          {reply.kind === "error"
+            ? <span className={styles.screenReader} role="alert">{reply.text}</span>
+            : <span className={styles.screenReader} role="status">{reply.text}</span>}
         </div>
-        <button type="submit" disabled={!hydrated} aria-label="Start for free">Start for free</button>
-      </form>
-      {error && <p id="ryze-email-error" className={styles.error} role="alert">{error}</p>}
-      <p className={styles.screenReader} id="ryze-email-note">Local preview: no email is sent or stored.</p>
+      )}
       {submitted && (
         <div className={styles.proof} role="region" aria-label="Ryze capability examples">
           <div className={styles.choices}>
@@ -185,9 +224,32 @@ export default function HeroConversation() {
                 sizes="(max-width: 640px) 80vw, 230px" unoptimized />
             </div>
           </div>
-          <p className={styles.honesty} role="status">Demo only. No email has been sent and no store has been analyzed.</p>
+          <p className={styles.honesty}>Demo only. No email has been sent and no store has been analyzed.</p>
         </div>
       )}
+      <form ref={composer} className={styles.composer} onSubmit={submitEmail} noValidate>
+        <label className={styles.screenReader} htmlFor="ryze-preview-email">Email address</label>
+        <div className={styles.fieldArea}>
+          <input id="ryze-preview-email" ref={field} type="email" name="email"
+            autoComplete="email" inputMode="email" required maxLength={254}
+            placeholder={overlayVisible ? "" : "Enter your email…"}
+            value={email}
+            onFocus={stopPresentation}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              setError("");
+              setReply(null);
+              setSubmitted(false);
+              if (processingTimer.current) clearTimeout(processingTimer.current);
+            }}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "ryze-email-error" : "ryze-email-note"} />
+          {overlayVisible && <span className={styles.animatedPlaceholder} data-animated-placeholder aria-hidden="true" ref={hint}>Enter your email…</span>}
+        </div>
+        <button type="submit" disabled={!hydrated} aria-label="Start for free">Start for free</button>
+      </form>
+      <p className={styles.screenReader} id="ryze-email-note">Local preview: no email is sent or stored.</p>
+
     </section>
   );
 }
