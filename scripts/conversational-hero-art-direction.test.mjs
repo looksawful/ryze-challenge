@@ -11,9 +11,10 @@ const renderer = readFileSync(new URL("../public/ryze-canvas/src/main.js", impor
 
 test("Hero has one adaptive row for form and integrations, without background cards", () => {
   assert.doesNotMatch(hero, /styles\.mediaComposition/);
-  assert.match(hero, /styles\.actionCluster/);
+  assert.match(hero, /className=\{styles\.action\}/);
+  assert.doesNotMatch(hero, /styles\.actionCluster/);
   assert.match(hero, /<IntegrationLogos\s*\/>/);
-  assert.match(css, /\.hero\[data-conversational-hero\] \.headline[\s\S]*?--type-heading-size:\s*clamp\(72px/);
+  assert.match(css, /--type-heading-size:\s*clamp\(72px,\s*6\.667vw,\s*108px\)/);
   assert.match(css, /@media\s*\(width\s*<\s*800px\)/);
 });
 
