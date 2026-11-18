@@ -1034,3 +1034,32 @@
     }
   }
 }
+
+/* Fixed mascot insertion point aligned beside the email composer at all wide
+   breakpoints, not an arbitrary position higher up the hero. */
+@layer components {
+  @media (width >= 800px) {
+    .hero[data-conversational-hero] > .mascot {
+      position: relative;
+      inset: auto;
+      grid-area: 5 / 1 / 6 / 3;
+      justify-self: start;
+      align-self: center;
+      inline-size: min(100%, 190px);
+      block-size: clamp(118px, 13vw, 192px);
+      margin: 0;
+      z-index: 3;
+    }
+  }
+  @media (width >= 800px) and (width < 1024px) {
+    .hero[data-conversational-hero] > .action {
+      grid-area: 5 / 1 / 6 / -1;
+      inline-size: calc(100% - clamp(150px, 20vw, 190px));
+      justify-self: end;
+    }
+    .hero[data-conversational-hero] > .mascot {
+      inline-size: clamp(125px, 16vw, 165px);
+      block-size: clamp(126px, 19vw, 175px);
+    }
+  }
+}
