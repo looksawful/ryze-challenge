@@ -432,7 +432,6 @@ export function SiteHeader({
               </div>
             </section>
             {showMobileCookieSettings && <HomeworkCookieSettingsButton className={styles.mobileLink} />}
-            {variant === "dock" && <a className={styles.mobileContact} href={bookingLink.href} target="_blank" rel="noopener noreferrer">Contact us <span aria-hidden="true">↗</span></a>}
           </nav>
         </dialog>
       )}
