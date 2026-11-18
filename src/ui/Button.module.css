@@ -3,9 +3,18 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    max-inline-size: 100%;
+    border: 0;
     border-radius: 999px;
+    line-height: 1.2;
     text-align: center;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color var(--motion-control, 180ms) var(--motion-ease-enter, ease-out),
+      color var(--motion-control, 180ms) var(--motion-ease-enter, ease-out),
+      scale var(--motion-fast, 160ms) var(--motion-ease-enter, ease-out);
   }
 
   .regular {
@@ -25,18 +34,38 @@
   }
 
   .primary {
-    border: 0;
+    --button-hover: #292929;
+    --button-pressed: #202020;
     background: #080808;
     color: #fff;
   }
-  .primary:hover:not(:disabled) { background: #292929; }
 
   .secondary {
-    border: 0;
+    --button-hover: #45454b;
+    --button-pressed: #2a2a30;
     background: #35353b;
     color: #fff;
   }
-  .secondary:hover:not(:disabled) { background: #45454b; }
 
-  .button:disabled { cursor: not-allowed; }
+  .button:focus-visible,
+  .button[data-visual-state="hover"]:not(:disabled) {
+    background: var(--button-hover);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .button:hover:not(:disabled) { background: var(--button-hover); }
+  }
+
+  .button:active:not(:disabled),
+  .button[data-visual-state="pressed"]:not(:disabled) {
+    background: var(--button-pressed);
+    scale: 0.985;
+  }
+
+  .button:disabled { cursor: not-allowed; opacity: 0.6; }
+  .button[aria-busy="true"] { cursor: progress; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .button { transition: none; scale: 1; }
+  }
 }
