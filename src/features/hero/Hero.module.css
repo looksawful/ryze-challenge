@@ -250,7 +250,7 @@
       grid-template-rows: 270px 240px minmax(150px, 1fr) 130px;
       padding: 0 20px 100px;
     }
-    .brand { grid-column: 1 / 4; grid-row: 1; justify-self: start; align-self: center; margin-inline: -290px 0; }
+    .brand { grid-column: 10 / 13; grid-row: 1; justify-self: end; align-self: center; margin-inline: 0; }
     .headline { grid-column: 1 / 10; grid-row: 2 / 4; inline-size: calc(100% - 60px); --type-heading-size: clamp(100px, 5.7vw, 160px); }
     .lead { grid-column: 10 / 13; grid-row: 3; align-self: start; margin-block-start: 0; --type-lead-size: 19px; }
     .description { grid-column: 10 / 13; grid-row: 3; margin-block-start: 40px; --type-paragraph-size: 19px; }
@@ -873,8 +873,8 @@
   .mascot { --hero-enter-delay: .44s; }
   .action, .integration { --hero-enter-delay: .66s; }
 
-  :global([data-intro="revealing"]:not([data-motion-driver="gsap"])) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration),
-  :global([data-intro="ready"]:not([data-motion-driver="gsap"])) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration) {
+  :global([data-intro="revealing"]:not([data-motion-driver="gsap"]):not([data-theme="dawn"])) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration),
+  :global([data-intro="ready"]:not([data-motion-driver="gsap"]):not([data-theme="dawn"])) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration) {
     animation: ryze-hero-item-reveal .52s cubic-bezier(.22, 1, .36, 1) both;
     animation-delay: var(--hero-enter-delay);
   }
@@ -883,7 +883,7 @@
     to { opacity: 1; translate: 0 0; }
   }
   @media (prefers-reduced-motion: reduce) {
-    :global([data-intro="ready"]:not([data-motion-driver="gsap"])) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration) {
+    :global([data-intro="ready"]:not([data-motion-driver="gsap"]):not([data-theme="dawn"])) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration) {
       animation: none;
     }
   }

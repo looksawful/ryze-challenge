@@ -4,6 +4,7 @@ import { HeroWithNavigation } from "./HeroWithNavigation";
 const meta = {
   title: "Design System/Screens/First screen with navigation",
   component: HeroWithNavigation,
+  render: (_args, context) => <HeroWithNavigation theme={context.globals.theme === "dawn" ? "dawn" : "dusk"} />,
   parameters: {
     layout: "fullscreen",
     fullScreen: true,

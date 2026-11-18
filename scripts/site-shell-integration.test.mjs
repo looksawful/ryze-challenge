@@ -19,7 +19,7 @@ test("first-screen uses the approved scroll-aware dock without displacing Hero",
   assert.match(shell, /variant="dock"/);
   assert.match(shell, /enhancement="auto"/);
   assert.match(shell, /data-ryze-dark-end/);
-  assert.match(shell, /<Hero\s*\/>/);
+  assert.match(shell, /<Hero\s+theme=\{theme\}\s*\/>/);
   assert.match(css, /position:\s*absolute/);
   assert.match(css, /noscript\s+nav/);
 });

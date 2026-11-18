@@ -10,17 +10,20 @@ import styles from "./HeroWithNavigation.module.css";
 
 type IntroPhase = "playing" | "revealing" | "ready";
 
-export function HeroWithNavigation() {
-  // SSR starts with the cinematic intro; reveal content as soon as its 118 pieces assemble.
-  const [introPhase, setIntroPhase] = useState<IntroPhase>("playing");
+type HeroWithNavigationProps = { theme?: "dawn" | "dusk" };
+
+export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) {
+  // Dawn is a static, immediately usable preview; the approved live page stays Dusk.
+  const [introPhase, setIntroPhase] = useState<IntroPhase>(theme === "dawn" ? "ready" : "playing");
   const stageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reduced.matches) {
+    if (theme === "dawn" || reduced.matches) {
       setIntroPhase("ready");
       return;
     }
+    setIntroPhase("playing");
     let finished = false;
     let revealStarted = false;
     let alive = true;
@@ -88,7 +91,7 @@ export function HeroWithNavigation() {
       window.removeEventListener("message", onMessage);
       reduced.removeEventListener("change", onPreferenceChange);
     };
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -102,7 +105,7 @@ export function HeroWithNavigation() {
   }, [introPhase]);
 
   return (
-    <div ref={stageRef} className={styles.stage} data-ryze-dark-end data-motion-driver="css" data-intro={introPhase}>
+    <div ref={stageRef} className={styles.stage} data-theme={theme} data-ryze-dark-end={theme === "dusk" || undefined} data-motion-driver="css" data-intro={introPhase}>
       <noscript>
         <style>{`
           .${styles.stage}[data-intro="playing"] > main,
@@ -114,6 +117,7 @@ export function HeroWithNavigation() {
       </noscript>
       <div className={styles.navigation} data-motion-slot="navigation">
         <SiteHeader
+          theme={theme}
           variant="dock"
           enhancement="auto"
           previewMode={false}
@@ -127,8 +131,8 @@ export function HeroWithNavigation() {
           }}
         />
       </div>
-      <HeroMotionBackground />
-      <Hero />
+      {theme === "dusk" && <HeroMotionBackground />}
+      <Hero theme={theme} />
     </div>
   );
 }
