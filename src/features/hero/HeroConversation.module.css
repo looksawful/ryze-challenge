@@ -16,8 +16,8 @@
     align-items: center;
     width: 100%;
     min-width: 0;
-    min-height: 56px;
-    padding: 5px 6px 5px clamp(18px, 3vw, 28px);
+    min-block-size: 96px;
+    padding: 8px 9px 8px clamp(25px, 3vw, 36px);
     gap: 8px;
     border: 0;
     border-radius: 999px;
@@ -31,7 +31,7 @@
     width: 100%;
     flex: 1 1 auto;
     min-width: 0;
-    min-height: 44px;
+    min-block-size: 76px;
     padding: 0;
     border: 0;
     outline: none;
@@ -62,14 +62,14 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    min-inline-size: clamp(112px, 11vw, 137px);
-    min-block-size: 46px;
-    padding: 0 18px;
+    min-inline-size: 180px;
+    min-block-size: 80px;
+    padding: 0 24px;
     border: 0;
     border-radius: 999px;
     background: var(--hero-action-background, #d9d9d9);
     color: var(--hero-action-foreground, #050505);
-    font: 700 clamp(12px, 1vw, 14px)/1.1 var(--font-body);
+    font: 700 clamp(16px, 1.15vw, 18px)/1.1 var(--font-body);
     letter-spacing: -.01em;
     white-space: nowrap;
     cursor: pointer;
@@ -118,10 +118,10 @@
   .honesty { margin: 0; color: var(--hero-description); font-size: 11px; line-height: 1.4; }
 
   @media (width < 700px) {
-    .composer { min-height: 48px; padding: 4px 5px 4px 18px; gap: 4px; }
-    .composer input { min-height: 40px; font-size: 13px; }
-    .composer button { min-inline-size: 106px; min-block-size: 40px; padding-inline: 14px; font-size: 12px; }
-    .animatedPlaceholder { font-size: 13px; }
+    .composer { min-block-size: 76px; padding: 6px 7px 6px 20px; gap: 6px; }
+    .composer input { min-block-size: 58px; font-size: 15px; }
+    .composer button { min-inline-size: clamp(132px, 37vw, 156px); min-block-size: 62px; padding-inline: 16px; font-size: 15px; }
+    .animatedPlaceholder { font-size: 15px; }
     .preview { grid-template-columns: 1fr; }
     .previewImage { aspect-ratio: 16/9; }
   }
