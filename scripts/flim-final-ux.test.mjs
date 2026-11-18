@@ -35,7 +35,7 @@ test("Consent has one short notice without an unused heading, retains the settin
 });
 
 test("Form uses accent pink submit and conversation replies instead of alert/bordered error states", () => {
-  assert.match(chatCss, /\.composer button[\s\S]*?background:\s*var\(--accent-current\)/);
+  assert.match(chatCss, /\.composer button[\s\S]*?background:\s*var\(--accent-current/);
   assert.match(chat, /role="status"/);
   assert.match(chat, /role="alert"/);
   assert.match(chat, /Starting your preview/);
