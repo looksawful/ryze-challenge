@@ -29,8 +29,8 @@
   visibility: hidden;
   pointer-events: none;
 }
-:global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="revealing"])) .desktopCookies,
-:global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="ready"])) .desktopCookies {
+:global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="revealing"]:not([data-motion-driver="gsap"]))) .desktopCookies,
+:global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="ready"]:not([data-motion-driver="gsap"]))) .desktopCookies {
   animation: ryze-cookie-reveal .48s 1.14s cubic-bezier(.22, 1, .36, 1) both;
 }
 @keyframes ryze-cookie-reveal {
@@ -38,7 +38,7 @@
   to { opacity: 1; visibility: visible; }
 }
 @media (prefers-reduced-motion: reduce) {
-  :global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="ready"])) .desktopCookies {
+  :global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="ready"]:not([data-motion-driver="gsap"]))) .desktopCookies {
     animation: none;
   }
   :global([data-theme="dusk"]:has([data-ryze-dark-end][data-intro="playing"])) .desktopCookies {

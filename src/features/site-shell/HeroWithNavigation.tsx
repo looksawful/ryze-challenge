@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Hero from "../hero/Hero";
+import { createHeroEntranceTimeline } from "../../motion/hero-entrance";
 import { HeroMotionBackground } from "./HeroMotionBackground";
 import { SiteHeader } from "./SiteHeader";
 import { previewNotice } from "./link-model";
@@ -21,6 +22,41 @@ export function HeroWithNavigation() {
       return;
     }
     let finished = false;
+    let revealStarted = false;
+    let alive = true;
+    let gsapReady: typeof import("gsap")["gsap"] | null = null;
+    let motionContext: ReturnType<(typeof import("gsap"))["gsap"]["context"]> | null = null;
+    let entrance: ReturnType<typeof createHeroEntranceTimeline> | null = null;
+    // Preload while the 118 pieces assemble. No extra blocking load at the cue.
+    void import("gsap").then(({ gsap }) => {
+      if (alive) gsapReady = gsap;
+    }).catch(() => { /* CSS entrance remains fully functional. */ });
+
+    const beginReveal = () => {
+      if (finished || revealStarted) return;
+      revealStarted = true;
+      const stage = stageRef.current;
+      if (stage && gsapReady) {
+        try {
+          const driver = gsapReady;
+          motionContext = driver.context(() => {
+            const cookies = stage.parentElement?.querySelector<HTMLElement>(
+              '[data-motion-slot="cookies"]'
+            ) ?? null;
+            entrance = createHeroEntranceTimeline(driver, stage, cookies);
+          }, stage);
+          if (entrance) {
+            stage.dataset.motionDriver = "gsap";
+            entrance.play(0);
+          }
+        } catch {
+          motionContext?.revert();
+          motionContext = null;
+          stage.dataset.motionDriver = "css";
+        }
+      }
+      setIntroPhase(current => current === "playing" ? "revealing" : current);
+    };
     const finish = () => {
       if (finished) return;
       finished = true;
@@ -31,17 +67,23 @@ export function HeroWithNavigation() {
         'iframe[title="Ryze motion canvas"]'
       );
       if (event.origin !== window.location.origin || event.source !== frame?.contentWindow) return;
-      if (event.data?.type === "ryze:assembled" && !finished) {
-        setIntroPhase(current => current === "playing" ? "revealing" : current);
-      }
+      if (event.data?.type === "ryze:assembled" && !finished) beginReveal();
       if (event.data?.type === "ryze:intro-complete") finish();
     };
-    const onPreferenceChange = () => { if (reduced.matches) finish(); };
+    const onPreferenceChange = () => {
+      if (!reduced.matches) return;
+      entrance?.progress(1);
+      stageRef.current?.removeAttribute("data-motion-driver");
+      motionContext?.revert();
+      finish();
+    };
     window.addEventListener("message", onMessage);
     reduced.addEventListener("change", onPreferenceChange);
     // Asset/WebGL failures must never strand the user behind an invisible Hero.
     const watchdog = window.setTimeout(finish, 24000);
     return () => {
+      alive = false;
+      motionContext?.revert();
       window.clearTimeout(watchdog);
       window.removeEventListener("message", onMessage);
       reduced.removeEventListener("change", onPreferenceChange);
@@ -60,7 +102,7 @@ export function HeroWithNavigation() {
   }, [introPhase]);
 
   return (
-    <div ref={stageRef} className={styles.stage} data-ryze-dark-end data-intro={introPhase}>
+    <div ref={stageRef} className={styles.stage} data-ryze-dark-end data-motion-driver="css" data-intro={introPhase}>
       <noscript>
         <style>{`
           .${styles.stage}[data-intro="playing"] > main,
@@ -70,7 +112,7 @@ export function HeroWithNavigation() {
           }
         `}</style>
       </noscript>
-      <div className={styles.navigation}>
+      <div className={styles.navigation} data-motion-slot="navigation">
         <SiteHeader
           variant="dock"
           enhancement="auto"

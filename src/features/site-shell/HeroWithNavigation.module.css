@@ -44,8 +44,8 @@
     opacity: 0;
     pointer-events: none;
   }
-  .stage[data-intro="revealing"] .navigation,
-  .stage[data-intro="ready"] .navigation {
+  .stage[data-intro="revealing"]:not([data-motion-driver="gsap"]) .navigation,
+  .stage[data-intro="ready"]:not([data-motion-driver="gsap"]) .navigation {
     animation: ryze-nav-reveal .48s .9s cubic-bezier(.22, 1, .36, 1) both;
   }
   @keyframes ryze-nav-reveal {
@@ -57,8 +57,8 @@
     transition: opacity .48s cubic-bezier(.22, 1, .36, 1);
   }
   @media (prefers-reduced-motion: reduce) {
-    .stage[data-intro="revealing"] .navigation,
-    .stage[data-intro="ready"] .navigation { animation: none; }
+    .stage[data-intro="revealing"]:not([data-motion-driver="gsap"]) .navigation,
+    .stage[data-intro="ready"]:not([data-motion-driver="gsap"]) .navigation { animation: none; }
     .stage > :global(main), .navigation, .motionBackdrop {
       transition: none;
     }

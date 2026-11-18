@@ -10,6 +10,7 @@ import {
 } from "./link-model";
 import type { ShopifyDockSection, SiteDestination } from "./link-model";
 import styles from "./SiteHeader.module.css";
+import { MOTION } from "../../motion/tokens";
 
 export type NavigationMode = "auto" | "static" | "reduced" | "no-webgl" | "lightweight" | "full";
 export type NavigationTheme = "dawn" | "dusk";
@@ -175,6 +176,7 @@ export function SiteHeader({
       if (!alive || !panel.isConnected) return;
       const links = panel.querySelectorAll("[data-mega-item]");
       const heading = panel.querySelectorAll("[data-mega-heading]");
+      panel.dataset.gsapActive = "true";
       const timeline = gsap.timeline({
         paused: true,
         onReverseComplete: () => setRenderedGroup((id) =>
@@ -189,14 +191,14 @@ export function SiteHeader({
         ? `inset(0px ${rightInset}px ${Math.max(0, bounds.height - 12)}px ${x}px round 14px)`
         : `inset(${Math.max(0, bounds.height - 12)}px ${rightInset}px 0px ${x}px round 14px)`;
       timeline.fromTo(panel,
-        { autoAlpha: 0, clipPath: collapsed, y: fromAbove ? -10 : 10, scale: 0.98 },
+        { autoAlpha: 0, clipPath: collapsed, y: fromAbove ? -8 : 8, scale: 0.99 },
         { autoAlpha: 1, clipPath: "inset(0px 0px 0px 0px round 24px)", y: 0, scale: 1,
-          duration: 0.64, ease: "back.out(1.3)", easeReverse: "power3.out" }, 0);
-      timeline.fromTo(heading, { autoAlpha: 0, y: -8 },
-        { autoAlpha: 1, y: 0, duration: 0.24, ease: "power2.out", stagger: 0.04 }, 0.1);
-      timeline.fromTo(links, { autoAlpha: 0, y: -17, scale: 0.97, filter: "blur(4px)" },
-        { autoAlpha: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.34,
-          stagger: { amount: 0.18 }, ease: "power3.out" }, 0.14);
+          duration: MOTION.surface.duration, ease: MOTION.surface.ease, easeReverse: MOTION.exit.ease }, 0);
+      timeline.fromTo(heading, { autoAlpha: 0, y: -6 },
+        { autoAlpha: 1, y: 0, duration: 0.26, ease: MOTION.enter.ease, stagger: 0.035 }, 0.08);
+      timeline.fromTo(links, { autoAlpha: 0, y: 12, scale: 0.985 },
+        { autoAlpha: 1, y: 0, scale: 1, duration: 0.34,
+          stagger: { amount: 0.16 }, ease: MOTION.enter.ease }, 0.12);
       panelMotionRef.current = timeline;
       if (activeRef.current === currentGroup) timeline.play();
       else timeline.progress(1).reverse();
@@ -211,6 +213,7 @@ export function SiteHeader({
       alive = false;
       panelMotionRef.current?.revert();
       panelMotionRef.current?.kill();
+      panel.removeAttribute("data-gsap-active");
       panelMotionRef.current = null;
     };
   }, [renderedGroup, premium, uid]);

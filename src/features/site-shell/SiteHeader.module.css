@@ -290,8 +290,8 @@
 
 @media (prefers-reduced-motion: no-preference) {
   @layer components {
-    .megaPanel { animation: site-shell-enter 180ms ease-out both; }
-    .mobileDialog[open] { animation: site-shell-drawer 230ms ease-out both; }
+    .megaPanel:not([data-gsap-active="true"]) { animation: site-shell-enter var(--motion-state) var(--motion-ease-enter) both; }
+    .mobileDialog[open] { animation: site-shell-drawer var(--motion-layout) var(--motion-ease-enter) both; }
     @keyframes site-shell-enter {
       from { opacity: 0; transform: translateY(-0.5rem); }
       to { opacity: 1; transform: translateY(0); }
@@ -355,7 +355,7 @@
     background: var(--nav-surface);
     box-shadow: 0 9px 32px rgb(0 0 0 / 18%);
     pointer-events: auto;
-    transition: width 280ms ease, min-height 280ms ease, border-radius 280ms ease;
+    transition: width var(--motion-layout) var(--motion-ease-standard), min-height var(--motion-layout) var(--motion-ease-standard), border-radius var(--motion-layout) var(--motion-ease-standard);
   }
   .header[data-variant="dock"] .brand,
   .header[data-variant="dock"] .actions {
@@ -413,7 +413,7 @@
     transform: translateY(-2px) rotate(45deg);
     font-size: 0;
     color: inherit;
-    transition: transform 180ms ease;
+    transition: transform var(--motion-control) var(--motion-ease-enter);
   }
   .header .navTrigger[aria-expanded="true"] .chevron {
     transform: translateY(1px) rotate(225deg);

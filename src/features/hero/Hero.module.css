@@ -873,8 +873,8 @@
   .mascot { --hero-enter-delay: .44s; }
   .action, .integration { --hero-enter-delay: .66s; }
 
-  :global([data-intro="revealing"]) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration),
-  :global([data-intro="ready"]) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration) {
+  :global([data-intro="revealing"]:not([data-motion-driver="gsap"])) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration),
+  :global([data-intro="ready"]:not([data-motion-driver="gsap"])) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration) {
     animation: ryze-hero-item-reveal .52s cubic-bezier(.22, 1, .36, 1) both;
     animation-delay: var(--hero-enter-delay);
   }
@@ -883,7 +883,7 @@
     to { opacity: 1; translate: 0 0; }
   }
   @media (prefers-reduced-motion: reduce) {
-    :global([data-intro="ready"]) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration) {
+    :global([data-intro="ready"]:not([data-motion-driver="gsap"])) .hero > :is(.brand, .headline, .lead, .description, .mascot, .action, .integration) {
       animation: none;
     }
   }

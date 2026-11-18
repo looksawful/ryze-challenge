@@ -6,7 +6,7 @@ export default function Page() {
   return (
     <div data-theme="dusk">
       <HeroWithNavigation />
-      <div className={styles.desktopCookies}>
+      <div className={styles.desktopCookies} data-motion-slot="cookies">
         <HomeworkCookieNotice />
       </div>
     </div>

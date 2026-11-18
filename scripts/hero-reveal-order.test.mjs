@@ -27,7 +27,7 @@ test("Reveal order: H1, lead, description, CTA with integrations, navigation, de
   assert.match(cookie, /animation:\s*ryze-cookie-reveal\s+\.48s\s+1\.14s/);
   assert.match(hero, /prefers-reduced-motion:\s*reduce/);
   assert.match(nav, /prefers-reduced-motion:\s*reduce/);
-  assert.match(nav, /\.stage\[data-intro="ready"\] \.navigation\s*\{\s*animation:\s*none/);
+  assert.match(nav, /\.stage\[data-intro="ready"\]:not\(\[data-motion-driver="gsap"\]\) \.navigation\s*\{\s*animation:\s*none/);
   assert.match(cookie, /prefers-reduced-motion:\s*reduce/);
 });
 

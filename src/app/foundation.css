@@ -49,6 +49,17 @@
     --content-width: 72rem;
     --text-measure: 65ch;
     --motion-duration: 0ms;
+    /* Motion vocabulary: utility, state change, surface, cinematic entrance.
+       GSAP timings live in src/motion/tokens.ts. */
+    --motion-fast: 160ms;
+    --motion-control: 180ms;
+    --motion-state: 220ms;
+    --motion-layout: 280ms;
+    --motion-surface: 420ms;
+    --motion-content: 580ms;
+    --motion-ease-enter: cubic-bezier(.22, 1, .36, 1);
+    --motion-ease-standard: cubic-bezier(.4, 0, .2, 1);
+    --motion-ease-exit: cubic-bezier(.55, .05, .67, .19);
   }
 
   [data-theme="dawn"] {
