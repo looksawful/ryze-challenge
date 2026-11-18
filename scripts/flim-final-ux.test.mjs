@@ -28,7 +28,8 @@ test("Official Ryze lockup is visible at left in wide header, while mobile conta
 
 test("Consent has one short notice without an unused heading, retains the settings dialog", () => {
   assert.match(consent, /We use optional cookies/);
-  assert.match(consent, /view === "settings" \? \(/);
+  assert.match(consent, /view === "notice" \? \(/);
+  assert.match(consent, /<h2 ref=\{titleRef\}/);
   assert.doesNotMatch(consent, /Customize cookie settings/);
   assert.match(consent, /Analytics/);
 });
