@@ -378,7 +378,9 @@ export function SiteHeader({
         )}
 
         <div className={styles.actions} data-preview-part="header-actions">
-          {variant !== "dock" && destinationAnchor(bookingLink, styles.booking)}
+          {variant === "dock" ? (
+            <a className={styles.booking} href={bookingLink.href} target="_blank" rel="noopener noreferrer">Contact us</a>
+          ) : destinationAnchor(bookingLink, styles.booking)}
           {mode !== "static" && (
             <button ref={menuTriggerRef} type="button" className={styles.mobileToggle}
                     aria-label="Toggle navigation menu" aria-expanded={mobileOpen}
