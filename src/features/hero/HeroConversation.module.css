@@ -25,7 +25,10 @@
     color: var(--color-foreground);
   }
 
+  .fieldArea { flex: 1 1 auto; min-width: 0; position: relative; }
   .composer input {
+    display: block;
+    width: 100%;
     flex: 1 1 auto;
     min-width: 0;
     min-height: 44px;
@@ -39,27 +42,45 @@
     letter-spacing: 0.01em;
   }
   .composer input::placeholder { color: color-mix(in oklab, currentColor 58%, transparent); opacity: 1; }
+  .animatedPlaceholder {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    color: color-mix(in oklab, currentColor 58%, transparent);
+    font: 500 clamp(13px, 1.25vw, 15px)/1.35 var(--font-body);
+    letter-spacing: .01em;
+  }
   .composer:focus-within { box-shadow: 0 0 0 2px var(--accent-current); }
 
   .composer button {
     flex: 0 0 auto;
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    padding: 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-inline-size: clamp(112px, 11vw, 137px);
+    min-block-size: 46px;
+    padding: 0 18px;
     border: 0;
-    border-radius: 50%;
-    background: var(--hero-action-background, #e3e3e3);
+    border-radius: 999px;
+    background: var(--hero-action-background, #d9d9d9);
     color: var(--hero-action-foreground, #050505);
-    font: 600 24px/1 var(--font-body);
+    font: 700 clamp(12px, 1vw, 14px)/1.1 var(--font-body);
+    letter-spacing: -.01em;
+    white-space: nowrap;
     cursor: pointer;
-    transition: transform 160ms ease, opacity 160ms ease;
+    transition: background-color 180ms ease, transform 180ms ease;
   }
-  .composer button span { transform: translate(-1px, 1px); }
-  .composer button:hover { transform: scale(0.95); }
+  .composer button:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--hero-action-background) 88%, var(--hero-action-foreground));
+    transform: translateY(-1px);
+  }
   .composer button:focus-visible { outline: 2px solid var(--accent-current); outline-offset: 2px; }
-  .composer button:disabled { opacity: 0.5; cursor: default; }
+  .composer button:disabled { opacity: .65; cursor: default; }
 
   .screenReader {
     position: absolute !important;
@@ -99,7 +120,8 @@
   @media (width < 700px) {
     .composer { min-height: 48px; padding: 4px 5px 4px 18px; gap: 4px; }
     .composer input { min-height: 40px; font-size: 13px; }
-    .composer button { width: 40px; height: 40px; font-size: 21px; }
+    .composer button { min-inline-size: 106px; min-block-size: 40px; padding-inline: 14px; font-size: 12px; }
+    .animatedPlaceholder { font-size: 13px; }
     .preview { grid-template-columns: 1fr; }
     .previewImage { aspect-ratio: 16/9; }
   }
