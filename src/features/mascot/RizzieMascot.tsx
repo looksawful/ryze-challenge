@@ -170,18 +170,23 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
       setTouchPoints(navigator.maxTouchPoints ?? 0);
       setViewportWidth(window.innerWidth);
     };
-    // Hydration must not wait for rAF: background tabs can suspend it entirely,
-    // leaving Rizzie absent even though the rest of the Hero has rendered.
-    setSupported(hasMatchMedia && hasObserver && hasPointerSupport);
-    if (!hasObserver) setVisible(true);
-    sync();
-    setHydrated(true);
+    // Microtasks run even in background tabs; rAF can leave Rizzie invisible.
+    // Defer the initial state synchronization so StrictMode cleanup can cancel it.
+    let mounted = true;
+    queueMicrotask(() => {
+      if (!mounted) return;
+      setSupported(hasMatchMedia && hasObserver && hasPointerSupport);
+      if (!hasObserver) setVisible(true);
+      sync();
+      setHydrated(true);
+    });
     motionQuery?.addEventListener?.("change", sync);
     desktopQuery?.addEventListener?.("change", sync);
     coarseQuery?.addEventListener?.("change", sync);
     document.addEventListener("visibilitychange", sync);
     window.addEventListener("resize", sync, { passive: true });
     return () => {
+      mounted = false;
       motionQuery?.removeEventListener?.("change", sync);
       desktopQuery?.removeEventListener?.("change", sync);
       coarseQuery?.removeEventListener?.("change", sync);
@@ -268,7 +273,9 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
       }
       const id = `${cell.x},${cell.y}`;
       if (spriteRef.current && id !== lastCell) {
-        spriteRef.current.style.backgroundPosition = `${cell.x}px ${cell.y}px`;
+        const col = -cell.x / 192;
+        const row = -cell.y / 208;
+        spriteRef.current.style.backgroundPosition = `${(col / 7) * 100}% ${(row / 10) * 100}%`;
         lastCell = id;
       }
     };
@@ -416,7 +423,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
     <section className={styles.zone} ref={zoneRef} aria-label="Rizzie mascot"
       data-mode={mode.kind} data-compact={compact || undefined}>
       <a className={styles.pet} ref={petRef} href="#hero-action"
-        aria-label="Rizzie: Start For Free" onClick={activate}
+        aria-label="Rizzie: Start For Free" draggable={false} onClick={activate}
         onMouseEnter={() => { setEngaged(true); freezeWalk(); }}
         onMouseLeave={() => setEngaged(false)}
         onFocus={() => { setEngaged(true); freezeWalk(); }}

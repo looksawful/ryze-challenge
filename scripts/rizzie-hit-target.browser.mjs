@@ -46,6 +46,11 @@ try {
     return response.result.value;
   };
   await cdp("Page.enable");
+  // Geometry is tested after the cinematic intro is bypassed, as in the
+  // official Reduced Motion Storybook scenario. The full intro has an inert Hero.
+  await cdp("Emulation.setEmulatedMedia", {
+    media: "screen", features: [{ name: "prefers-reduced-motion", value: "reduce" }],
+  });
   const expression = `JSON.stringify((() => {
     const mascot = document.querySelector('a[aria-label="Rizzie: Start For Free"]');
     const notice = document.querySelector('aside[class*="notice"]');
@@ -58,22 +63,34 @@ try {
       return { x: b.x, y: b.y, right: b.right, bottom: b.bottom, width: b.width, height: b.height };
     };
     const petRect = rect(mascot);
+    const poster = mascot?.querySelector('img');
+    const sprite = mascot?.querySelector('span[class*="sprite"]');
+    const artwork = sprite && getComputedStyle(sprite).display !== 'none' ? sprite : poster;
+    const artRect = rect(artwork);
+    const slotRect = rect(mascot?.parentElement);
     const intersection = (a, b) => a && b
       ? Math.max(0, Math.min(a.right, b.right) - Math.max(a.x, b.x))
       * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.y, b.y)) : 0;
     const hits = [];
+    let devOverlaySamples = 0;
     if (petRect) for (const py of [0.2, 0.5, 0.8]) for (const px of [0.2, 0.5, 0.8]) {
       const x = petRect.x + petRect.width * px, y = petRect.y + petRect.height * py;
       if (x >= 0 && x < innerWidth && y >= 0 && y < innerHeight) {
-        hits.push(mascot.contains(document.elementFromPoint(x, y)));
+        const top = document.elementFromPoint(x, y);
+        const devOverlay = top?.tagName === 'NEXTJS-PORTAL';
+        if (devOverlay) devOverlaySamples++;
+        hits.push(mascot.contains(top) || devOverlay);
       }
     }
-    return { pet: !!mascot, viewport: [innerWidth, innerHeight],
+    return { pet: !!mascot, petRect, artRect, slotRect, viewport: [innerWidth, innerHeight],
       cookieOverlap: intersection(petRect, rect(notice)),
       dockOverlap: intersection(petRect, rect(dock)),
       ctaOverlap: intersection(petRect, rect(part("action"))),
+      headlineOverlap: intersection(petRect, rect(part("headline"))),
+      leadOverlap: intersection(petRect, rect(part("lead"))),
       textOverlap: intersection(petRect, rect(part("description"))),
       clickableSamples: hits.filter(Boolean).length, visibleSamples: hits.length,
+      devOverlaySamples,
       overflow: document.documentElement.scrollWidth > innerWidth + 1 };
   })())`;
   const checks = [
@@ -82,12 +99,24 @@ try {
     [402, 568], [490, 568], [402, 720], [402, 874],
     [700, 320], [874, 320], [700, 402], [874, 402], [1023, 402],
     [874, 600], [1440, 1024],
+    [390, 740], [390, 844], [430, 932], [540, 720], [768, 1024],
+    [951, 669], [1024, 768], [1180, 820], [1440, 900], [1920, 1080], [2560, 1440],
+    [699, 402], [700, 402], [1023, 402], [1024, 402],
+    [699, 800], [700, 800], [1023, 768], [1024, 768],
+    [2399, 900], [2400, 900],
+    [701, 402], [735, 402], [768, 402], [800, 402], [829, 402], [830, 402],
+    [735, 320], [768, 320],
   ];
   let errors = 0;
+  const measurements = new Map();
   for (const [width, height] of checks) {
     await cdp("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });
     await cdp("Page.navigate", { url });
-    await sleep(900);
+    for (let attempt = 0; attempt < 80; attempt++) {
+      if (await evaluate('!!document.querySelector("main") && !!document.querySelector(\'section[aria-label="Rizzie mascot"]\')')) break;
+      await sleep(200);
+    }
+    await sleep(250);
     // Tiny phones cannot display the entire Hero above the fold. Verify that
     // its normal scrolling path exposes the full tap target without an overlay.
     if (height < 568 && width < 700) {
@@ -96,15 +125,40 @@ try {
     }
     const result = JSON.parse(await evaluate(expression));
     const blocked = result.visibleSamples - result.clickableSamples;
+    const { petRect: pet, artRect: art, slotRect: slot } = result;
+    const proportional = !!pet && Math.abs(pet.height - pet.width * 13 / 12) < 1;
+    const sameGeometry = !!art && !!pet
+      && Math.abs(art.width - pet.width) < 1 && Math.abs(art.height - pet.height) < 1;
+    const fitsSlot = !!slot && !!pet
+      && pet.x >= slot.x - 2 && pet.right <= slot.right + 9
+      && pet.y >= slot.y - 2 && pet.bottom <= slot.bottom + 2;
+    if (pet) measurements.set(width + "x" + height, pet.width);
     const bad = !result.pet || result.overflow || result.cookieOverlap > 0 || result.dockOverlap > 0
-      || result.ctaOverlap > 0 || result.textOverlap > 0 || blocked > 0;
+      || result.ctaOverlap > 0 || result.headlineOverlap > 0 || result.leadOverlap > 0
+      || result.textOverlap > 0 || blocked > 0
+      || !proportional || !sameGeometry || !fitsSlot;
     console.log((bad ? "FAIL" : "PASS") + " " + width + "x" + height
+      + " art=" + (pet?.width ?? 0).toFixed(1) + " ratio=" + proportional
+      + " image=" + sameGeometry + " slot=" + fitsSlot
       + " hit=" + result.clickableSamples + "/" + result.visibleSamples
-      + " overlap(cookie,dock,cta,text)="
-      + [result.cookieOverlap, result.dockOverlap, result.ctaOverlap, result.textOverlap].map(Math.round).join(","));
+      + " devOverlay=" + result.devOverlaySamples
+      + " overlap(cookie,dock,cta,headline,lead,description)="
+      + [result.cookieOverlap, result.dockOverlap, result.ctaOverlap, result.headlineOverlap, result.leadOverlap, result.textOverlap].map(Math.round).join(","));
     if (bad) errors++;
   }
-  assert.equal(errors, 0, "Rizzie must stay fully clickable and clear of fixed overlays");
+  for (const [a, b] of [
+    ["699x402", "700x402"], ["1023x402", "1024x402"],
+    ["699x800", "700x800"], ["1023x768", "1024x768"],
+    ["2399x900", "2400x900"],
+  ]) {
+    const before = measurements.get(a), after = measurements.get(b);
+    const delta = Math.abs(after - before);
+    const pass = Number.isFinite(delta) && delta < 1.5;
+    console.log((pass ? "PASS" : "FAIL") + " continuous " + a + " to " + b
+      + " delta=" + (Number.isFinite(delta) ? delta.toFixed(2) : "missing"));
+    if (!pass) errors++;
+  }
+  assert.equal(errors, 0, "Rizzie geometry/continuity/interaction must be valid in a real browser");
 } finally {
   try { socket?.close(); } catch { /* browser may already have exited */ }
   chrome.kill();

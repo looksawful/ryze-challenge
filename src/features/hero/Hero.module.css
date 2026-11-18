@@ -215,7 +215,7 @@
       grid-column: 1;
       grid-row: 4;
       inline-size: 100%;
-      block-size: 180px;
+      block-size: clamp(11rem, 24svh, 13rem);
       justify-self: start;
       align-self: end;
       margin: 0;
@@ -282,6 +282,16 @@
       inset-inline-start: clamp(-190px, calc(690px - 100vw), -10px);
       inset-block-end: max(0px, calc(100% - 100svh + 84px));
     }
+  }
+
+  /* In narrow landscape, reserve the left edge for Rizzie while keeping the
+     headline, lead and copy on the right. Clearance decreases continuously. */
+  @media (width >= 700px) and (width < 830px) and (orientation: landscape) and (max-height: 500px) {
+    .hero { --rizzie-copy-clearance: clamp(0px, calc(830px - 100vw), 130px); }
+    .hero .headline, .hero .lead, .hero .description {
+      margin-inline-start: var(--rizzie-copy-clearance);
+    }
+    .hero .lead { inline-size: calc(100% - var(--rizzie-copy-clearance)); }
   }
 
   /* Intrinsic spacing within art-directed phone compositions. */
@@ -499,10 +509,6 @@
       block-size: clamp(8.5rem, 19svh, 10rem);
       margin: 0;
     }
-    .mascot :global([data-mode]) {
-      --rizzie-width: clamp(7rem, 12vw, 8.5rem);
-      --sprite-scale: .64;
-    }
     .action {
       position: relative;
       grid-area: 5 / 2 / 6 / 4;
@@ -545,7 +551,11 @@
       --type-paragraph-size: 14px;
       line-height: 1.24;
     }
-    .mascot { block-size: 122px; align-self: end; }
+    /* Reserve the actual poster height even on short, wide phones. */
+    .mascot {
+      block-size: max(7.625rem, calc(clamp(6rem, 30vw, 7.75rem) * 13 / 12));
+      align-self: end;
+    }
     .integration { align-self: end; }
     .action { margin: 0; }
     .action summary { min-block-size: 44px; font-size: 15px; }
@@ -724,14 +734,10 @@
       grid-area: 4 / 4 / 5 / 7;
       justify-self: start;
       align-self: end;
-      inline-size: min(100%, 10.5rem);
-      block-size: clamp(9rem, 20svh, 11rem);
+      inline-size: min(100%, 12rem);
+      block-size: clamp(11rem, 24svh, 13rem);
       margin: 0;
       pointer-events: none;
-    }
-    .mascot :global([data-mode]) {
-      --rizzie-width: clamp(7.5rem, 11vw, 9.5rem);
-      --sprite-scale: .68;
     }
     .action {
       position: relative;

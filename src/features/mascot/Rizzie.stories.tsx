@@ -3,21 +3,11 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import Hero from "../hero/Hero";
-import RizzieMascot from "./RizzieMascot";
-import type { AnimationName, RizzieScenario } from "./mascot-model";
-
-type Playback = AnimationName | "natural";
+import type { RizzieScenario } from "./mascot-model";
 type Props = {
   scenario: RizzieScenario;
   theme?: "dawn" | "dusk";
-  playback?: Playback;
-  message?: string;
 };
-
-const animations: Playback[] = [
-  "natural", "idle", "running-right", "running-left", "waving",
-  "jumping", "failed", "waiting", "working", "review",
-];
 
 function RizziePlayground({ scenario, theme = "dusk" }: Props) {
   const [resetKey, setResetKey] = useState(0);
@@ -37,37 +27,6 @@ function RizziePlayground({ scenario, theme = "dusk" }: Props) {
   );
 }
 
-function RizzieMotionPreview({ scenario, playback = "natural", message = "" }: Props) {
-  const [resetKey, setResetKey] = useState(0);
-  const [replayKey, setReplayKey] = useState(0);
-  const hidden = scenario === "no-js";
-
-  function showMessage() {
-    window.dispatchEvent(new CustomEvent("rizzie:message", { detail: { text: message } }));
-  }
-
-  return (
-    <section aria-label="Rizzie animation preview" style={{ position: "relative", minHeight: "min(70svh, 600px)" }}>
-      <div aria-label="Preview actions" style={{
-        position: "absolute", zIndex: 2, insetBlockStart: 12, insetInlineStart: 12,
-        display: "flex", flexWrap: "wrap", gap: 8,
-      }}>
-        <button type="button" disabled={hidden} onClick={() => setReplayKey(key => key + 1)}>Replay</button>
-        <button type="button" onClick={() => setResetKey(key => key + 1)}>Reset position</button>
-        <button type="button" disabled={hidden || !message.trim()} onClick={showMessage}>Show message</button>
-      </div>
-      <RizzieMascot
-        key={`${scenario}:${resetKey}`}
-        scenario={scenario}
-        actionOpen={false}
-        previewAnimation={playback}
-        previewReplayKey={replayKey}
-        onActivate={showMessage}
-      />
-    </section>
-  );
-}
-
 const meta = {
   title: "Design System/Components/Rizzie",
   component: RizziePlayground,
@@ -77,6 +36,22 @@ const meta = {
     viewport: {
       options: {
         mobilePortrait: { name: "490 × 1091", styles: { width: "490px", height: "1091px" }, type: "mobile" },
+        phoneCompact: { name: "320 × 568", styles: { width: "320px", height: "568px" }, type: "mobile" },
+        phoneReference: { name: "375 × 667", styles: { width: "375px", height: "667px" }, type: "mobile" },
+        phoneStandard: { name: "390 × 844", styles: { width: "390px", height: "844px" }, type: "mobile" },
+        phoneWide: { name: "540 × 720", styles: { width: "540px", height: "720px" }, type: "mobile" },
+        preLandscape: { name: "699 × 800", styles: { width: "699px", height: "800px" }, type: "mobile" },
+        landscapeThreshold: { name: "700 × 800", styles: { width: "700px", height: "800px" }, type: "tablet" },
+        landscapeBefore: { name: "699 × 402", styles: { width: "699px", height: "402px" }, type: "mobile" },
+        landscapeAfter: { name: "700 × 402", styles: { width: "700px", height: "402px" }, type: "tablet" },
+        desktopBefore: { name: "1023 × 402", styles: { width: "1023px", height: "402px" }, type: "tablet" },
+        desktopAfter: { name: "1024 × 402", styles: { width: "1024px", height: "402px" }, type: "desktop" },
+        wideBefore: { name: "2399 × 900", styles: { width: "2399px", height: "900px" }, type: "desktop" },
+        wideAfter: { name: "2400 × 900", styles: { width: "2400px", height: "900px" }, type: "desktop" },
+        duoOpen: { name: "951 × 669", styles: { width: "951px", height: "669px" }, type: "tablet" },
+        desktopReference: { name: "1440 × 900", styles: { width: "1440px", height: "900px" }, type: "desktop" },
+        desktopFullHD: { name: "1920 × 1080", styles: { width: "1920px", height: "1080px" }, type: "desktop" },
+        ultraWideExtreme: { name: "2803 × 1024", styles: { width: "2803px", height: "1024px" }, type: "desktop" },
         mobileShort: { name: "572 × 846", styles: { width: "572px", height: "846px" }, type: "mobile" },
         mobileLandscape: { name: "874 × 402", styles: { width: "874px", height: "402px" }, type: "mobile" },
         tabletPortrait: { name: "897 × 1211", styles: { width: "897px", height: "1211px" }, type: "tablet" },
@@ -88,14 +63,12 @@ const meta = {
     },
     docs: {
       description: {
-        component: "The real Rizzie mascot, using the same sprites and interaction logic as the site.",
+        component: "Rizzie is the production Hero mascot, not a separate animation lab. This Playground and its viewport controls are the canonical design-system reference. Poster, sprite and hit area share one CSS --rizzie-art-size and a 12:13 ratio. The size varies continuously with rem, vw and svh, and is capped for short windows. Hero defines positioning and reserves the stage, never overrides the mascot scale. Use the scenario control to compare runtime fallbacks. The no-js scenario here is a simulation; verify true no-JS on the page.",
       },
     },
   },
   args: {
     scenario: "full",
-    playback: "natural",
-    message: "On the live site, this opens the destination. This preview stays here.",
   },
   argTypes: {
     scenario: {
@@ -103,8 +76,6 @@ const meta = {
       control: "select",
       options: ["auto", "no-js", "reduced-motion", "unsupported-browser", "touch-unavailable", "touch", "full"],
     },
-    playback: { name: "Animation", control: "select", options: animations },
-    message: { control: "text" },
     theme: { table: { disable: true } },
   },
 } satisfies Meta<typeof RizziePlayground>;
@@ -113,25 +84,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
-  argTypes: {
-    playback: { table: { disable: true } },
-    message: { table: { disable: true } },
-  },
   render: (args, context) => (
     <RizziePlayground {...args} theme={context.globals.theme === "dawn" ? "dawn" : "dusk"} />
   ),
-};
-
-export const MotionLab: Story = {
-  name: "Motion Lab",
-  args: { scenario: "auto" },
-  parameters: {
-    layout: "fullscreen",
-    docs: {
-      description: {
-        story: "Use Storybook Controls for animation, capability mode and message. Use Viewport for real responsive CSS. Replay repeats one-shot actions; Reset restores the mascot position. No-JavaScript is only a simulation.",
-      },
-    },
-  },
-  render: (args) => <RizzieMotionPreview {...args} />,
 };
