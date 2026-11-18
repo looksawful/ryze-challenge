@@ -23,6 +23,7 @@ export const placeholderPhrases = [
 export default function HeroConversation() {
   const [hydrated, setHydrated] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -36,6 +37,7 @@ export default function HeroConversation() {
 
   const stopPresentation = () => {
     interacted.current = true;
+    setHasInteracted(true);
     activeAnimation.current?.progress(1);
     activeAnimation.current?.kill();
     activeAnimation.current = null;
@@ -141,7 +143,7 @@ export default function HeroConversation() {
   }
 
   const active = capabilities[selected];
-  const overlayVisible = hydrated && !reducedMotion && !interacted.current && !email;
+  const overlayVisible = hydrated && !reducedMotion && !hasInteracted && !email;
 
   return (
     <section id="hero-conversation" className={styles.chat} aria-label="Ryze AI preview">
