@@ -67,8 +67,8 @@
     padding: 0 24px;
     border: 0;
     border-radius: 999px;
-    background: var(--hero-action-background, #d9d9d9);
-    color: var(--hero-action-foreground, #050505);
+    background: var(--accent-current, #ff5af1);
+    color: #17131a;
     font: 700 clamp(16px, 1.15vw, 18px)/1.1 var(--font-body);
     letter-spacing: -.01em;
     white-space: nowrap;
@@ -76,11 +76,32 @@
     transition: background-color 180ms ease, transform 180ms ease;
   }
   .composer button:hover:not(:disabled) {
-    background: color-mix(in oklab, var(--hero-action-background) 88%, var(--hero-action-foreground));
+    background: color-mix(in oklab, var(--accent-current, #ff5af1) 88%, white);
     transform: translateY(-1px);
   }
   .composer button:focus-visible { outline: 2px solid var(--accent-current); outline-offset: 2px; }
   .composer button:disabled { opacity: .65; cursor: default; }
+
+
+  /* Chat replies: plain text above the composer, no error panel or border. */
+  .reply { margin: 0 0 18px; min-block-size: 2.4rem; }
+  .assistantReply {
+    margin: 0;
+    color: var(--color-foreground);
+    font: 500 clamp(15px, 1.4vw, 19px)/1.4 var(--font-body);
+    text-wrap: pretty;
+  }
+  .replyCursor {
+    display: inline-block;
+    inline-size: 1px;
+    block-size: 1em;
+    margin-inline-start: 2px;
+    vertical-align: -.12em;
+    background: currentColor;
+    animation: ryze-chat-caret 1s steps(1) infinite;
+  }
+  @keyframes ryze-chat-caret { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .replyCursor { display: none; animation: none; } }
 
   .screenReader {
     position: absolute !important;
@@ -93,10 +114,9 @@
     white-space: nowrap;
     border: 0;
   }
-  .error { margin: 7px 18px 0; color: #db626a; font-size: 12px; }
 
   /* Proof appears only after a valid email, not in the initial composition. */
-  .proof { display: grid; gap: 12px; width: 100%; margin-top: 24px; }
+  .proof { display: grid; gap: 12px; width: 100%; margin-block: 0 20px; }
   .choices { display: flex; flex-wrap: wrap; gap: 7px; }
   .choice {
     font: 500 12px/1.25 var(--font-body);
