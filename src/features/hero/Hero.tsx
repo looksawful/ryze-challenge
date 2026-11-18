@@ -25,10 +25,12 @@ export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, them
         <span>AI autopilot <span className={styles.muted}>for</span></span>{" "}
         <span><span className={styles.muted}>your</span> Shopify</span>
       </Typography>
-      <Typography as="p" variant="lead" className={styles.lead} data-motion-slot="lead">A new way to grow<br />{" "}your store.</Typography>
-      <Typography as="p" variant="paragraph" className={styles.description} data-motion-slot="description">
-        Paid ads, SEO, AI visibility &amp; CRO. One AI autopilot built around your business.
-      </Typography>
+      <div className={styles.prose} data-flow>
+        <Typography as="p" variant="lead" className={styles.lead} data-motion-slot="lead">A new way to grow<br />{" "}your store.</Typography>
+        <Typography as="p" variant="paragraph" className={styles.description} data-motion-slot="description">
+          Paid ads, SEO, AI visibility &amp; CRO. One AI autopilot built around your business.
+        </Typography>
+      </div>
 
       <div className={styles.mascot} data-motion-slot="mascot" ref={mascotZoneRef}>
         <RizzieMascot key={`${mascotScenario}:${mascotResetKey}`} scenario={mascotScenario}

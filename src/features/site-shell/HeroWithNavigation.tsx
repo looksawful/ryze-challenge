@@ -6,6 +6,7 @@ import { createHeroEntranceTimeline } from "../../motion/hero-entrance";
 import { HeroMotionBackground } from "./HeroMotionBackground";
 import { SiteHeader } from "./SiteHeader";
 import { previewNotice } from "./link-model";
+import { usePrefersReducedMotion } from "../../motion/use-prefers-reduced-motion";
 import styles from "./HeroWithNavigation.module.css";
 
 type IntroPhase = "playing" | "revealing" | "ready";
@@ -14,16 +15,14 @@ type HeroWithNavigationProps = { theme?: "dawn" | "dusk" };
 
 export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) {
   // Dawn is a static, immediately usable preview; the approved live page stays Dusk.
-  const [introPhase, setIntroPhase] = useState<IntroPhase>(theme === "dawn" ? "ready" : "playing");
+  const [introPhase, setIntroPhase] = useState<IntroPhase>("playing");
+  const reducedMotion = usePrefersReducedMotion();
+  const visiblePhase: IntroPhase = theme === "dawn" || reducedMotion ? "ready" : introPhase;
   const stageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (theme === "dawn" || reduced.matches) {
-      setIntroPhase("ready");
-      return;
-    }
-    setIntroPhase("playing");
+    if (theme === "dawn" || reduced.matches) return;
     let finished = false;
     let revealStarted = false;
     let alive = true;
@@ -90,7 +89,7 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
     window.addEventListener("message", onMessage);
     reduced.addEventListener("change", onPreferenceChange);
     // Asset/WebGL failures must never strand the user behind an invisible Hero.
-    const watchdog = window.setTimeout(beginReveal, 6500);
+    const watchdog = window.setTimeout(beginReveal, 3600);
     return () => {
       alive = false;
       entrance?.revertSplit();
@@ -99,11 +98,11 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
       window.removeEventListener("message", onMessage);
       reduced.removeEventListener("change", onPreferenceChange);
     };
-  }, [theme]);
+  }, [theme, reducedMotion]);
 
 
   return (
-    <div ref={stageRef} className={styles.stage} data-theme={theme} data-ryze-dark-end={theme === "dusk" || undefined} data-motion-driver="css" data-intro={introPhase}>
+    <div ref={stageRef} className={styles.stage} data-theme={theme} data-ryze-dark-end={theme === "dusk" || undefined} data-motion-driver="css" data-intro={visiblePhase}>
       <noscript>
         <style>{`
           .${styles.stage}[data-intro="playing"] > main,

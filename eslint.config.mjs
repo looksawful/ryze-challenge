@@ -12,7 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "storybook-static/**",
     "build/**",
-    "storybook-static/**",
+    "public/ryze-canvas/vendor/**", // Third-party WebGL/GSAP distributions.
+    "public/ryze-canvas/assets/**", // Media, not authored JavaScript.
+    "public/ryze-media/**",
+    "docs/**",
     "next-env.d.ts",
   ]),
 ]);

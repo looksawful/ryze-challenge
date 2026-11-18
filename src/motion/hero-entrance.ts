@@ -50,10 +50,10 @@ export function createHeroEntranceTimeline(
             char instanceof HTMLElement && Boolean(char.textContent?.trim())));
           timeline.fromTo(split.chars,
             { autoAlpha: 0 },
-            { autoAlpha: 1, duration: .035, stagger: .04, ease: "none",
+            { autoAlpha: 1, duration: .025, stagger: .027, ease: "none",
               clearProps: "opacity,visibility" },
             typingAt);
-          typingAt += split.chars.length * .04 + .07;
+          typingAt += split.chars.length * .027 + .04;
         }
         continue;
       }
@@ -71,7 +71,7 @@ export function createHeroEntranceTimeline(
       cue.at);
   }
 
-  if (headingChars.length) timeline.call(scheduleSpin, [], 2);
+  if (headingChars.length) timeline.call(scheduleSpin, [], timeline.duration());
   return Object.assign(timeline, {
     revertSplit() {
       idleSpin?.kill();

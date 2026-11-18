@@ -323,7 +323,7 @@
     --nav-muted: #5c5c63;
   }
   .brandImage { display: block; width: 126px; height: auto; }
-  .header[data-theme="dawn"] .brandImage { filter: invert(1); }
+  .header[data-theme="dawn"] .brandImage { filter: brightness(.66); }
   .header[data-variant="ryze"] .brand { color: var(--nav-foreground); }
   .header[data-variant="ryze"] .inner {
     min-height: 4.75rem;
@@ -1208,9 +1208,9 @@
       min-block-size: 52px;
       padding: 0 22px;
       border-radius: 999px;
-      color: var(--accent-current, #ff5af1);
+      color: #fff;
       background: transparent;
-      border: 2px solid var(--accent-current, #ff5af1);
+      border: 2px solid #fff;
       box-shadow: none;
       font-size: 14px;
       font-weight: 600;
@@ -1220,11 +1220,11 @@
     }
     .header[data-variant="dock"] .booking:hover {
       background: transparent;
-      color: var(--nav-foreground);
-      border-color: var(--nav-foreground);
+      color: var(--accent-current, #ff5af1);
+      border-color: var(--accent-current, #ff5af1);
     }
     .header[data-variant="dock"] .booking:focus-visible {
-      outline: 2px solid var(--accent-current, #ff5af1);
+      outline: 2px solid #fff;
       outline-offset: 3px;
     }
   }
@@ -1327,6 +1327,59 @@
     .header[data-variant="dock"] .brandImage {
       inline-size: clamp(98px, 25vw, 116px);
       block-size: auto;
+    }
+  }
+}
+
+/* Pricing uses the real source plan tiers in the same mega-panel system. */
+@layer components {
+  .header .pricingHighlights {
+    min-inline-size: 0;
+    padding: clamp(1rem, 2vw, 1.75rem);
+    color: var(--nav-foreground);
+  }
+  .header .pricingCards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(.5rem, 1vw, .85rem);
+  }
+  .header .pricingCard {
+    display: flex;
+    flex-direction: column;
+    gap: .9rem;
+    min-inline-size: 0;
+    min-block-size: 13rem;
+    padding: clamp(.9rem, 1.5vw, 1.35rem);
+    border-radius: 1.2rem;
+    background: color-mix(in oklab, var(--nav-foreground) 5%, var(--nav-inside));
+    color: var(--nav-foreground);
+    text-decoration: none;
+    transition: background-color .18s ease;
+  }
+  .header .pricingCard:hover {
+    background: color-mix(in oklab, var(--nav-foreground) 12%, var(--nav-inside));
+  }
+  .header .pricingCard:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .header .pricingName { font-size: .9rem; line-height: 1.25; font-weight: 600; }
+  .header .pricingPrice { font: 500 clamp(1.6rem, 2.1vw, 2.25rem)/1 var(--font-heading); letter-spacing: -.05em; }
+  .header .pricingPrice small { font: 400 .8rem/1 var(--font-body); letter-spacing: normal; color: var(--nav-muted); }
+  .header .pricingDetail { margin-block-start: auto; color: var(--nav-muted); font: 400 .8rem/1.35 var(--font-body); }
+  .header .pricingSource { color: var(--nav-muted); margin: 1rem 0 0; font: 400 .78rem/1.4 var(--font-body); }
+  .header .staticPanel .pricingCards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (prefers-reduced-motion: reduce) { .header .pricingCard { transition: none; } }
+}
+
+@layer components {
+  /* Panels with a full-bleed showcase use the entire available column. */
+  .header .megaContent:has(.productHighlights):not(:has(.megaLinksColumn)) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .header .megaContent:has(.productHighlights):not(:has(.megaLinksColumn)) .productCards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  @media (width < 75rem) {
+    .header .megaContent:has(.productHighlights):not(:has(.megaLinksColumn)) .productCards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 }

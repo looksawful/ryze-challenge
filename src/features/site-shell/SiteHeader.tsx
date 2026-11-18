@@ -5,10 +5,10 @@ import type { MouseEvent, ReactNode } from "react";
 import Image from "next/image";
 import { HomeworkCookieSettingsButton } from "../consent/HomeworkCookieNotice";
 import {
-  bookingLink, headerLinks, mobileSiteSections, navigationGroups, navigationProductCards,
-  previewNotice, shopifyDockSections, shopifyPricingHref, shopifyStartHref,
+  bookingLink, headerLinks, mobileSiteSections, navigationGroups, navigationProductCards, pricingPlans,
+  previewNotice, shopifyPricingHref, shopifyStartHref,
 } from "./link-model";
-import type { ShopifyDockSection, SiteDestination } from "./link-model";
+import type { SiteDestination } from "./link-model";
 import styles from "./SiteHeader.module.css";
 import { MOTION } from "../../motion/tokens";
 
@@ -46,10 +46,10 @@ function useNavigationMode(requested: NavigationMode): Exclude<NavigationMode, "
   return mode;
 }
 
-function FeaturedProducts({ onSelect }: { onSelect: (event: MouseEvent<HTMLAnchorElement>, destination: SiteDestination) => void }) {
+function FeaturedSolutions({ onSelect }: { onSelect: (event: MouseEvent<HTMLAnchorElement>, destination: SiteDestination) => void }) {
   return (
-    <section className={styles.productHighlights} aria-label="Ryze product capabilities">
-      <p className={styles.productHighlightsHeading}>Products</p>
+    <section className={styles.productHighlights} aria-label="Ryze solutions">
+      <p className={styles.productHighlightsHeading}>Solutions</p>
       <div className={styles.productCards}>
         {navigationProductCards.map((destination) => (
           <a key={destination.id} className={styles.productCard} href={destination.href}
@@ -63,6 +63,25 @@ function FeaturedProducts({ onSelect }: { onSelect: (event: MouseEvent<HTMLAncho
           </a>
         ))}
       </div>
+    </section>
+  );
+}
+
+function FeaturedPricing({ onSelect }: { onSelect: (event: MouseEvent<HTMLAnchorElement>, destination: SiteDestination) => void }) {
+  return (
+    <section className={styles.pricingHighlights} aria-label="Ryze monthly pricing plans">
+      <p className={styles.productHighlightsHeading}>Monthly plans</p>
+      <div className={styles.pricingCards}>
+        {pricingPlans.map(plan => (
+          <a key={plan.id} className={styles.pricingCard} href={plan.href}
+             data-mega-item onClick={(event) => onSelect(event, plan)}>
+            <span className={styles.pricingName}>{plan.label}</span>
+            <strong className={styles.pricingPrice}>${plan.price.toLocaleString("en-US")}<small>/mo</small></strong>
+            <span className={styles.pricingDetail}>{plan.description}</span>
+          </a>
+        ))}
+      </div>
+      <p className={styles.pricingSource}>Flat monthly rates · View current plans on Ryze</p>
     </section>
   );
 }
@@ -306,22 +325,6 @@ export function SiteHeader({
     closeMobile();
   }
 
-  function selectShopifySection(event: MouseEvent<HTMLAnchorElement>, section: ShopifyDockSection) {
-    event.preventDefault();
-    closeMobile();
-    const target = document.getElementById(section.targetId);
-    if (target) {
-      target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
-      return;
-    }
-    if (onPreviewDestination) onPreviewDestination({ id: section.id, label: section.label, href: section.href });
-    else {
-      setNoticeHovered(false);
-      setNoticeFocused(false);
-      setNotice({ id: ++noticeId.current, text: section.label + " is not available in this preview yet." });
-    }
-  }
-
   function destinationAnchor(destination: SiteDestination, className: string, mega = false) {
     return (
       <a key={destination.id} href={destination.href} className={className}
@@ -346,7 +349,7 @@ export function SiteHeader({
            onClick={(event) => selectDestination(event, {
              id: "brand", label: "Ryze", href: "https://www.get-ryze.ai/",
            })} aria-label="Ryze home">
-          {brand ?? <Image className={styles.brandImage} src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/ryze-lockup-white.svg`} alt=""
+          {brand ?? <Image className={styles.brandImage} src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/ryze-lockup-pink.svg`} alt=""
                            width={126} height={40} unoptimized priority />}
         </a>
 
@@ -358,11 +361,12 @@ export function SiteHeader({
               <details className={styles.staticGroup} key={group.id}>
                 <summary>{group.label}<span aria-hidden="true">⌄</span></summary>
                 <div className={styles.staticPanel}>
-                  {group.id === "products" && <FeaturedProducts onSelect={selectDestination} />}
-                  <div className={styles.megaGrid}>
+                  {group.id === "growth" && <FeaturedSolutions onSelect={selectDestination} />}
+                   {group.id === "pricing" && <FeaturedPricing onSelect={selectDestination} />}
+                  {group.id !== "pricing" && group.id !== "growth" && <div className={styles.megaGrid}>
                     {group.links.map((destination) => destinationAnchor(destination, styles.megaLink, true))}
                     {group.id === "resources" && <HomeworkCookieSettingsButton className={styles.megaLink} />}
-                  </div>
+                  </div>}
                 </div>
               </details>
             ))}
@@ -401,17 +405,18 @@ export function SiteHeader({
                    inert={desktopGroup !== panelGroup.id}>
                 <div className={styles.megaPanelTop} data-mega-heading>
                   <span className={styles.megaEyebrow}>EXPLORE RYZE / {panelGroup.label.toUpperCase()}</span>
-                  <span className={styles.megaPanelIndex}>0{navigationGroups.indexOf(panelGroup) + 1} / 03</span>
+                  <span className={styles.megaPanelIndex}>0{navigationGroups.indexOf(panelGroup) + 1} / 0{navigationGroups.length}</span>
                 </div>
                 <div className={styles.megaContent}>
-                  {panelGroup.id === "products" && <FeaturedProducts onSelect={selectDestination} />}
-                  <div className={styles.megaLinksColumn}>
+                  {panelGroup.id === "growth" && <FeaturedSolutions onSelect={selectDestination} />}
+                   {panelGroup.id === "pricing" && <FeaturedPricing onSelect={selectDestination} />}
+                  {panelGroup.id !== "pricing" && panelGroup.id !== "growth" && <div className={styles.megaLinksColumn}>
                     <p className={styles.megaSectionName} data-mega-heading>{panelGroup.label}</p>
                     <div className={styles.megaGrid}>
                       {panelGroup.links.map((destination) => destinationAnchor(destination, styles.megaLink, true))}
                       {panelGroup.id === "resources" && <HomeworkCookieSettingsButton className={styles.megaLink} />}
                     </div>
-                  </div>
+                  </div>}
                 </div>
               </div>
             )}
@@ -451,11 +456,7 @@ export function SiteHeader({
             {variant === "dock" && (
               <section className={styles.drawerQuickLinks} aria-label="Shopify quick navigation"
                        data-preview-part="mobile-dock">
-                <h2 className={styles.mobileSectionTitle}>Shopify Autopilot</h2>
-                {shopifyDockSections.map((section) => (
-                  <a key={section.id} href={section.href} className={styles.drawerQuickLink}
-                     onClick={(event) => selectShopifySection(event, section)}>{section.label}</a>
-                ))}
+                <h2 className={styles.mobileSectionTitle}>Get started</h2>
                 <a className={styles.drawerQuickLink} href={shopifyPricingHref}>Pricing</a>
                 <a className={styles.drawerQuickLink} href={shopifyStartHref}>Start</a>
                 <a className={styles.mobileStart} href={bookingLink.href}
@@ -468,10 +469,10 @@ export function SiteHeader({
                 {group.links.map((destination) => destinationAnchor(destination, styles.mobileLink))}
               </section>
             ))}
-            <section className={styles.mobileProductShelf} aria-label="Other Ryze products">
-              <h2 className={styles.mobileSectionTitle}>Other products</h2>
+            <section className={styles.mobileProductShelf} aria-label="Ryze solutions">
+              <h2 className={styles.mobileSectionTitle}>Solutions</h2>
               <div className={styles.mobileProductRail} tabIndex={0}
-                   role="region" aria-label="Swipe to browse Ryze products"
+                   role="region" aria-label="Swipe to browse Ryze solutions"
                    data-preview-part="mobile-products">
                 {navigationProductCards.map((destination) => (
                   <a key={destination.id} className={styles.mobileProductCard}

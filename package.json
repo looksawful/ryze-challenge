@@ -9,10 +9,10 @@
     "typecheck": "next typegen && tsc --noEmit",
     "storybook": "storybook dev -p 6007 --exact-port",
     "build-storybook": "storybook build",
-    "test": "node --test scripts/foundation.test.mjs scripts/integration-logos.test.mjs scripts/brand-intro.test.mjs scripts/site-shell.test.mjs scripts/site-shell-integration.test.mjs scripts/approved-hero-contract.test.mjs scripts/theme-responsive-contract.test.mjs",
-    "test:static": "node --test scripts/static-html.test.mjs",
-    "test:smoke": "node --test scripts/hero-smoke.test.mjs",
-    "test:rizzie:geometry": "node scripts/rizzie-hit-target.browser.mjs"
+    "test": "node --test scripts/website-address.test.mjs scripts/links-assets-and-copy.test.mjs scripts/ui-guardrails.test.mjs",
+    "test:smoke": "npm run build -- --webpack && node --test scripts/browser-smoke.test.mjs",
+    "test:all": "npm test && npm run test:smoke && npm run typecheck && npm run lint && npm run build-storybook",
+    "test:links:live": "node scripts/links-live.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.1",

@@ -1,10 +1,10 @@
 // Curated Ryze local media, 2026-11-17. Original files: D:\\inwork\\RYZE-MEDIA.
 export const cardMedia=[
- {type:'image',src:'./assets/card-media/card-01.png'}, // fashion portrait
+ {type:'image',src:'./assets/card-media/card-01.webp'}, // fashion portrait
  {type:'video',src:'./assets/card-media/card-02.mp4'}, // gadget cut-out collage
- {type:'image',src:'./assets/card-media/card-03.png'}, // cobalt handbag
+ {type:'image',src:'./assets/card-media/card-03.webp'}, // cobalt handbag
  {type:'video',src:'./assets/card-media/card-04.mp4'}, // grocery collage
- {type:'image',src:'./assets/card-media/card-05.png'}, // cashmere texture
+ {type:'image',src:'./assets/card-media/card-05.webp'}, // cashmere texture
  {type:'video',src:'./assets/card-media/card-06.mp4'}, // scanned catalogue loading
  {type:'image',src:'./assets/card-media/card-07.webp'}, // kraft bag editorial
  {type:'image',src:'./assets/card-media/card-08.webp'}, // portrait with jewelry

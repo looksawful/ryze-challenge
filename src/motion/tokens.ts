@@ -17,7 +17,7 @@ export const CHAT_RHYTHM = {
   eraseCharacter: 0.027,
   pause: 1.2,
   gap: 0.24,
-  reveal: 0.68,
+  reveal: 0.48,
   processingTail: 0.45,
 } as const;
 
@@ -26,12 +26,12 @@ export const CHAT_RHYTHM = {
 export const HERO_ENTRANCE_CUES = [
   { name: "brand", at: 0, duration: 0.46, rise: -10 },
   { name: "headline", at: 0, duration: 0.76, rise: 32 },
-  { name: "lead", at: 0.22, duration: 0.56, rise: 14 },
-  { name: "description", at: 0.44, duration: 0.58, rise: 12 },
-  { name: "action", at: 0.66, duration: 0.64, rise: 17 },
-  { name: "integration", at: 0.66, duration: 0.58, rise: 12 },
-  { name: "navigation", at: 0.9, duration: 0.42, rise: 0 },
-  { name: "cookies", at: 1.14, duration: 0.42, rise: 0 },
+  { name: "lead", at: 0.14, duration: 0.46, rise: 8 },
+  { name: "description", at: 0.28, duration: 0.48, rise: 8 },
+  { name: "action", at: 0.42, duration: 0.5, rise: 10 },
+  { name: "integration", at: 0.42, duration: 0.48, rise: 8 },
+  { name: "navigation", at: 0.5, duration: 0.38, rise: 0 },
+  { name: "cookies", at: 0.72, duration: 0.36, rise: 0 },
 ] as const;
 
 export type HeroEntranceSlot = (typeof HERO_ENTRANCE_CUES)[number]["name"];

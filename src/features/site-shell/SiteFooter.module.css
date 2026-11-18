@@ -1,0 +1,93 @@
+/* The original Homework rail + five-column footer. Visible in document flow
+   after the Hero, with a subtle progressive scroll entrance. */
+.frame {
+  container: ryze-footer / inline-size;
+  inline-size: min(calc(100% - 2 * clamp(1rem, 3vw, 3.5rem)), 96rem);
+  margin: clamp(3rem, 8svh, 6rem) auto 0;
+  padding-block-end: clamp(2rem, 6svh, 4rem);
+}
+.footer {
+  display: grid;
+  grid-template-columns: minmax(7rem, 1fr) minmax(0, 5fr);
+  gap: clamp(1.5rem, 3cqi, 3rem);
+  inline-size: 100%;
+  min-block-size: 31rem;
+  padding: clamp(1.5rem, 4cqi, 4rem);
+  border: 1px solid #2b2b30;
+  border-radius: clamp(1rem, 2vw, 2rem);
+  background: #0b0b0d;
+  color: #f5f5f6;
+}
+.rail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+.brand { margin-block-end: auto; display: inline-flex; }
+.brand img { display: block; max-inline-size: 100%; block-size: auto; }
+.backToTop, .cookieSettings {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  min-block-size: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #b6b6bd;
+  font: 400 .875rem/1.4 var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+}
+.columns {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(1rem, 2.1cqi, 2rem);
+  min-inline-size: 0;
+}
+.column { min-inline-size: 0; }
+.column h2 {
+  margin: 0 0 1.15rem;
+  font: 600 clamp(.875rem, 1vw, 1rem)/1.4 var(--font-body);
+  color: #f5f5f6;
+}
+.column ul { display: grid; gap: .85rem; margin: 0; padding: 0; list-style: none; }
+.column a {
+  color: #a6a6b0;
+  font: 400 clamp(.82rem, .95vw, .95rem)/1.4 var(--font-body);
+  text-decoration: none;
+  overflow-wrap: break-word;
+}
+.column a:hover, .backToTop:hover, .cookieSettings:hover {
+  color: #f5f5f6;
+}
+.footer :is(a, button):focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+@container ryze-footer (width < 60rem) {
+  .footer { grid-template-columns: 1fr; min-block-size: 0; }
+  .rail { order: 1; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .brand { margin-block-end: 0; margin-inline-end: auto; }
+  .columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@container ryze-footer (width < 36rem) {
+  .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 1rem; }
+  .footer { padding: clamp(1.25rem, 5cqi, 2rem); }
+}
+@supports (animation-timeline: view()) {
+  .footer {
+    animation: footer-enter linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 70%;
+  }
+  @keyframes footer-enter {
+    from { opacity: .35; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer { animation: none; }
+}

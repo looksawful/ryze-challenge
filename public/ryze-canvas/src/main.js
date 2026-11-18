@@ -69,7 +69,6 @@ function drawMelt(){
   }
   blurCtx.putImageData(px,0,0);
  }
- const pixelMin=Math.min(logoCanvas.width,logoCanvas.height);
  const logoUnit=logoUnitPixels();
  const meltSize=45*logoUnit;
  ctx.drawImage(blur,logoCanvas.width/2-meltSize/2,logoCanvas.height/2-meltSize/2,meltSize,meltSize);
@@ -245,7 +244,7 @@ if(renderer){
  const cards=[];
  const plane=new THREE.PlaneGeometry(1,1);
  let W=1,H=1,minDim=1,cameraDistance=1;
- let running=true,raf=0,orbitStarted=false,orbitFinished=false,timeline,orbitCycle=0;
+ let running=true,raf=0,orbitStarted=false,orbitFinished=!SHOW_MEDIA_CARDS,timeline,orbitCycle=0;
  let windFadeComplete=false,introEventSent=false,windFadeTween;
  const logoIntro={progress:0};
  const STORAGE_KEY='ryze-motionpath-cinematic-6-v3';
@@ -539,7 +538,12 @@ if(renderer){
  apply();
  sourceSVG.style.opacity='0';
  canvas.style.display='block';
- if(reduce.matches){orbitFinished=true;}
- else window.__ryzeStartSequence?.();
+ // The SVG already started its paper clock. Importing Three.js must not
+ // restart it, which previously caused a backward jump on slower machines.
+ if(reduce.matches) orbitFinished=true;
+ if(frame.dataset.state==='blown'){
+   windFadeComplete=true;
+   announceIntroComplete();
+ }
  render();
 }

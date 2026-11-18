@@ -858,23 +858,21 @@
     blurNode.setAttribute('stdDeviation','0');
     alphaNode.setAttribute('values','1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0');
     pathEls.forEach((path,i)=>{path.setAttribute('d',morphGeometry[i].initial);pieces[i].style.opacity='1';});
-    const {ox,oy,scale,span}=layout();
+    const {sw,sh,ox,oy,scale,span}=layout();
     const rand=randomGenerator(117031);
     const prepared=[];
     let scene2Start=0;
     for(const [i,el] of pieces.entries()){
       const cx=Number(el.dataset.cx), cy=Number(el.dataset.cy);
       const tx=ox+cx*scale, ty=oy+cy*scale;
-      // The canvas is fullscreen, but the visible paper cloud stays local to the
-      // header-sized emblem instead of filling the viewport with confetti.
-      const centerX = ox + span/2, centerY = oy + span/2;
-      const spread = span*.7;
-      const edge=i%4;
+      // Keep the tiny final logo, but originate all 118 papers just OUTSIDE
+      // each edge of the fullscreen canvas. Never start from a square.
+      const edge=i%4, margin=span*.3+rand()*span*.55;
       let sx,sy;
-      if(edge===0){sx=centerX-spread;sy=centerY+(rand()-.5)*spread*1.8;}
-      else if(edge===1){sx=centerX+spread;sy=centerY+(rand()-.5)*spread*1.8;}
-      else if(edge===2){sx=centerX+(rand()-.5)*spread*1.8;sy=centerY-spread;}
-      else{sx=centerX+(rand()-.5)*spread*1.8;sy=centerY+spread;}
+      if(edge===0){sx=-margin;sy=rand()*sh;}
+      else if(edge===1){sx=sw+margin;sy=rand()*sh;}
+      else if(edge===2){sx=rand()*sw;sy=-margin;}
+      else{sx=rand()*sw;sy=sh+margin;}
       const dx=(sx-tx)/scale, dy=(sy-ty)/scale;
       const length=Math.hypot(dx,dy)||1;
       const perpX=-dy/length,perpY=dx/length;
@@ -911,7 +909,7 @@
     let cardsStarted=false;
     // Single continuous GSAP clock, one stateful group of 118 paper paths.
     tween=createClockTween(clock,{
-      time:totalDuration,duration:totalDuration*.66,ease:'none',
+      time:totalDuration,duration:totalDuration*.44,ease:'none',
       onUpdate:()=>{
         // Cards join while paper fragments are still assembling, before the gust.
         if(!cardsStarted && clock.time>=scene2Start*.45){

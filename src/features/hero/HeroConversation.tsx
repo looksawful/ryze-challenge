@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import styles from "./HeroConversation.module.css";
 import { CHAT_RHYTHM } from "../../motion/tokens";
 import { normalizeWebsiteAddress } from "./website-address";
+import { usePrefersReducedMotion } from "../../motion/use-prefers-reduced-motion";
 
 // User-tested interaction pattern: type, pause, erase, repeat. This is a
 // decorative overlay, never the value of the real website input.
@@ -14,9 +15,13 @@ export const placeholderPhrases = [
   "Grow your Shopify store…",
 ] as const;
 
+const subscribeToHydration = () => () => {};
+const getClientHydrated = () => true;
+const getServerHydrated = () => false;
+
 export default function HeroConversation() {
-  const [hydrated, setHydrated] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const hydrated = useSyncExternalStore(subscribeToHydration, getClientHydrated, getServerHydrated);
+  const reducedMotion = usePrefersReducedMotion();
   const [hasInteracted, setHasInteracted] = useState(false);
   const [introReleased, setIntroReleased] = useState(false);
   const [website, setWebsite] = useState("");
@@ -39,15 +44,6 @@ export default function HeroConversation() {
     typedAnimation.current = null;
     if (hint.current) hint.current.textContent = "";
   };
-
-  useEffect(() => {
-    setHydrated(true);
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReducedMotion(preference.matches);
-    sync();
-    preference.addEventListener("change", sync);
-    return () => preference.removeEventListener("change", sync);
-  }, []);
 
   useEffect(() => {
     const stage = composer.current?.closest<HTMLElement>("[data-intro]");
@@ -182,11 +178,11 @@ export default function HeroConversation() {
             aria-describedby={error ? "ryze-website-error" : "ryze-website-note"} />
           {overlayVisible && <span className={styles.animatedPlaceholder} data-animated-placeholder aria-hidden="true" ref={hint}>Enter your website…</span>}
         </div>
-        <button type="submit" disabled={!hydrated} aria-label="Start for free">Start for free</button>
+        <button type="submit" disabled={!hydrated} aria-label="Check for free">Check for free</button>
       </form>
       <p className={styles.screenReader} id="ryze-website-note">This preview checks address formatting locally; no website is contacted.</p>
       <noscript>
-        <a className={styles.staticStart} href="https://reports.get-ryze.ai/o/all">Start for free</a>
+        <a className={styles.staticStart} href="https://reports.get-ryze.ai/o/all">Check for free</a>
       </noscript>
 
     </section>

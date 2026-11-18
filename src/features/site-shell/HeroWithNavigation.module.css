@@ -53,7 +53,7 @@
   }
   .stage[data-intro="revealing"]:not([data-motion-driver="gsap"]):not([data-theme="dawn"]) .navigation,
   .stage[data-intro="ready"]:not([data-motion-driver="gsap"]):not([data-theme="dawn"]) .navigation {
-    animation: ryze-nav-reveal .48s .9s cubic-bezier(.22, 1, .36, 1) both;
+    animation: ryze-nav-reveal .36s .2s cubic-bezier(.22, 1, .36, 1) both;
   }
   @keyframes ryze-nav-reveal {
     from { opacity: 0; visibility: hidden; }
@@ -61,7 +61,7 @@
   }
   .stage[data-intro="ready"] .motionBackdrop {
     opacity: 0;
-    transition: opacity .48s cubic-bezier(.22, 1, .36, 1);
+    transition: opacity .32s cubic-bezier(.22, 1, .36, 1);
   }
   @media (prefers-reduced-motion: reduce) {
     .stage[data-intro="revealing"]:not([data-motion-driver="gsap"]):not([data-theme="dawn"]) .navigation,

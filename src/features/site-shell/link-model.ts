@@ -18,38 +18,50 @@ export const navigationGroups: readonly DestinationGroup[] = [
     id: "products",
     label: "Products",
     links: [
-      { id: "marketer", label: "AI Marketer", href: "https://www.get-ryze.ai/", description: "Ads, SEO and site management" },
-      { id: "muse", label: "Muse", href: "https://www.get-ryze.ai/muse", description: "Explore Muse" },
-      { id: "shopify", label: "Shopify CRO", href: "https://www.get-ryze.ai/shopify-claude-ai-for-paid-ads-geo-cro", description: "Store growth and conversion" },
+      { id: "marketer", label: "AI Marketer", href: "https://www.get-ryze.ai/", description: "Autonomous campaign management" },
+      { id: "muse", label: "Muse", href: "https://www.get-ryze.ai/muse", description: "Marketing intelligence in your AI assistant" },
+      { id: "mcp", label: "MCP", href: "https://www.get-ryze.ai/how-to-connect-claude-to-google-meta-ads-mcp", description: "Connect your marketing tools to AI" },
+      { id: "integrations", label: "Integrations", href: "https://www.get-ryze.ai/integrations", description: "Connected platforms" },
     ],
   },
   {
     id: "growth",
     label: "Solutions",
     links: [
-      { id: "paid-ads", label: "Paid Ads", href: "https://www.get-ryze.ai/#ai-marketer", description: "Campaign optimization" },
-      { id: "seo", label: "SEO", href: "https://www.get-ryze.ai/seo", description: "Organic search" },
-      { id: "ai-visibility", label: "AI visibility", href: "https://www.get-ryze.ai/ai-visibility-tool", description: "Discoverability in AI search" },
-      { id: "geo", label: "GEO", href: "https://www.get-ryze.ai/geo-tool", description: "Generative search visibility" },
+      { id: "paid-ads", label: "Paid Ads", href: "https://www.get-ryze.ai/", description: "Campaigns and budgets" },
+      { id: "seo", label: "SEO & AI visibility", href: "https://www.get-ryze.ai/seo", description: "Search performance" },
+      { id: "cro", label: "CRO", href: "https://www.get-ryze.ai/shopify-claude-ai-for-paid-ads-geo-cro", description: "Shopify conversions" },
+      { id: "reporting", label: "Reporting", href: "https://help.get-ryze.ai/agent/reports", description: "Performance reports" },
     ],
   },
   {
     id: "resources",
     label: "Resources",
     links: [
-      { id: "mcp", label: "MCP", href: "https://www.get-ryze.ai/how-to-connect-claude-to-google-meta-ads-mcp", description: "Connect Claude to your ad tools" },
-      { id: "integrations", label: "Integrations", href: "https://www.get-ryze.ai/integrations", description: "Available connections" },
-      { id: "docs", label: "Docs", href: "https://help.get-ryze.ai/", description: "Help and documentation" },
-      { id: "changelog", label: "Changelog", href: "https://www.get-ryze.ai/changelog", description: "Recent updates" },
+      { id: "guides", label: "Guides", href: "https://help.get-ryze.ai/", description: "Product documentation" },
+      { id: "blog", label: "Blog", href: "https://www.get-ryze.ai/blog", description: "Marketing research and tutorials" },
+      { id: "tools", label: "Free tools", href: "https://www.get-ryze.ai/tools", description: "Practical marketing utilities" },
+      { id: "changelog", label: "Changelog", href: "https://www.get-ryze.ai/changelog", description: "Product releases" },
     ],
+  },
+  {
+    id: "pricing",
+    label: "Pricing",
+    links: [],
   },
 ];
 
 export const headerLinks: readonly SiteDestination[] = [
-  // Header uses /payment-setup; footer links to /pricing. Preserve the real discrepancy.
-  { id: "pricing-header", label: "Pricing", href: "https://www.get-ryze.ai/payment-setup" },
   { id: "about", label: "About", href: "https://www.get-ryze.ai/about" },
 ];
+
+/** Current monthly prices published by Ryze; no derived or inferred tiers. */
+export const pricingPlans = [
+  { id: "paid-ads-plan", label: "Paid Ads Autopilot", price: 89, href: "https://www.get-ryze.ai/pricing", description: "AI ad management" },
+  { id: "seo-plan", label: "SEO Autopilot", price: 129, href: "https://www.get-ryze.ai/pricing", description: "SEO and AI search" },
+  { id: "traffic-plan", label: "Traffic Printer", price: 599, href: "https://www.get-ryze.ai/pricing", description: "Full-service SEO and GEO" },
+  { id: "ecom-plan", label: "Ecom Autopilot", price: 1499, href: "https://www.get-ryze.ai/pricing", description: "E-commerce growth" },
+] as const;
 
 export const bookingLink: SiteDestination = {
   id: "book-call",
@@ -58,135 +70,43 @@ export const bookingLink: SiteDestination = {
 };
 
 export const footerGroups: readonly DestinationGroup[] = [
-  {
-    id: "product",
-    label: "Product",
-    links: [
-      { id: "footer-marketer", label: "AI Marketer", href: "https://www.get-ryze.ai/" },
-      { id: "footer-muse", label: "Muse", href: "https://www.get-ryze.ai/muse" },
-      { id: "footer-shopify", label: "Shopify CRO", href: "https://www.get-ryze.ai/shopify-claude-ai-for-paid-ads-geo-cro" },
-      { id: "pricing-footer", label: "Pricing", href: "https://www.get-ryze.ai/pricing" },
-    ],
-  },
-  {
-    id: "solutions",
-    label: "Solutions",
-    links: [
-      { id: "footer-paid-ads", label: "Paid Ads", href: "https://www.get-ryze.ai/#ai-marketer" },
-      { id: "footer-seo", label: "SEO", href: "https://www.get-ryze.ai/seo" },
-      { id: "footer-ai", label: "AI visibility", href: "https://www.get-ryze.ai/ai-visibility-tool" },
-      { id: "footer-geo", label: "GEO", href: "https://www.get-ryze.ai/geo-tool" },
-    ],
-  },
-  {
-    id: "tools",
-    label: "Tools",
-    links: [
-      { id: "ai-seo-tool", label: "AI SEO tool", href: "https://www.get-ryze.ai/ai-seo-tool" },
-      { id: "geo-tool", label: "GEO tool", href: "https://www.get-ryze.ai/geo-tool" },
-      { id: "organic-dropshipping", label: "Organic AI dropshipping", href: "https://www.get-ryze.ai/organic-ai-dropshipping" },
-      { id: "integration-list", label: "Integrations", href: "https://www.get-ryze.ai/integrations" },
-    ],
-  },
-  {
-    id: "resources",
-    label: "Resources",
-    links: [
-      { id: "help", label: "Docs", href: "https://help.get-ryze.ai/" },
-      { id: "compare", label: "Compare", href: "https://www.get-ryze.ai/compare" },
-      { id: "claude", label: "Connect Claude", href: "https://www.get-ryze.ai/how-to-connect-claude-to-google-ads" },
-      { id: "updates", label: "Changelog", href: "https://www.get-ryze.ai/changelog" },
-      { id: "ai-info", label: "AI Info", href: "https://www.get-ryze.ai/ai-info" },
-    ],
-  },
-  {
-    id: "company",
-    label: "Company",
-    links: [
-      { id: "company-about", label: "About", href: "https://www.get-ryze.ai/about" },
-      { id: "affiliates", label: "Affiliates", href: "https://www.get-ryze.ai/affiliate-program" },
-      { id: "white-label", label: "White label", href: "https://www.get-ryze.ai/white-label" },
-      { id: "security", label: "Security", href: "https://www.get-ryze.ai/security-policy" },
-      { id: "contact", label: "Contact", href: "mailto:hello@get-ryze.ai" },
-    ],
-  },
-  {
-    id: "legal",
-    label: "Legal",
-    links: [
-      { id: "privacy", label: "Privacy", href: "https://www.get-ryze.ai/privacy" },
-      { id: "terms", label: "Terms", href: "https://www.get-ryze.ai/terms-of-use" },
-      { id: "refund", label: "Refund policy", href: "https://www.get-ryze.ai/refund-policy" },
-      { id: "sms", label: "SMS opt-in", href: "https://www.get-ryze.ai/sms-optin" },
-    ],
-  },
+  { id: "company", label: "Company", links: [
+    { id: "footer-about", label: "About", href: "https://www.get-ryze.ai/about" },
+    { id: "footer-customers", label: "Customer stories", href: "https://www.get-ryze.ai/customers" },
+    { id: "footer-contact", label: "Contact", href: "mailto:hello@get-ryze.ai" },
+  ] },
+  { id: "product", label: "Product", links: [
+    { id: "footer-marketer", label: "AI Marketer", href: "https://www.get-ryze.ai/" },
+    { id: "footer-muse", label: "Muse", href: "https://www.get-ryze.ai/muse" },
+    { id: "footer-pricing", label: "Pricing", href: "https://www.get-ryze.ai/pricing" },
+  ] },
+  { id: "resources", label: "Resources", links: [
+    { id: "footer-guides", label: "Guides", href: "https://help.get-ryze.ai/" },
+    { id: "footer-blog", label: "Blog", href: "https://www.get-ryze.ai/blog" },
+    { id: "footer-tools", label: "Free tools", href: "https://www.get-ryze.ai/tools" },
+    { id: "footer-changelog", label: "Changelog", href: "https://www.get-ryze.ai/changelog" },
+  ] },
+  { id: "legal", label: "Legal", links: [
+    { id: "footer-privacy", label: "Privacy", href: "https://www.get-ryze.ai/privacy" },
+    { id: "footer-terms", label: "Terms", href: "https://www.get-ryze.ai/terms-of-use" },
+    { id: "footer-refund", label: "Refund policy", href: "https://www.get-ryze.ai/refund-policy" },
+  ] },
+  { id: "explore", label: "Explore", links: [
+    { id: "footer-seo", label: "SEO & GEO", href: "https://www.get-ryze.ai/seo" },
+    { id: "footer-ai", label: "AI visibility", href: "https://www.get-ryze.ai/ai-visibility-tool" },
+    { id: "footer-integrations", label: "Integrations", href: "https://www.get-ryze.ai/integrations" },
+    { id: "footer-agency", label: "Agency", href: "https://www.get-ryze.ai/agency" },
+  ] },
 ];
 
 // Mobile global navigation: the current product is Shopify Autopilot; all
 // other products are one tap away once the upper hamburger is open.
+// The mobile menu shares the same product and resource data as desktop.
+// Solution screenshot cards appear exactly once in their own scrollable rail.
 export const mobileSiteSections: readonly DestinationGroup[] = [
-  {
-    id: "mobile-products",
-    label: "Products",
-    links: [
-      ...navigationGroups[0].links,
-      { id: "mobile-seo", label: "SEO / GEO", href: "https://www.get-ryze.ai/seo" },
-      { id: "mobile-agents", label: "Agents", href: "https://www.get-ryze.ai/agents" },
-      { id: "mobile-agency", label: "Agency", href: "https://www.get-ryze.ai/agency" },
-    ],
-  },
-  {
-    id: "mobile-explore",
-    label: "Explore",
-    links: [
-      navigationGroups[2].links[1], // Integrations
-      { id: "mobile-cases", label: "Case Studies", href: "https://www.get-ryze.ai/case-studies" },
-    ],
-  },
-  {
-    id: "mobile-resources",
-    label: "Resources",
-    links: [
-      navigationGroups[2].links[0], // MCP
-      navigationGroups[2].links[2], // Docs
-      { id: "mobile-tools", label: "Free Tools", href: "https://www.get-ryze.ai/tools" },
-      { id: "mobile-blog", label: "Blog", href: "https://www.get-ryze.ai/blog" },
-      footerGroups[3].links[1], // Compare
-    ],
-  },
-  {
-    id: "mobile-company",
-    label: "Company",
-    links: [headerLinks[1]], // About
-  },
-];
-
-export type ShopifyDockSection = Readonly<{
-  id: string;
-  label: string;
-  targetId: string;
-  href: string; // Working no-JS fallback while the local section is unavailable.
-}>;
-
-export const shopifyDockSections: readonly ShopifyDockSection[] = [
-  {
-    id: "shopify-ads",
-    label: "Ads",
-    targetId: "shopify-paid-ads",
-    href: "https://www.get-ryze.ai/shopify-claude-ai-for-paid-ads-geo-cro",
-  },
-  {
-    id: "shopify-seo-ai",
-    label: "SEO / AI",
-    targetId: "shopify-seo-ai",
-    href: "https://www.get-ryze.ai/seo",
-  },
-  {
-    id: "shopify-cro",
-    label: "CRO",
-    targetId: "shopify-cro",
-    href: "https://www.get-ryze.ai/shopify-claude-ai-for-paid-ads-geo-cro",
-  },
+  navigationGroups[0],
+  navigationGroups[2],
+  { id: "mobile-company", label: "Company", links: [headerLinks[0]] },
 ];
 
 export const shopifyPricingHref = "https://www.get-ryze.ai/pricing";
@@ -217,20 +137,20 @@ export const navigationProductCards: readonly NavigationProduct[] = [
     label: "SEO & AI Visibility",
     href: "https://www.get-ryze.ai/seo",
     description: "Search rankings, content and AI citations.",
-    image: "/ryze-media/navigation/seo.png", width: 1920, height: 1080,
+    image: "/ryze-media/navigation/seo.webp", width: 1920, height: 1080,
   },
   {
     id: "cro-card",
     label: "CRO",
     href: "https://www.get-ryze.ai/shopify-claude-ai-for-paid-ads-geo-cro",
     description: "Product pages, experiments and conversion.",
-    image: "/ryze-media/navigation/site-audit.png", width: 1920, height: 1080,
+    image: "/ryze-media/navigation/site-audit.webp", width: 1920, height: 1080,
   },
   {
     id: "reporting-card",
     label: "Reporting",
     href: "https://help.get-ryze.ai/agent/reports",
     description: "Performance, attribution and weekly summaries.",
-    image: "/ryze-media/navigation/reporting.png", width: 1920, height: 1080,
+    image: "/ryze-media/navigation/reporting.webp", width: 1920, height: 1080,
   },
 ];
