@@ -35,8 +35,6 @@ export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, them
       <div className={styles.integration} data-motion-slot="integration">
         <IntegrationLogos />
       </div>
-      <a className={styles.contact} href="https://ryze.cal.com/hello/partner-program"
-         target="_blank" rel="noopener noreferrer">Contact us <span aria-hidden="true">↗</span></a>
     </main>
   );
 }
