@@ -203,7 +203,7 @@ export default function HeroConversation() {
         <div className={styles.reply} data-ai-reply={reply.kind}>
           <p className={styles.assistantReply} aria-hidden="true"><span ref={replyTextRef}>{reply.text}</span><span className={styles.replyCursor} aria-hidden="true" /></p>
           {reply.kind === "error"
-            ? <span className={styles.screenReader} role="alert">{reply.text}</span>
+            ? <span id="ryze-email-error" className={styles.screenReader} role="alert">{reply.text}</span>
             : <span className={styles.screenReader} role="status">{reply.text}</span>}
         </div>
       )}
