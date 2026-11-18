@@ -172,22 +172,25 @@ export function HomeworkCookieNotice({ onSave, rememberChoice = true, initialVie
   if (!mounted || !visible) return null;
 
   return (
-    <aside ref={noticeRef} className={styles.notice} aria-labelledby={titleId} data-settings={view === "settings" || undefined}
+    <aside ref={noticeRef} className={styles.notice} aria-label={view === "notice" ? "Cookie preferences" : undefined} aria-labelledby={view === "settings" ? titleId : undefined} data-settings={view === "settings" || undefined}
       onKeyDown={(event) => {
         if (event.key === "Escape" && view === "settings") {
           setView(storedChoice ? "closed" : "notice");
           requestAnimationFrame(() => (storedChoice ? returnFocusRef.current : customizeRef.current)?.focus({ preventScroll: true }));
         }
       }}>
-      <h2 ref={titleRef} id={titleId} className={styles.title} tabIndex={-1}>Cookie settings</h2>
       {view === "notice" ? (
-        <div className={styles.actions}>
-          <button ref={customizeRef} className={styles.button} type="button" onClick={openSettings}><span className={styles.wideLabel}>Customize cookie settings</span><span className={styles.shortLabel}>Customize</span></button>
-          <button className={styles.button} type="button" onClick={() => save({ analytics: false, marketing: false })}><span className={styles.wideLabel}>Reject all cookies</span><span className={styles.shortLabel}>Reject</span></button>
-          <button className={`${styles.button} ${styles.primary}`} type="button" onClick={() => save({ analytics: true, marketing: true })}><span className={styles.wideLabel}>Accept all cookies</span><span className={styles.shortLabel}>Accept</span></button>
-        </div>
+        <>
+          <p className={styles.message}>We use optional cookies only if you allow them. No tracking is enabled in this demo. {privacyHref && <a href={privacyHref}>Privacy</a>}</p>
+          <div className={styles.actions}>
+            <button ref={customizeRef} className={styles.button} type="button" onClick={openSettings}>Settings</button>
+            <button className={styles.button} type="button" onClick={() => save({ analytics: false, marketing: false })}>Reject</button>
+            <button className={`${styles.button} ${styles.primary}`} type="button" onClick={() => save({ analytics: true, marketing: true })}>Accept</button>
+          </div>
+        </>
       ) : (
         <form onSubmit={(event) => { event.preventDefault(); save(preferences); }}>
+          <h2 ref={titleRef} id={titleId} className={styles.title} tabIndex={-1}>Cookie settings</h2>
           <p className={styles.description}>Choose which optional cookies Ryze may use. {privacyHref && <a href={privacyHref}>Privacy policy</a>}</p>
           <div className={styles.options}>
             <label><span>Necessary<small>Security and basic functionality.</small></span><span className={styles.state}>Required<input aria-label="Necessary" type="checkbox" role="switch" checked disabled /></span></label>
