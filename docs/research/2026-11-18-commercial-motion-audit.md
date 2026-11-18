@@ -65,3 +65,56 @@
 
 ## Статус handoff
 Исследование и приоритеты зафиксированы. Изменение исходного анимационного кода, новый PR/issue, push и deployment НЕ выполнялись. Некоторые цифры и восприятие взяты из сохранённых QA от 17–18 ноября, а не из нового измерительного прогона.
+
+
+## Исследование GSAP: что берём для Ryze (18.11.2026, актуальная main `f7631b5`)
+
+**Статус:** инженерно-дизайнерская рекомендация на обсуждение; не утверждённый редизайн. На момент повторной проверки `main` и `origin/main` совпадали на `f7631b5`. Исследованы официальная документация GSAP и первичные кейсы, включая Ponpon Mania, Monolith NYC и Moooi Paper Play. Изменений поведения сайта нет.
+
+### Факты текущей реализации
+- `gsap ^3.15.1` уже установлен; `@gsap/react` не обнаружен в package.json.
+- `src/motion/tokens.ts` — общий словарь control .18s / exit .2s / surface .42s / enter .58s / emphasis .76s / character .68s и относительные cue Hero, отсчитываемые **после** `ryze:assembled`.
+- `HeroWithNavigation.tsx` и `hero-entrance.ts` уже имеют `gsap.context()` и cleanup; отдельный iframe WebGL получает postMessage. `IntroPhase=playing` ставит интерактивные области в `inert` до сборки; watchdog 24s. Это ключевой продуктовый риск, а не повод вводить ещё один плагин.
+- `SiteHeader.tsx` уже содержит timeline с `play()/reverse()`; `HeroAction.tsx` условно переключает `details` на inline-форму или мобильный `dialog`. В данный момент ни `Flip`, ни `SplitText`, ни `ScrollTrigger`, ни `gsap.matchMedia()` в `src/` не обнаружены.
+
+### Решения-кандидаты
+| Приём | Решение | Объект/польза | Ограничение |
+|---|---|---|---|
+| `timeline()` + labels + reusable `MOTION` | **Оставить, доработать** | Hero — читаемый порядок H1→пояснение→CTA→второстепенное, не блокируя действия; MegaMenu — reversible | Не переписывать WebGL-движок на сотни DOM-tweens; держать CSS fallback; не создавать второй набор токенов |
+| `gsap.context()` | **Оставить существующее** | Очистка в React уже реализована | `useGSAP()` добавляет пакет `@gsap/react` и не нужен пока конкретные lifecycle-баги не выявлены; если переходить — только отдельным доказанным рефакторингом |
+| `gsap.matchMedia()` | **Взять для breakpoint/motion** | Автоматический cleanup при смене viewport / prefers-reduced-motion; один контракт для всех motion islands | Это не детектор мощности устройства. Политика Static/Reduced/Lightweight/Full должна жить отдельно; статическая разметка остаётся доступной |
+| `Flip` | **POC для CTA** | При реальной перестройке одного контейнера Start For Free→поле+submit визуально связывает до/после | Сначала выбрать DOM/фокус/aria, потом замерить. Если достаточно CSS transform+opacity, не внедрять Flip; мобильный dialog не обязан morph-иться |
+| `SplitText` | **Только проба, не обязательный плагин** | При динамическом переносе строк H1: `type:'lines'`, `mask:'lines'`, `autoSplit:true`, `onSplit` | H1 уже содержит две утверждённые `span`-строки. Не переписывать типографику и не дробить её на буквы без показанной пользы; проверять aria/zoom/переносы |
+| `ScrollTrigger` | **Отложить** | Одна смысловая сцена Product UI при появлении следующих секций: запрос → действие → результат; `once` или краткая scrub-последовательность | В текущей первой секции ему нечего делать. Не делать длинный pinned-scroll, scroll-jacking или подмену скролла |
+| `quickTo()` | **Условно** | Маленький pointer-follow/возврат Rizzie, если текущий механизм дёргается | Не создавать постоянную дополнительную анимацию поверх спрайт-машины; только после измерений |
+| `ScrollSmoother`, `Observer`, `Physics2D`, `Draggable`, `Inertia`, `MorphSVG`, `DrawSVG` | **Не вводить сейчас** | Нет функциональной потребности в текущем Hero | Не превращать лендинг в демонстрацию всех плагинов GSAP |
+
+### Режиссёрская модель (предложение, не установленный бенчмарк)
+- **Немедленно:** семантические H1/текст/CTA/навигация доступны с первого рендера (SSR/static); загрузка 118 фрагментов — декоративная параллельная дорожка. Событие `ryze:assembled` может запускать только необязательный акцент, не разблокировку кнопки.
+- **Вступление:** H1 + lead со смысловым overlap, CTA уже работоспособна; текст не перекрывается розовым кругом. Отдельные visual-clocks WebGL/DOM остаются; связывать их через ограниченный протокол состояния (start/settle), а не один гигантский таймлайн.
+- **Интеракции:** короткие, обратимые, прерываемые на середине; ориентиры для прототипирования control 120–200ms, menu 180–260ms, CTA/layout 240–350ms, H1 reveal 350–550ms, branded accent 0.9–1.4s. Это наши предлагаемые числа, не норма GSAP и не измеренный результат.
+- **Показ пользы:** все 5 платформ узнаваемы одновременно; WebGL morph лишь дополнительный акцент. В будущей product-секции показать настоящие данные/интерфейс, не фиктивный результат.
+- **Режимы:** Static = HTML/CSS без JS; Reduced = без camera travel/particles/разгона; Lightweight = CSS + краткий GSAP timeline без большой WebGL-сцены; Full = разрешённая optional WebGL + контролируемая GSAP-хореография. Порог «слабого устройства» должен основываться на runtime policy/реальном профилировании, не на ширине экрана.
+
+### Примеры и вывод, который применим к Ryze
+1. **Ponpon Mania (Codrops, 07.10.2025):** GSAP синхронизирует DOM и WebGL сцены; используются таймлайны, ScrollTrigger и SplitText. Взять принцип «GSAP-дирижёр, WebGL-рендерер» и отладочные сцены, **не** плотность эффектов. https://tympanus.net/codrops/2025/10/07/ponpon-mania-how-webgl-and-gsap-bring-a-comic-sheeps-dream-to-life/
+2. **Monolith NYC (Awwwards, 12.02.2025):** смена представлений карточек продукта через Flip. Взять ясную связь двух состояний CTA/демонстрации, **не** копировать сложную сетку. https://www.awwwards.com/case-study-monolith-nyc.html
+3. **Moooi Paper Play (Webby Awards):** сцены и переходы управляются GSAP timelines, PixiJS/GLSL остаются отдельной графической системой. Взять разделение ролей, **не** превращать продажный Hero в трёхактный фильм. https://www.webbyawards.com/crafted-with-code/moooi-paper-play/
+
+### Контроль принятия
+- Никаких `inert`/недоступных CTA из-за ожидания WebGL; fallback без JS и reduced-motion проверен по DOM/клавиатуре.
+- После resize и смены motion preference нет удвоенных анимаций или скрытого контента.
+- Hero/меню/CTA проверены при повторном клике и обратном взаимодействии в середине tween; фокус/aria не теряются.
+- Для новых эффектов фиксируются before/after кадры, FPS/LoAF/INP где применимо, 320/390/490/Duo/700/874×402/1440/1920 и Safari/Chrome/Firefox; только после этого принимать дополнительные плагины.
+- Не менять утверждённую типографику, историю чужих коммитов, не добавлять новый motion engine/зависимости/публичный деплой.
+
+### Официальные источники
+- GSAP timelines: https://gsap.com/docs/v3/GSAP/Timeline/
+- GSAP React и `contextSafe`: https://gsap.com/resources/React
+- `gsap.context()`: https://gsap.com/docs/v3/GSAP/gsap.context()
+- `gsap.matchMedia()`: https://gsap.com/docs/v3/GSAP/gsap.matchMedia()
+- `Flip`: https://gsap.com/docs/v3/Plugins/Flip/
+- `SplitText`: https://gsap.com/docs/v3/Plugins/SplitText/
+- `ScrollTrigger`: https://gsap.com/docs/v3/Plugins/ScrollTrigger/
+- `quickTo`: https://gsap.com/docs/v3/GSAP/gsap.quickTo()
+- Web performance: https://web.dev/articles/animations-guide
