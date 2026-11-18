@@ -39,6 +39,7 @@ function paintPieces(target, monochrome=false){
  for(const o of paths){
   const tr=parseTransform(o.el.getAttribute('transform'));
   target.save();
+  target.globalAlpha=Math.max(0,Math.min(1,Number(o.el.style.opacity||1)));
   target.translate(o.x+tr.x,o.y+tr.y);
   target.rotate(tr.a);target.scale(tr.s,tr.s);
   target.fillStyle=monochrome?'#ff5af1':o.color;
@@ -103,13 +104,11 @@ catch(error){
  console.warn('WebGL failed; original SVG still available.',error);
 }
 if(!renderer){
-  frame.addEventListener('ryze:circle',()=>{
-   gsap.to(sourceSVG,{opacity:0,scale:0,duration:.72,ease:'power2.inOut',
-    transformOrigin:'50% 50%',onComplete:()=>{
-     if(window.parent!==window)window.parent.postMessage(
+  // Native SVG already performs its own paper blow-away and alpha fade.
+  frame.addEventListener('ryze:blown',()=>{
+    if(window.parent!==window) window.parent.postMessage(
       {type:'ryze:intro-complete',version:1},
       window.location.origin==='null'?'*':window.location.origin);
-    }});
   });
  }
 if(renderer){
@@ -243,7 +242,7 @@ if(renderer){
  const plane=new THREE.PlaneGeometry(1,1);
  let W=1,H=1,minDim=1,cameraDistance=1;
  let running=true,raf=0,orbitStarted=false,orbitFinished=false,timeline,orbitCycle=0;
- let circleFadeComplete=false,introEventSent=false,circleFadeTween;
+ let windFadeComplete=false,introEventSent=false,windFadeTween;
  const logoIntro={progress:0};
  const STORAGE_KEY='ryze-motionpath-cinematic-6-v3';
  const defaults={fov:CAMERA_FOV,yaw:0,pitch:0,roll:0,tx:0,ty:0,tz:0,logoYaw:0,logoPitch:0,logoZ:0,paused:false};
@@ -401,7 +400,7 @@ if(renderer){
   const density=Math.min(1.5,window.devicePixelRatio||1,2048/Math.max(W,H));
   logoCanvas.width=Math.max(1,Math.round(W*density));
   logoCanvas.height=Math.max(1,Math.round(H*density));
-  logo.scale.set(W*(1-logoIntro.progress),H*(1-logoIntro.progress),1);
+  logo.scale.set(W,H,1);
   // Helpers share the SAME camera and orbit math as the real cards.
   const gridSize=minDim*2.4;
   for(const [grid,z] of [[farGrid,-cameraDistance*.8],[logoGrid,0],[nearGrid,cameraDistance*.45]]){
@@ -439,11 +438,11 @@ if(renderer){
   window.__ryze3d={status:'webgl',sceneState:frame.dataset.state,
    originalPieces:pieces.length,cardCount:cards.length,videoCount:videoElements.length,orbitCycle,
    videos:videoElements.map(v=>({readyState:v.readyState,paused:v.paused,time:v.currentTime})),orbitStarted,orbitFinished,
-   cameraZ:cameraDistance,intro:{circleFadeComplete,orbitFinished,introEventSent,logoScale:1-logoIntro.progress},cards:cards.map(c=>({
+   cameraZ:cameraDistance,intro:{windFadeComplete,orbitFinished,introEventSent,logoScale:1-logoIntro.progress},cards:cards.map(c=>({
     index:c.index,progress:c.progress,x:c.mesh.position.x,y:c.mesh.position.y,
     z:c.mesh.position.z,scale:perspectiveScale(c.mesh.position.z,cameraDistance),
     visible:c.mesh.visible,opacity:+c.mesh.material.opacity.toFixed(3)}))};
-  if((frame.dataset.state==='circle'&&orbitFinished&&circleFadeComplete) || (reduce.matches&&frame.dataset.state==='static')){
+  if((frame.dataset.state==='blown'&&orbitFinished&&windFadeComplete) || (reduce.matches&&frame.dataset.state==='static')){
    running=false;videoElements.forEach(v=>v.pause());return;
   }
   raf=requestAnimationFrame(frameRender);
@@ -452,7 +451,7 @@ if(renderer){
  // The overlay is an opening act: release the page only when BOTH the
  // pink circle has disappeared and the last media card has exited.
  function announceIntroComplete(){
-  if(introEventSent || !circleFadeComplete || !orbitFinished)return;
+  if(introEventSent || !windFadeComplete || !orbitFinished)return;
   introEventSent=true;
   if(window.parent!==window){
    window.parent.postMessage({type:'ryze:intro-complete',version:1},
@@ -466,27 +465,33 @@ if(renderer){
     window.location.origin==='null'?'*':window.location.origin);
   }
  });
- frame.addEventListener('ryze:circle',()=>{
-  circleFadeTween?.kill();
-  circleFadeComplete=false;
-  const fade={progress:0};
+ frame.addEventListener('ryze:wind-start',()=>{
+  windFadeTween?.kill();
+  windFadeComplete=false;
   logo.visible=true;
-  logoIntro.progress=0;
-  circleFadeTween=gsap.to(fade,{
-   progress:1,duration:.72,ease:'power2.inOut',
+  logo.material.opacity=1;
+  const fade={value:1};
+  // Fade begins with the wind, not when the pieces finish moving.
+  windFadeTween=gsap.to(fade,{
+   value:0,duration:1.78,ease:'power2.in',
    onUpdate:()=>{
-    logoIntro.progress=fade.progress;
-    logo.scale.set(W*(1-fade.progress),H*(1-fade.progress),1);
-    logo.material.opacity=1-fade.progress;
+    logo.material.opacity=fade.value;
     running=true;render();
    },
    onComplete:()=>{
-    circleFadeComplete=true;
+    windFadeComplete=true;
     logo.visible=false;
     announceIntroComplete();
     running=true;render();
    }
   });
+ });
+ frame.addEventListener('ryze:blown',()=>{
+  windFadeTween?.kill();
+  windFadeComplete=true;
+  logo.visible=false;
+  announceIntroComplete();
+  running=true;render();
  });
  function startOrbit(){
   if(reduce.matches)return;
@@ -523,7 +528,7 @@ if(renderer){
   orbitFinished=true;running=true;render();
  });
  window.addEventListener('pagehide',()=>{
-  circleFadeTween?.kill();
+  windFadeTween?.kill();
   videoElements.forEach(v=>v.pause());
  });
  resize();
