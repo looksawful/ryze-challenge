@@ -6,9 +6,9 @@
   inset-block-end: calc(var(--cookie-bottom, var(--space-4)) + env(safe-area-inset-bottom));
   z-index: 20;
   box-sizing: border-box;
-  inline-size: min(100%, 34rem);
+  inline-size: min(100%, 27rem);
   max-block-size: calc(100svh - var(--cookie-bottom, var(--space-4)) - var(--space-4) - env(safe-area-inset-bottom));
-  padding: var(--space-4) var(--space-6);
+  padding: 14px 18px;
   overflow-y: auto;
   border: 0;
   border-radius: 0;
@@ -19,16 +19,18 @@
 }
 
 .notice[data-settings] { inline-size: min(100%, 26rem); }
-.title { margin: 0 0 var(--space-3); font: 500 .875rem/1.4 system-ui, sans-serif; }
+.title { margin: 0 0 12px; font: 500 .875rem/1.4 system-ui, sans-serif; }
+.message { margin: 0 0 10px; font: 400 .8125rem/1.4 var(--font-body, system-ui), sans-serif; }
+.message a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .description { margin: 0 0 var(--space-4); color: color-mix(in oklab, var(--cookie-foreground) 75%, transparent); text-wrap: pretty; }
 .description a { color: inherit; text-underline-offset: .2em; }
 .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .button {
   flex: 1 1 auto;
-  min-block-size: 2.75rem;
-  padding: var(--space-2) var(--space-3);
+  min-block-size: 36px;
+  padding: 7px 12px;
   border: 0;
-  border-radius: .5rem;
+  border-radius: 999px;
   background: color-mix(in oklab, var(--cookie-foreground) 7%, var(--cookie-background));
   color: inherit;
   font: 500 .8125rem/1.4 system-ui, sans-serif;
