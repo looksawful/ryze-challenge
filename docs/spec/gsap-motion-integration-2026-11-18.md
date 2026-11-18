@@ -104,46 +104,46 @@ Rewriting typography, copy, mascot sprite engine, WebGL scene, other designers' 
 
 ### Dependency diagram
 
-\`\`\`text
+```text
 T1: Hero accessible without waiting for Canvas
   ├─> T2: responsive GSAP lifecycle and same-driver ownership
   │      ├─> T3: MegaMenu + Storybook timeline debugger
   │      └─> T4: desktop CTA CSS-vs-Flip with preserved form state
   └─> T5: H1 span-vs-SplitText (can research/POC after T1)
 T3 + T4 + T5 -> T6: device matrix, regressions, review
-\`\`\`
+```
 
 ### T1. Unblock meaningful Hero before WebGL (P0)
 
 **Files to touch:** src/features/site-shell/HeroWithNavigation.tsx and HeroWithNavigation.module.css, src/motion/hero-entrance.ts; targeted browser test and the existing scripts/hero-reveal-order.test.mjs.
 
 **Specific edits:**
-- Remove \`introPhase === 'playing'\` control of the main and header inert property. Remove CSS rule that makes the *entire* main/header \`opacity:0; pointer-events:none\` during intro. Do not confuse inert with visual opacity; both restrictions must go.
-- Keep \`data-intro\` for visual decoration only, and validated postMessage handling (\`ryze:assembled\`, \`ryze:intro-complete\`), including event.origin / event.source checks.
-- Ensure first-frame heading and action have readable default CSS, without GSAP \`fromTo(autoAlpha:0)\` that races clicks or focus. Move any brand entrance movement to a separate decorative layer or to nonblocking transforms.
+- Remove `introPhase === 'playing'` control of the main and header inert property. Remove CSS rule that makes the *entire* main/header `opacity:0; pointer-events:none` during intro. Do not confuse inert with visual opacity; both restrictions must go.
+- Keep `data-intro` for visual decoration only, and validated postMessage handling (`ryze:assembled`, `ryze:intro-complete`), including event.origin / event.source checks.
+- Ensure first-frame heading and action have readable default CSS, without GSAP `fromTo(autoAlpha:0)` that races clicks or focus. Move any brand entrance movement to a separate decorative layer or to nonblocking transforms.
 - If preserving a watchdog to fade/stop a broken decorative Canvas, it must not gate visitor access. Keep current WebGL code and artistic trajectory unchanged.
 
 **Acceptance:** load with disabled JavaScript, missing iframe, missing assembled event, low-performance delay and reduced-motion toggle. Immediately see, focus and click H1/CTA/navigation. No 24-second wait or invisible focus. Existing two-line typography and safe viewport geometry preserved.
 
-**Verification:** actual browser behavior (not only source regex), keyboard click and pointer test, screenshot before assembled event; rerun \`node --test scripts/hero-reveal-order.test.mjs scripts/motion-system.test.mjs\`, \`npm run typecheck\`, \`npm run build\` after revising obsolete literal test expectations.
+**Verification:** actual browser behavior (not only source regex), keyboard click and pointer test, screenshot before assembled event; rerun `node --test scripts/hero-reveal-order.test.mjs scripts/motion-system.test.mjs`, `npm run typecheck`, `npm run build` after revising obsolete literal test expectations.
 
 ### T2. Make one owner for each DOM tween (P1)
 
 **Files to touch:** src/motion/tokens.ts, src/motion/hero-entrance.ts, src/features/site-shell/HeroWithNavigation.tsx, and relevant existing tests. Consider src/features/site-shell/HeroMotionBackground.tsx only when the enhancement-mode contract is coordinated with its owner.
 
 **Specific edits:**
-- Add semantic labels \`content\`, \`brand\`, \`settled\` to the existing Hero timeline; preserve existing token registry and named motion slots. No new animation engine.
-- Use \`gsap.matchMedia()\` only to construct GSAP tweens under responsive/reduced-motion conditions. It already manages a GSAP Context. Revert on dismount/media change, cancel async imports, and ensure no CSS keyframe concurrently drives the same element/property.
-- Treat Static (no JS), Reduced (skip decorative travel), Lightweight (without costly full-screen WebGL), and Full as a common behavior contract across Hero/Header. SiteHeader's \`useNavigationMode\` currently considers reduced motion, deviceMemory and hardwareConcurrency, but \`HeroMotionBackground\` currently checks only reduced motion; reconcile without inferring GPU capability from viewport width.
+- Add semantic labels `content`, `brand`, `settled` to the existing Hero timeline; preserve existing token registry and named motion slots. No new animation engine.
+- Use `gsap.matchMedia()` only to construct GSAP tweens under responsive/reduced-motion conditions. It already manages a GSAP Context. Revert on dismount/media change, cancel async imports, and ensure no CSS keyframe concurrently drives the same element/property.
+- Treat Static (no JS), Reduced (skip decorative travel), Lightweight (without costly full-screen WebGL), and Full as a common behavior contract across Hero/Header. SiteHeader's `useNavigationMode` currently considers reduced motion, deviceMemory and hardwareConcurrency, but `HeroMotionBackground` currently checks only reduced motion; reconcile without inferring GPU capability from viewport width.
 - Preserve fixed-position Dock's no-transform parent rule and existing iframe message verification.
 
-**Acceptance:** resize 699↔700 and 1199↔1200, change \`prefers-reduced-motion\` mid-tween, switch Dawn/Dusk, mount/unmount/remount. No duplicate animation owner, leaked ticker, hidden text or incorrect WebGL mode.
+**Acceptance:** resize 699↔700 and 1199↔1200, change `prefers-reduced-motion` mid-tween, switch Dawn/Dusk, mount/unmount/remount. No duplicate animation owner, leaked ticker, hidden text or incorrect WebGL mode.
 
 ### T3. Optimize reversible MegaMenu + debug real timelines (P1)
 
 **Files to touch:** src/features/site-shell/SiteHeader.tsx, SiteHeader.module.css and existing navigation Storybook/tests; optional new debug-only Storybook helper.
 
-**Specific edits:** retain existing \`timeline.play()/reverse()\` and \`easeReverse\`; first test 3 rapid pointer interactions and keyboard Escape/Tab during motion. Compare current \`MOTION.surface.duration=.42s\` versus a candidate ~.18-.28s using screenshots and perceived clarity; alter duration only if justified. No extra GSAP controller when existing one works. Add a dev-only control to pause/scrub/seek the actual Hero timeline (GSDevTools where available, otherwise the native timeline \`progress()\` API), exposed through Storybook without importing debug UI into the shipped route.
+**Specific edits:** retain existing `timeline.play()/reverse()` and `easeReverse`; first test 3 rapid pointer interactions and keyboard Escape/Tab during motion. Compare current `MOTION.surface.duration=.42s` versus a candidate ~.18-.28s using screenshots and perceived clarity; alter duration only if justified. No extra GSAP controller when existing one works. Add a dev-only control to pause/scrub/seek the actual Hero timeline (GSDevTools where available, otherwise the native timeline `progress()` API), exposed through Storybook without importing debug UI into the shipped route.
 
 **Acceptance:** rapid direction changes do not leave overlays stuck, keyboard focus remains correct, not more than one menu timeline controls the panel; debug tooling cannot enter the production bundle. Storybook is the actual app component, not a duplicated fake.
 
@@ -151,7 +151,7 @@ T3 + T4 + T5 -> T6: device matrix, regressions, review
 
 **Files to touch:** src/features/hero/HeroAction.tsx and HeroAction.module.css, HeroAction.stories.tsx, relevant browser interaction tests.
 
-**Specific edits:** remove \`key={containerWidth}\` from Storybook: this currently force-remounts HeroAction on resize and conceals state losses. First make the existing CSS state transition and ResizeObserver handle 799↔800 with current domain, validation/error and focus intact. Then compare an optional Flip implementation **on desktop only**: capture \`Flip.getState\` before React state change, after DOM commit animate a stable shell via \`Flip.from\`; if React remounts targets, use \`data-flip-id\` plus targets. Kill/revert interrupted tweens, no direct DOM reparenting, no default \`flushSync\`. Maintain native mobile dialog and CSS no-JS fallback.
+**Specific edits:** remove `key={containerWidth}` from Storybook: this currently force-remounts HeroAction on resize and conceals state losses. First make the existing CSS state transition and ResizeObserver handle 799↔800 with current domain, validation/error and focus intact. Then compare an optional Flip implementation **on desktop only**: capture `Flip.getState` before React state change, after DOM commit animate a stable shell via `Flip.from`; if React remounts targets, use `data-flip-id` plus targets. Kill/revert interrupted tweens, no direct DOM reparenting, no default `flushSync`. Maintain native mobile dialog and CSS no-JS fallback.
 
 **Acceptance:** 800px+ wide CTA transforms to input/submit; narrower layout uses accessible native dialog; retries preserve value/focus, Escape closes, screen keyboard doesn't clip controls, reduced motion has instant state transitions. Ship Flip only if visually better than CSS without regressions.
 
@@ -159,7 +159,7 @@ T3 + T4 + T5 -> T6: device matrix, regressions, review
 
 **Files to touch:** src/features/hero/Hero.tsx, src/motion/hero-entrance.ts, Hero heading Storybook story and visual tests. Do not change actual heading copy, nested muted spans, font choice, or approved layout.
 
-**Specific edits:** version A uses the two existing spans and simple reveal. Version B experiments with SplitText \`type:'lines'\`, \`mask:'lines'\`, \`autoSplit:true\` and a returned tween inside \`onSplit\`; manage revert and accessibility carefully. Never split into characters by default.
+**Specific edits:** version A uses the two existing spans and simple reveal. Version B experiments with SplitText `type:'lines'`, `mask:'lines'`, `autoSplit:true` and a returned tween inside `onSplit`; manage revert and accessibility carefully. Never split into characters by default.
 
 **Acceptance:** consistent accessible H1 with late font loading, 200% zoom, narrow landscape, 320/390/490(Duo)/700/1024/1440/1920/2803 widths. Select A by default unless B is clearly and measurably better.
 
@@ -167,14 +167,14 @@ T3 + T4 + T5 -> T6: device matrix, regressions, review
 
 **Files to touch:** pre-existing QA scripts/stories, a bounded review report, and the linked existing GitHub QA issue after approved execution.
 
-**Runs/checks:** \`npm run typecheck\`; \`npm run build\`; \`node --test scripts/hero-reveal-order.test.mjs scripts/motion-system.test.mjs\`; relevant pre-existing browser smoke tests; targeted Storybook interaction tests. Real browser verification on Titan in available Chrome/Firefox/Opera/Yandex; Safari on Mac/iPhone where available, with screenshots tagged by device, browser and tested git SHA. Viewports: 320×568, 390×844, Duo 490×1091/951×669, breakpoint 699/700 and 799/800, 874×402 landscape, 1440×900, 1897×1024, 1920×1080, 2803×1024; 200% zoom and reduced/static/lightweight/full modes.
+**Runs/checks:** `npm run typecheck`; `npm run build`; `node --test scripts/hero-reveal-order.test.mjs scripts/motion-system.test.mjs`; relevant pre-existing browser smoke tests; targeted Storybook interaction tests. Real browser verification on Titan in available Chrome/Firefox/Opera/Yandex; Safari on Mac/iPhone where available, with screenshots tagged by device, browser and tested git SHA. Viewports: 320×568, 390×844, Duo 490×1091/951×669, breakpoint 699/700 and 799/800, 874×402 landscape, 1440×900, 1897×1024, 1920×1080, 2803×1024; 200% zoom and reduced/static/lightweight/full modes.
 
 **Acceptance:** no regression in actual CTA and menu interaction, body overflow, focus, reduced motion, typography, or static fallback. Compare visual frames 0/25/50/75/100% in private Storybook; measure frame drops/Long Animation Frames and layout changes before claiming an optimization. Never call a source-code regex check alone proof of behavior.
 
 ### Engineering process and safe integration
 
-- Do not checkout/pull/stash/rebase or blanket \`git add -A\` in a dirty shared worktree. Re-check \`main\`, \`origin/main\`, worktrees and specific changed paths immediately before edits. Preserve other agents' untracked assets and tests.
-- One existing canonical \`main\` with tiny path-scoped commits, or review-isolated changes only when branch policy explicitly allows it. No parallel variants promoted to new SoT. No force-push.
+- Do not checkout/pull/stash/rebase or blanket `git add -A` in a dirty shared worktree. Re-check `main`, `origin/main`, worktrees and specific changed paths immediately before edits. Preserve other agents' untracked assets and tests.
+- One existing canonical `main` with tiny path-scoped commits, or review-isolated changes only when branch policy explicitly allows it. No parallel variants promoted to new SoT. No force-push.
 - Proposed approval checkpoints: (1) T1 actual accessible first frame; (2) T2/T3 lifecycle and navigation; (3) CSS vs Flip and H1 variants; (4) full QA and two-axis review.
 - Trace work in the existing GitHub Issues according to docs/agents/issue-tracker.md once the plan is approved; do not invent a new Asana implementation backlog. Report technical findings to the existing Asana Ryze handoff task only as a mirror.
 - No public deployment, changes to CI/repository visibility or other artists' 3D scene without explicit approval.
