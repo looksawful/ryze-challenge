@@ -13,7 +13,7 @@ test("Hero has one adaptive row for form and integrations, without background ca
   assert.doesNotMatch(hero, /styles\.mediaComposition/);
   assert.match(hero, /styles\.actionCluster/);
   assert.match(hero, /<IntegrationLogos\s*\/>/);
-  assert.match(css, /\.hero\[data-conversational-hero\] \.headline[\s\S]*?--type-heading-size:clamp\(72px/);
+  assert.match(css, /\.hero\[data-conversational-hero\] \.headline[\s\S]*?--type-heading-size:\s*clamp\(72px/);
   assert.match(css, /@media\s*\(width\s*<\s*800px\)/);
 });
 
