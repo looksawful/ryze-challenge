@@ -1,0 +1,8 @@
+{
+  "browser": "C:\\Users\\awful\\AppData\\Local\\Programs\\Opera\\opera.exe",
+  "story": "http://100.110.158.49:6011/iframe.html?id=ryze-foundations-button--states&viewMode=story",
+  "cases": [],
+  "errors": [
+    "AssertionError [ERR_ASSERTION]: CDP page\n    at file:///D:/inwork/ryze-challenge/scripts/button-browser-qa.mjs:81:10\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+  ]
+}

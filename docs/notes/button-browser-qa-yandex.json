@@ -1,0 +1,210 @@
+{
+  "browser": "C:\\Program Files\\Yandex\\YandexBrowser\\Application\\browser.exe",
+  "story": "http://127.0.0.1:6011/iframe.html?id=ryze-foundations-button--states&viewMode=story",
+  "cases": [
+    {
+      "width": 320,
+      "height": 720,
+      "reduced": false,
+      "viewport": 320,
+      "overflow": 0,
+      "controls": 12,
+      "minHeight": 44,
+      "clippedLabels": [],
+      "first": {
+        "background": "rgb(8, 8, 8)",
+        "transition": "0.18s, 0.18s, 0.16s",
+        "x": 32,
+        "y": 167,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "reduced": false,
+      "viewport": 390,
+      "overflow": 0,
+      "controls": 12,
+      "minHeight": 44,
+      "clippedLabels": [],
+      "first": {
+        "background": "rgb(8, 8, 8)",
+        "transition": "0.18s, 0.18s, 0.16s",
+        "x": 32,
+        "y": 167,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "width": 700,
+      "height": 900,
+      "reduced": false,
+      "viewport": 700,
+      "overflow": 0,
+      "controls": 12,
+      "minHeight": 44,
+      "clippedLabels": [],
+      "first": {
+        "background": "rgb(8, 8, 8)",
+        "transition": "0.18s, 0.18s, 0.16s",
+        "x": 32,
+        "y": 125,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "width": 874,
+      "height": 402,
+      "reduced": false,
+      "viewport": 874,
+      "overflow": -15,
+      "controls": 12,
+      "minHeight": 44,
+      "clippedLabels": [],
+      "first": {
+        "background": "rgb(8, 8, 8)",
+        "transition": "0.18s, 0.18s, 0.16s",
+        "x": 32,
+        "y": 125,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "width": 900,
+      "height": 760,
+      "reduced": false,
+      "viewport": 900,
+      "overflow": 0,
+      "controls": 12,
+      "minHeight": 44,
+      "clippedLabels": [],
+      "first": {
+        "background": "rgb(8, 8, 8)",
+        "transition": "0.18s, 0.18s, 0.16s",
+        "x": 32,
+        "y": 125,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "width": 1200,
+      "height": 800,
+      "reduced": false,
+      "viewport": 1200,
+      "overflow": 0,
+      "controls": 12,
+      "minHeight": 44,
+      "clippedLabels": [],
+      "first": {
+        "background": "rgb(8, 8, 8)",
+        "transition": "0.18s, 0.18s, 0.16s",
+        "x": 32,
+        "y": 125,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "reduced": false,
+      "viewport": 1440,
+      "overflow": 0,
+      "controls": 12,
+      "minHeight": 44,
+      "clippedLabels": [],
+      "first": {
+        "background": "rgb(8, 8, 8)",
+        "transition": "0.18s, 0.18s, 0.16s",
+        "x": 32,
+        "y": 125,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "reduced": false,
+      "viewport": 1920,
+      "overflow": 0,
+      "controls": 12,
+      "minHeight": 44,
+      "clippedLabels": [],
+      "first": {
+        "background": "rgb(8, 8, 8)",
+        "transition": "0.18s, 0.18s, 0.16s",
+        "x": 32,
+        "y": 125,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "reduced": true,
+      "viewport": 390,
+      "overflow": 0,
+      "controls": 12,
+      "minHeight": 44,
+      "clippedLabels": [],
+      "first": {
+        "background": "rgb(8, 8, 8)",
+        "transition": "0s",
+        "x": 32,
+        "y": 150,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "reduced": true,
+      "viewport": 1440,
+      "overflow": 0,
+      "controls": 12,
+      "minHeight": 44,
+      "clippedLabels": [],
+      "first": {
+        "background": "rgb(8, 8, 8)",
+        "transition": "0s",
+        "x": 32,
+        "y": 125,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "reduced": false,
+      "viewport": 1440,
+      "overflow": 0,
+      "controls": 12,
+      "minHeight": 44,
+      "clippedLabels": [],
+      "first": {
+        "background": "rgb(8, 8, 8)",
+        "transition": "0.18s, 0.18s, 0.16s",
+        "x": 32,
+        "y": 125,
+        "width": 100,
+        "height": 50
+      }
+    }
+  ],
+  "errors": [],
+  "hover": {
+    "before": "rgb(8, 8, 8)",
+    "after": "rgb(41, 41, 41)",
+    "pressed": "0.985"
+  }
+}
