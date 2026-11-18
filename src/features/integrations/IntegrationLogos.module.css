@@ -1,10 +1,10 @@
 @layer components {
   .root {
     --integration-gap: clamp(6px, 1vw, 12px);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, min(8ch, 50%));
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    column-gap: var(--integration-gap);
+    gap: var(--integration-gap);
     inline-size: 100%;
     min-inline-size: 0;
   }
@@ -22,14 +22,16 @@
     inline-size: clamp(70px, 7vw, 90px);
   }
   .root:has(.visual[data-mode="webgl"]) .caption {
-    flex: 0 1 auto;
+    flex: 1 0 10ch;
+    min-inline-size: 10ch;
     text-align: start;
   }
 
   .visual {
     position: relative;
-    inline-size: 100%;
-    min-inline-size: 0;
+    flex: 1 1 70px;
+    inline-size: auto;
+    min-inline-size: 70px;
     min-block-size: 70px;
     container-type: inline-size;
     display: grid;
@@ -64,13 +66,15 @@
   }
 
   .caption {
+    flex: 1 0 10ch;
+    min-inline-size: 10ch;
     font-size: clamp(0.8125rem, 0.75rem + 0.25vw, 0.875rem);
     line-height: 1.35;
     font-weight: 400;
     color: #c3c3c3;
     text-align: right;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
   }
 
   :global([data-theme="dawn"]) .root .caption { color: #4d4d4d; }

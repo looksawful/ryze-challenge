@@ -50,18 +50,18 @@ export const Playground: Story = {};
 /** Keep the former entry so existing links don't break. */
 export const Interactive: Story = { name: "Interactive (manual)" };
 
-export const MissingEmail: Story = {
-  name: "Empty email · actual validation",
+export const MissingWebsite: Story = {
+  name: "Empty website · actual validation",
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Start for free" }));
   },
 };
 
 export const ReadyPreview: Story = {
-  name: "Valid email · AI preview",
+  name: "Valid website · AI preview",
   play: async ({ canvas, userEvent }) => {
-    const input = canvas.getByRole("textbox", { name: "Email address" });
-    await userEvent.type(input, "hello@example.com");
+    const input = canvas.getByRole("textbox", { name: "Website address" });
+    await userEvent.type(input, "example.com");
     await userEvent.click(canvas.getByRole("button", { name: "Start for free" }));
     await canvas.findByRole("region", { name: "Ryze capability examples" }, { timeout: 8000 });
   },

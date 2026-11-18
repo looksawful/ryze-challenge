@@ -771,7 +771,7 @@
     const h = Math.max(1, frame.clientHeight);
     const unit = 1000 / Math.min(w,h);
     const sw = w*unit, sh = h*unit;
-    const span = 610;
+    const span = 550;
     const scale = span/LOGO_SIZE;
     const ox = (sw-span)/2, oy=(sh-span)/2;
     svg.setAttribute('viewBox',`0 0 ${sw} ${sh}`);
@@ -906,7 +906,7 @@
     let cardsStarted=false;
     // Single continuous GSAP clock, one stateful group of 118 paper paths.
     tween=createClockTween(clock,{
-      time:totalDuration,duration:totalDuration*.78,ease:'none',
+      time:totalDuration,duration:totalDuration*.66,ease:'none',
       onUpdate:()=>{
         // Cards join while paper fragments are still assembling, before the gust.
         if(!cardsStarted && clock.time>=scene2Start*.45){

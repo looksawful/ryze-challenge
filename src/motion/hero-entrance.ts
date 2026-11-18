@@ -11,6 +11,23 @@ export function createHeroEntranceTimeline(
 ) {
   gsap.registerPlugin(SplitText);
   const splits: SplitText[] = [];
+  const headingChars: HTMLElement[] = [];
+  let idleSpin: { kill: () => unknown } | null = null;
+  let activeSpin: { kill: () => unknown } | null = null;
+  const scheduleSpin = () => {
+    // A rare single-letter accent, never a distracting continuous loop.
+    idleSpin = gsap.delayedCall(35 + Math.random() * 20, () => {
+      if (document.visibilityState === "visible" &&
+          !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+          headingChars.length) {
+        const char = headingChars[Math.floor(Math.random() * headingChars.length)];
+        if (char.isConnected) activeSpin = gsap.fromTo(char,
+          { rotationY: 0 },
+          { rotationY: 360, duration: 0.86, ease: "power2.inOut", clearProps: "transform" });
+      }
+      scheduleSpin();
+    });
+  };
   const timeline = gsap.timeline({ paused: true, defaults: { ease: MOTION.enter.ease } });
 
   for (const cue of HERO_ENTRANCE_CUES) {
@@ -25,14 +42,18 @@ export function createHeroEntranceTimeline(
       );
       if (lines.length) {
         gsap.set(element, { opacity: 1 });
-        for (const [lineIndex, line] of lines.entries()) {
-          const split = SplitText.create(line, { type: "chars", mask: "chars", aria: "none" });
+        let typingAt = cue.at;
+        for (const line of lines) {
+          const split = SplitText.create(line, { type: "chars", aria: "none" });
           splits.push(split);
+          headingChars.push(...split.chars.filter((char): char is HTMLElement =>
+            char instanceof HTMLElement && Boolean(char.textContent?.trim())));
           timeline.fromTo(split.chars,
-            { yPercent: 102, autoAlpha: 0 },
-            { yPercent: 0, autoAlpha: 1, duration: .58, ease: MOTION.emphasis.ease,
-              stagger: .018, clearProps: "transform,opacity,visibility" },
-            cue.at + lineIndex * .13);
+            { autoAlpha: 0 },
+            { autoAlpha: 1, duration: .035, stagger: .04, ease: "none",
+              clearProps: "opacity,visibility" },
+            typingAt);
+          typingAt += split.chars.length * .04 + .07;
         }
         continue;
       }
@@ -50,7 +71,12 @@ export function createHeroEntranceTimeline(
       cue.at);
   }
 
+  if (headingChars.length) timeline.call(scheduleSpin, [], 2);
   return Object.assign(timeline, {
-    revertSplit() { for (const split of splits) split.revert(); },
+    revertSplit() {
+      idleSpin?.kill();
+      activeSpin?.kill();
+      for (const split of splits) split.revert();
+    },
   });
 }

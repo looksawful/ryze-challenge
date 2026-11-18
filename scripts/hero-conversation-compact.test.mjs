@@ -5,10 +5,10 @@ import { test } from "node:test";
 const component = readFileSync(new URL("../src/features/hero/HeroConversation.tsx", import.meta.url), "utf8");
 const css = readFileSync(new URL("../src/features/hero/HeroConversation.module.css", import.meta.url), "utf8");
 
-test("email-first Hero starts with a single chat-like field, not a transcript card", () => {
+test("website-first Hero starts with a single chat-like field, not a transcript card", () => {
   assert.doesNotMatch(component, /className=\{styles\.topline\}/);
   assert.doesNotMatch(component, /className=\{styles\.transcript\}/);
-  assert.match(component, /type="email"/);
+  assert.match(component, /type="text" name="website"/);
   assert.match(component, /<form\b[^>]*className=\{styles\.composer\}/);
   assert.match(component, /type="submit"/);
 });
@@ -19,7 +19,7 @@ test("chat shell is transparent and the input alone owns the pill surface", () =
   assert.doesNotMatch(css, /\.chat\s*\{[^}]*backdrop-filter\s*:/s);
 });
 
-test("email is a local preview, not a fictitious subscription", () => {
-  assert.match(component, /No email has been sent/);
+test("website address is a local preview, not a fictitious subscription", () => {
+  assert.match(component, /No website was contacted or analyzed/);
   assert.match(component, /setSubmitted\(true\)/);
 });

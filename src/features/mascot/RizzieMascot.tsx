@@ -77,8 +77,10 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
     viewportWidth,
   });
   const mobileInert = interactiveDesktopOnly && (!hydrated || viewportWidth < 800 || coarsePointer);
-  const canDrag = !mobileInert && ((mode.kind === "interactive" && mode.input === "pointer") ||
+  const canAnimate = !mobileInert && ((mode.kind === "interactive" && mode.input === "pointer") ||
     (desktop && supported && hydrated && mode.kind === "static" && mode.reason === "reduced-motion"));
+  // Keep the sprite and CTA interactions, but disable manual repositioning.
+  const canDrag = false;
 
   const freezeWalk = useCallback(() => {
     const zone = zoneRef.current;
@@ -316,7 +318,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
 
   const wander = shouldWander({
     desktop,
-    motionAllowed: ambientWander && motion && ready && canDrag && !wasDragged && !detached &&
+    motionAllowed: ambientWander && motion && ready && canAnimate && !wasDragged && !detached &&
       (previewAnimation === undefined || previewAnimation === "natural"),
     visible, actionOpen, messageOpen: Boolean(message), compact,
     interacting: engaged || dragging,
@@ -426,7 +428,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
       return;
     }
     freezeWalk();
-    if (canDrag && motion && ready) {
+    if (canAnimate && motion && ready) {
       animation.current = "waving";
       animationAt.current = performance.now();
       queueGaze.current = true;
@@ -441,13 +443,13 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
     setMessage({ id: ++counter.current, text: "Click to book a call." });
   }
 
-  const animated = canDrag && motion && ready && visible;
+  const animated = canAnimate && motion && ready && visible;
   if (mode.kind === "hidden") return null;
   return (
     <section className={styles.zone} ref={zoneRef} aria-label="Rizzie mascot"
       data-mode={mode.kind} data-compact={compact || undefined} data-mobile-inert={mobileInert || undefined}>
       <a className={styles.pet} ref={petRef} href={href}
-        aria-label="Rizzie: Book a call" draggable={false} onClick={activate}
+        aria-label="Rizzie: Book a call" tabIndex={mobileInert ? -1 : undefined} draggable={false} onClick={activate}
         onMouseEnter={() => { setEngaged(true); offerCall(); }}
         onMouseLeave={() => setEngaged(false)}
         onFocus={() => { setEngaged(true); offerCall(); }}

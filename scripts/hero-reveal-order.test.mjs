@@ -9,7 +9,7 @@ test("Hero reveals after paper intro completion, not during fragment assembly", 
   const shell = read("src/features/site-shell/HeroWithNavigation.tsx");
   assert.match(source, /addEventListener\(['"]ryze:assembled['"]/);
   assert.match(source, /type:\s*['"]ryze:assembled['"]/);
-  assert.match(shell, /event\.data\?\.type === "ryze:assembled"/);
+  assert.match(shell, /event\.data\?\.type === "ryze:intro-complete"/);
   assert.match(shell, /"revealing"/);
   assert.match(shell, /"ryze:intro-complete"/);
   assert.match(shell, /6500/);

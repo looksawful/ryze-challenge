@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 const read = (file) => readFileSync(new URL("../" + file, import.meta.url), "utf8");
 
-test("Storybook uses current email-first product stories, including real form outcomes", () => {
+test("Storybook uses current website-first product stories, including real form outcomes", () => {
  const file=read("src/features/hero/HeroConversation.stories.tsx");
- for(const name of ["Playground","MissingEmail","ReadyPreview"]) {
+ for(const name of ["Playground","MissingWebsite","ReadyPreview"]) {
    assert.match(file, new RegExp("export const " + name + "\\b"), name);
  }
  assert.match(file,/play:\s*async/, "interactive scenarios should actually operate the component");

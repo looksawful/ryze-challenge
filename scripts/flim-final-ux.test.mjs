@@ -39,11 +39,11 @@ test("Form uses accent pink submit and conversation replies instead of alert/bor
   assert.match(chatCss, /\.composer button[\s\S]*?background:\s*var\(--accent-current/);
   assert.match(chat, /role="status"/);
   assert.match(chat, /role="alert"/);
-  assert.match(chat, /Starting your preview/);
+  assert.match(chat, /Preparing a sample preview/);
   assert.doesNotMatch(chat, /className=\{styles\.error\}/);
 });
 
-test("Mascot ends to the left of the email form in the fluid desktop grid", () => {
+test("Mascot ends to the left of the website form in the fluid desktop grid", () => {
   assert.match(heroCss, /\.mascot\s*\{[^}]*grid-column:\s*1\s*\/\s*3/s);
   assert.match(heroCss, /\.action\s*\{[^}]*grid-column:\s*3\s*\/\s*11/s);
 });

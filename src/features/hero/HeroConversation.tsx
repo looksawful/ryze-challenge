@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import styles from "./HeroConversation.module.css";
 import { CHAT_RHYTHM } from "../../motion/tokens";
+import { normalizeWebsiteAddress } from "./website-address";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const capabilities = [
@@ -13,9 +14,9 @@ const capabilities = [
 ] as const;
 
 // User-tested interaction pattern: type, pause, erase, repeat. This is a
-// decorative overlay, never the value of the real email input.
+// decorative overlay, never the value of the real website input.
 export const placeholderPhrases = [
-  "Enter your email…",
+  "Enter your website…",
   "See what Ryze can do…",
   "Get your growth preview…",
   "Grow your Shopify store…",
@@ -26,7 +27,7 @@ export default function HeroConversation() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [introReleased, setIntroReleased] = useState(false);
-  const [email, setEmail] = useState("");
+  const [website, setWebsite] = useState("");
   const [error, setError] = useState("");
   const [reply, setReply] = useState<{ kind: "error" | "processing" | "ready"; text: string } | null>(null);
   const replyTextRef = useRef<HTMLSpanElement>(null);
@@ -185,14 +186,15 @@ export default function HeroConversation() {
     };
   }, [reply, reducedMotion]);
 
-  function submitEmail(event: FormEvent<HTMLFormElement>) {
+  function submitWebsite(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     stopPresentation();
     if (processingTimer.current) clearTimeout(processingTimer.current);
-    if (!field.current?.checkValidity() || email.trim().length > 254) {
-      const message = !email.trim()
-        ? "I'll need your email address to get started."
-        : "That email address doesn't look right. Could you check it?";
+    const store = normalizeWebsiteAddress(website);
+    if (!store) {
+      const message = !website.trim()
+        ? "I'll need your website address to get started."
+        : "That website address doesn't look right. Could you check it?";
       setError(message);
       setReply({ kind: "error", text: message });
       setSubmitted(false);
@@ -200,11 +202,11 @@ export default function HeroConversation() {
     }
     setError("");
     setSubmitted(false);
-    const processingCopy = "Starting your preview. Let's explore what Ryze can do.";
+    const processingCopy = `Preparing a sample preview for ${store}. Let's explore Ryze.`;
     setReply({ kind: "processing", text: processingCopy });
     processingTimer.current = setTimeout(() => {
       setSubmitted(true);
-      setReply({ kind: "ready", text: "Here is a sample of what your AI marketing workspace could explore." });
+      setReply({ kind: "ready", text: `Here is an example of the opportunities Ryze could explore for ${store}.` });
       processingTimer.current = null;
     }, reducedMotion ? 100 : Math.ceil(
       (processingCopy.length * CHAT_RHYTHM.character + CHAT_RHYTHM.processingTail) * 1000
@@ -212,7 +214,7 @@ export default function HeroConversation() {
   }
 
   const active = capabilities[selected];
-  const overlayVisible = hydrated && introReleased && !reducedMotion && !hasInteracted && !email;
+  const overlayVisible = hydrated && introReleased && !reducedMotion && !hasInteracted && !website;
 
   return (
     <section id="hero-conversation" className={styles.chat} aria-label="Ryze AI preview">
@@ -220,7 +222,7 @@ export default function HeroConversation() {
         <div className={styles.reply} data-ai-reply={reply.kind}>
           <p className={styles.assistantReply} aria-hidden="true"><span ref={replyTextRef}>{reply.text}</span><span className={styles.replyCursor} aria-hidden="true" /></p>
           {reply.kind === "error"
-            ? <span id="ryze-email-error" className={styles.screenReader} role="alert">{reply.text}</span>
+            ? <span id="ryze-website-error" className={styles.screenReader} role="alert">{reply.text}</span>
             : <span className={styles.screenReader} role="status">{reply.text}</span>}
         </div>
       )}
@@ -241,31 +243,31 @@ export default function HeroConversation() {
                 sizes="(max-width: 640px) 80vw, 230px" unoptimized />
             </div>
           </div>
-          <p className={styles.honesty}>Demo only. No email has been sent and no store has been analyzed.</p>
+          <p className={styles.honesty}>Demo only. No website was contacted or analyzed.</p>
         </div>
       )}
-      <form ref={composer} className={styles.composer} onSubmit={submitEmail} noValidate>
-        <label className={styles.screenReader} htmlFor="ryze-preview-email">Email address</label>
+      <form ref={composer} className={styles.composer} onSubmit={submitWebsite} noValidate>
+        <label className={styles.screenReader} htmlFor="ryze-preview-website">Website address</label>
         <div className={styles.fieldArea}>
-          <input id="ryze-preview-email" ref={field} type="email" name="email"
-            autoComplete="email" inputMode="email" required maxLength={254}
-            placeholder={overlayVisible ? "" : "Enter your email…"}
-            value={email}
+          <input id="ryze-preview-website" ref={field} type="text" name="website"
+            autoComplete="url" inputMode="url" required maxLength={254}
+            placeholder={overlayVisible ? "" : "Enter your website…"}
+            value={website}
             onFocus={stopPresentation}
             onChange={(event) => {
-              setEmail(event.target.value);
+              setWebsite(event.target.value);
               setError("");
               setReply(null);
               setSubmitted(false);
               if (processingTimer.current) clearTimeout(processingTimer.current);
             }}
             aria-invalid={Boolean(error)}
-            aria-describedby={error ? "ryze-email-error" : "ryze-email-note"} />
-          {overlayVisible && <span className={styles.animatedPlaceholder} data-animated-placeholder aria-hidden="true" ref={hint}>Enter your email…</span>}
+            aria-describedby={error ? "ryze-website-error" : "ryze-website-note"} />
+          {overlayVisible && <span className={styles.animatedPlaceholder} data-animated-placeholder aria-hidden="true" ref={hint}>Enter your website…</span>}
         </div>
         <button type="submit" disabled={!hydrated} aria-label="Start for free">Start for free</button>
       </form>
-      <p className={styles.screenReader} id="ryze-email-note">Local preview: no email is sent or stored.</p>
+      <p className={styles.screenReader} id="ryze-website-note">Local preview: your website address stays in this browser; no site is analyzed.</p>
 
     </section>
   );
