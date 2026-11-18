@@ -941,7 +941,7 @@
   }
   @media (max-width: 699px) {
     .header[data-variant="dock"] .mobileDock {
-      width: min(480px, calc(100% - 84px));
+      width: calc(100% - 84px);
       border-radius: 20px 0 0 20px;
       border-inline-end: 0;
     }
@@ -1060,15 +1060,15 @@
     .header[data-variant="dock"] .mobileDock {
       inset-inline-start: max(16px, calc((100% - 720px) / 2));
       width: min(650px, calc(100% - 98px));
-      min-height: 58px;
+      min-height: 65px;
       border-radius: 17px;
     }
     .header[data-variant="dock"] .inner,
     .header[data-variant="dock"][data-docked="true"] .inner {
       inset: max(10px, env(safe-area-inset-top)) max(16px, calc((100% - 720px) / 2)) auto auto;
       width: 56px;
-      height: 58px;
-      min-height: 58px;
+      height: 65px;
+      min-height: 65px;
       border-radius: 17px;
     }
     .header[data-variant="dock"] .mobileToggle {
@@ -1095,13 +1095,6 @@
     }
     .header[data-variant="dock"] .mobileDialog {
       width: min(46vw, 430px);
-    }
-  }
-
-  /* Duo Closed: preserve text readability without touching the Hero geometry. */
-  @media (min-width: 440px) and (max-width: 510px) and (max-height: 720px) and (orientation: portrait) {
-    .header[data-variant="dock"] .mobileDock {
-      width: min(350px, calc(100% - 85px));
     }
   }
 
