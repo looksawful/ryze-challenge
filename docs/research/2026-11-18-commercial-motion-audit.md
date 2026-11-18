@@ -118,3 +118,55 @@
 - `ScrollTrigger`: https://gsap.com/docs/v3/Plugins/ScrollTrigger/
 - `quickTo`: https://gsap.com/docs/v3/GSAP/gsap.quickTo()
 - Web performance: https://web.dev/articles/animations-guide
+
+
+## Проект внедрения пяти приёмов GSAP: решение и тестовый контракт (18.11.2026)
+
+**Статус:** исследование, предложение для технического и визуального согласования. Не меняет реализацию сайта, Storybook, ветки или релиз. Scope сознательно ограничен Timeline, gsap.context/useGSAP, gsap.matchMedia, Flip и SplitText. ScrollTrigger, ScrollSmoother, Observer, Physics, DrawSVG, MorphSVG, Draggable и Inertia исключены из данного этапа.
+
+### Продуктовое решение (The Business Engineer: ограничение и контргипотеза)
+Целевая работа посетителя: понять обещание сервиса и без препятствий начать доменный сценарий. Узкое место, **подтверждённое исходниками**, — доступность оффера и CTA зависит от сообщения WebGL \`ryze:assembled\`; блокирующий \`inert\` и визуальное скрытие Hero снимаются лишь после события, а fail-safe ждёт до 24 секунд. Это инженерная причина для P0, а не замерённая конверсия. Противогипотеза: длинная фирменная заставка повышает узнаваемость. Проверка решения: сохранить выразительность заставки, но пустить её параллельно с уже доступным H1/CTA. Сравнивать время до доступного CTA, успешное прохождение demo flow, ошибки и субъективную разборчивость. Не заявлять прирост конверсии без эксперимента.
+
+### Сводная таблица решений
+
+| Паттерн | Решение | Текущая база | Файлы и способ |
+|---|---|---|---|
+| Core Timeline + labels | **Улучшить уже установленный GSAP**, без новой библиотеки | \`src/motion/tokens.ts\`, \`hero-entrance.ts\`, \`HeroWithNavigation.tsx\` содержат timeline и cue от \`ryze:assembled\` | Задать семантические фазы \`content/brand/settled\`; не скрывать H1 и CTA до Assembly; меню как отдельный \`play/reverse\` timeline |
+| \`gsap.context()\` / \`useGSAP()\` | **Оставить context, не устанавливать @gsap/react пока** | \`HeroWithNavigation\` вызывает \`gsap.context()\` и \`revert()\`; \`SiteHeader\` вручную \`revert/kill\` | Обеспечить scope по ref, cancellation для асинхронного import и created-after-effect callbacks. \`useGSAP()\` имеет смысл, только если из-за lifecycle появляются повторные баги |
+| \`gsap.matchMedia()\` | **Взять в GSAP islands** | Есть собственные \`window.matchMedia()\` в SiteHeader, HeroMotionBackground, IntegrationLogos, Rizzie; GSAP matchMedia ещё нет | Ограничить им создание/отмену GSAP tweens при reduced/viewport. Общую политику Full/Lightweight/Reduced/Static **не** определять через matchMedia: условия WebGL, возможности устройства и fallback — отдельная детерминированная политика, одна на Hero и Header |
+| \`Flip\` | **POC только для wide HeroAction, условно внедрить** | \`HeroAction.tsx\` размонтирует \`details/summary\` и монтирует \`inline\` форму при \`mode=inline\` | Захват \`Flip.getState\` до смены React-state; дождаться commit DOM в \`useLayoutEffect\`, вызвать \`Flip.from\` для стабильного shell или с \`data-flip-id/targets\` для замещённых узлов. Не менять DOM вручную вне React; не применять на мобильном drawer |
+| \`SplitText\` | **POC в Storybook; без гарантии prod** | \`Hero.tsx\` уже имеет две семантические \`span\`-строки; \`hero-entrance.ts\` делает stagger по ним | Сравнить A: existing spans + небольшой масочный reveal и B: SplitText \`lines\`, \`mask:'lines'\`, \`autoSplit:true\`, \`onSplit\` с возвратом tween. Принять B только если переносы/шрифты/zoom и доступность лучше; не дробить в chars и не править утверждённый текст |
+
+### Обязательный P0 до художественной доработки
+1. В \`HeroWithNavigation.tsx\` больше не задавать \`inert\` для \`main#main\` и навигации из-за \`introPhase='playing'\`. В \`HeroWithNavigation.module.css\` не скрывать весь \`main\`/Header через \`opacity:0; pointer-events:none\` на период сборки. Нельзя просто изменить CSS и оставить \`inert\` или наоборот.
+2. Оставить iframe как декоративный слой с \`pointer-events:none\`. \`ryze:assembled\` и \`ryze:intro-complete\` менять только **необязательный visual state**, не семантическую доступность.
+3. На первом SSR/HTML-кадре H1, CTA и ссылки доступны, без JS всё работает в предусмотренном спецификацией fallback. Для GSAP движения H1 — небольшой transform без \`autoAlpha:0\` и невидимого начального состояния; CTA всегда интерактивна. Не создавать FOUC скрыванием через CSS до JS.
+4. Статус Reduced и смена системной настройки в середине intro немедленно освобождают весь контент. 24-секундный timer можно оставить для остановки декоративной сцены, но не как механизм разблокировки UI.
+
+### Техническая последовательность
+**Срез A, без изменения геометрии:** \`HeroWithNavigation.tsx/.module.css\`, \`hero-entrance.ts\`, \`tokens.ts\`, \`Hero.module.css\`. Преобразовать cue в labels и убрать блокирующую видимость. Отдельно проверить, что \`desktopCookies\` и fixed Dock не получают transform-контейнер (существующее исключение оставить). Сцену 118 фрагментов оставить прежней.
+**Срез B, адаптивность:** добавлять \`gsap.matchMedia()\` к DOM-анимациям на стороне Hero/Header. Внутри каждого island один scope и один cleanup; не дублировать \`motion tokens\` в третьем месте. Текущий \`HeroMotionBackground.tsx\` отключает iframe лишь при \`prefers-reduced-motion\`; синхронизировать его с единой capability policy для Lightweight и Full, не привязывать режим напрямую к размеру экрана.
+**Срез C, desktop CTA POC:** Storybook \`HeroAction.stories.tsx\` показывает две реализации — базовую CSS и Flip. Общая визуальная оболочка сохраняет identity, input и доступность; у формы одна source of truth для значения/валидации. Если React заменяет элементы, дать им \`data-flip-id\` и передать новые \`targets\`. Брать layout-снимок ДО смены state, а применять Flip ПОСЛЕ commit; \`flushSync\` не использовать по умолчанию (React предупреждает о стоимости), предпочтительнее layout effect. При закрытии, Escape, повторном клике, быстрых переключениях kill/revert предыдущую анимацию. Фокус в поле выставляется после mount без ожидания завершения tween. ResizeObserver на границе 800px не должен стирать введённый домен; возврат фокуса на original trigger после закрытия. Если POC не превосходит CSS по ясности и стабильности — оставить CSS.
+**Срез D, H1 POC:** \`Hero.tsx\`, \`hero-entrance.ts\`, Storybook stories. Вариант A существующие два span без изменения DOM; вариант B \`SplitText.create(headline, {type:'lines', mask:'lines', autoSplit:true, onSplit})\`, \`onSplit\` возвращает animation и \`revert\` восстанавливает исходную разметку. Сохранять вложенные muted spans, переносы Karrik/Micro Grotesk, читаемую строку для screen reader; при темы/resize/шрифтах пересоздание SplitText не должно спорить с React. Сравнивать только после загрузки шрифтов; TypeScript/SSR границу держать внутри client component.
+
+### Тесты и доказательства принятия
+| Уровень | Добавить/обновить | Проверяемое условие |
+|---|---|---|
+| Contract/unit | \`scripts/motion-system.test.mjs\`, \`scripts/hero-reveal-order.test.mjs\` | Старые тесты сейчас **требуют** \`ryze:assembled\` и \`24000\`. Изменить контракт на «не блокировать UI»; проверять отсутствие \`inert\` на этапе playing и сохранённые fallback, labels, cleanup и один GSAP/CSS-драйвер, а не застывшие magic numbers |
+| Hero browser | Chrome/Safari/Firefox: JS off, offline/abort iframe, WebGL exception, slow chunk, Reduced on/off в процессе intro | H1/CTA/навигация доступны **до** \`ryze:assembled\`, нет hidden/inert, клики по CTA срабатывают, зависаний на 24с нет |
+| Lifecycle | React StrictMode mount/unmount/remount, resize 699↔700, 799↔800, 1199↔1200, смена media в середине tween | Не копятся tweens и listeners, нет повторного старта intro и сломанной transform CSS при revert |
+| HeroAction Storybook | Расширить \`HeroAction.stories.tsx\` состояниями \`idle/opening/editing/thinking/result/closing\`; тест настоящего ResizeObserver без смены React key | В текущей Storybook \`key={containerWidth}\` пересоздаёт компонент на каждый resize и **скрывает баги переноса состояния**; нужна отдельная история с постоянным key и изменяющимся контейнером |
+| Flip E2E | Desktop 800/801/940/1440px, серия быстрых open→close→open, Escape/Tab/Enter, invalid→valid→result→edit, resize во время открытия | Нет скачка, CLS из-за промежуточного состояния, потерянного фокуса/значения. Сравнить вариант CSS и Flip на одинаковых viewport кадрах и timeline screenshots |
+| SplitText visual+accessibility | 320/375/390/540/699/700/951 Duo/1024/1440/1920/2803, landscape 874×402, 200% zoom, поздняя загрузка шрифтов | Нет двоения/скрытия H1, перепрыгивания muted spans, разрыва строк или переполнения; accessible name полный до/после split/revert |
+| Navigation Storybook | \`SiteHeader.stories.tsx\` для Full/Lightweight/Reduced/Static, mouse→panel gap, Escape, Tab, rapid hover | Не перекрывают друг друга CSS/GSAP driver; меню остаётся доступно без JS, \`play/reverse\` не конфликтуют при смене разделов |
+| Performance | DevTools traces/LoAF, FPS, LCP, CLS, INP на тестовом стенде, один и тот же сценарий до/после | Нет ухудшения отзывчивости/предметной читабельности. Не объявлять достигнутые значения без результатов замеров |
+
+**Граница тестирования:** Storybook «Static» — симуляция; настоящий no-JS проверяется отдельно в браузере. В первом проходе достаточны build, typecheck, адресные контрактные тесты, визуальный регресс и поведение. Mac Safari/iPhone и Titan Chrome/Firefox/Opera/Yandex сравнивать после локальных прототипов. Приватный сайт, без публичного деплоя.
+
+### Решение о принятии
+- **Принять без POC:** сохраняем \`timeline\` и \`gsap.context\`, внедряем \`matchMedia\` как ограниченный GSAP lifecycle. P0 по доступности Hero — необходим независимо от выбора плагина.
+- **Принять только после сравнения:** Flip при визуально правильном desktop CTA и сохранённом form-state/focus; SplitText при доказанном преимуществе на адаптивном H1. Равный по качеству CSS = меньше кода и меньше риска.
+- **Не начинать:** ScrollTrigger, ScrollSmoother, Observer, Physics и прочие отдельные плагины; нет соответствующих секций или пользовательских задач.
+
+### Первоисточники для исполнения
+GSAP timeline https://gsap.com/docs/v3/GSAP/Timeline/ ; GSAP context https://gsap.com/docs/v3/GSAP/gsap.context()/ ; matchMedia https://gsap.com/docs/v3/GSAP/gsap.matchMedia()/ ; GSAP React https://gsap.com/resources/React ; Flip https://gsap.com/docs/v3/Plugins/Flip/ ; SplitText https://gsap.com/docs/v3/Plugins/SplitText/ ; React flushSync https://react.dev/reference/react-dom/flushSync .
