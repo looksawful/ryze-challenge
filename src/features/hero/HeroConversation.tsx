@@ -165,7 +165,7 @@ export default function HeroConversation() {
           {reply.text}
         </p>
       )}
-      <form ref={composer} className={styles.composer} onSubmit={submitWebsite} noValidate>
+      <form ref={composer} className={styles.composer} data-state={error ? "error" : undefined} onSubmit={submitWebsite} noValidate>
         <label className={styles.screenReader} htmlFor="ryze-preview-website">Website address</label>
         <div className={styles.fieldArea}>
           <input id="ryze-preview-website" ref={field} type="text" name="website"

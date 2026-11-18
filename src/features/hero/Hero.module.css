@@ -32,8 +32,8 @@
   .headline {
     grid-column: 2 / 12;
     grid-row: 1;
-    justify-self: stretch;
-    inline-size: 100%;
+    justify-self: center;
+    inline-size: min(100%, 60vw);
     min-inline-size: 0;
     margin: 0;
     --type-heading-size: clamp(3.15rem, 6.15vw, 8.15rem);
@@ -166,6 +166,8 @@
     }
     .headline {
       grid-area: headline;
+      inline-size: 100%;
+      justify-self: stretch;
       --type-heading-size: clamp(2.1rem, calc(1.7rem + 2.75vw), 3.2rem);
       line-height: 1;
       letter-spacing: -.025em;

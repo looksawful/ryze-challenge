@@ -56,6 +56,9 @@
     letter-spacing: .01em;
   }
   .composer:focus-within { box-shadow: 0 0 0 2px var(--accent-current); }
+  .composer[data-state="error"] {
+    box-shadow: 0 0 0 2px #ff9ea9;
+  }
 
   .composer button {
     flex: 0 0 auto;

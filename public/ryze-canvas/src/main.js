@@ -75,7 +75,11 @@ function drawMelt(){
  ctx.drawImage(blur,logoCanvas.width/2-meltSize/2,logoCanvas.height/2-meltSize/2,meltSize,meltSize);
 }
 // Scale the 3D Ryze mark within the full-viewport plane; keep its world origin unchanged.
-const logoUnitPixels=()=>Math.min(logoCanvas.width,logoCanvas.height)*.55/40;
+const logoUnitPixels=()=>{
+ const logoPixels = Math.min(116, Math.max(88, Math.min(frame.clientWidth,frame.clientHeight)*.18));
+ const density = logoCanvas.width / Math.max(1,frame.clientWidth);
+ return logoPixels * density / 40;
+};
 const logoTexture=new THREE.CanvasTexture(logoCanvas);
 logoTexture.colorSpace=THREE.SRGBColorSpace;
 logoTexture.generateMipmaps=false;

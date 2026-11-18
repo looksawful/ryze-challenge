@@ -771,12 +771,13 @@
     const h = Math.max(1, frame.clientHeight);
     const unit = 1000 / Math.min(w,h);
     const sw = w*unit, sh = h*unit;
-    const span = 550;
+    const logoPixels = Math.min(116, Math.max(88, Math.min(w,h)*.18));
+    const span = logoPixels * unit;
     const scale = span/LOGO_SIZE;
     const ox = (sw-span)/2, oy=(sh-span)/2;
     svg.setAttribute('viewBox',`0 0 ${sw} ${sh}`);
     placement.setAttribute('transform',`translate(${ox} ${oy}) scale(${scale})`);
-    return {sw,sh,ox,oy,scale};
+    return {sw,sh,ox,oy,scale,span};
   }
   // GSAP is used if provided by a host page; a small native clock keeps the
   // *standalone downloaded HTML* fully operational without external scripts.
@@ -857,19 +858,23 @@
     blurNode.setAttribute('stdDeviation','0');
     alphaNode.setAttribute('values','1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0');
     pathEls.forEach((path,i)=>{path.setAttribute('d',morphGeometry[i].initial);pieces[i].style.opacity='1';});
-    const {sw,sh,ox,oy,scale}=layout();
+    const {ox,oy,scale,span}=layout();
     const rand=randomGenerator(117031);
     const prepared=[];
     let scene2Start=0;
     for(const [i,el] of pieces.entries()){
       const cx=Number(el.dataset.cx), cy=Number(el.dataset.cy);
       const tx=ox+cx*scale, ty=oy+cy*scale;
-      const edge=i%4, margin=170+rand()*230;
+      // The canvas is fullscreen, but the visible paper cloud stays local to the
+      // header-sized emblem instead of filling the viewport with confetti.
+      const centerX = ox + span/2, centerY = oy + span/2;
+      const spread = span*.7;
+      const edge=i%4;
       let sx,sy;
-      if(edge===0){sx=-margin;sy=rand()*(sh+250)-125;}
-      else if(edge===1){sx=sw+margin;sy=rand()*(sh+250)-125;}
-      else if(edge===2){sx=rand()*(sw+250)-125;sy=-margin;}
-      else{sx=rand()*(sw+250)-125;sy=sh+margin;}
+      if(edge===0){sx=centerX-spread;sy=centerY+(rand()-.5)*spread*1.8;}
+      else if(edge===1){sx=centerX+spread;sy=centerY+(rand()-.5)*spread*1.8;}
+      else if(edge===2){sx=centerX+(rand()-.5)*spread*1.8;sy=centerY-spread;}
+      else{sx=centerX+(rand()-.5)*spread*1.8;sy=centerY+spread;}
       const dx=(sx-tx)/scale, dy=(sy-ty)/scale;
       const length=Math.hypot(dx,dy)||1;
       const perpX=-dy/length,perpY=dx/length;
@@ -893,7 +898,7 @@
       prepared.push({el,cx,cy,delay,keyframes:points.keyframes,lastIndex:0,
         finalTransform:points.finalTransform,fx:finalX,fy:finalY,fr:finalRot,fs:finalScale,phase,
         windDelay:.025+(cx/40)*.26+rand()*.12,
-        windDX:36+rand()*58,windDY:-8-rand()*24,
+        windDX:14+rand()*18,windDY:-5-rand()*11,
         windSpin:(rand()-.5)*350,windWobble:1.6+rand()*2.6});
       scene2Start=Math.max(scene2Start,delay+points.duration);
     }
