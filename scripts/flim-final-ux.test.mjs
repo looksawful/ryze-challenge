@@ -12,6 +12,7 @@ const chat = read("src/features/hero/HeroConversation.tsx");
 const chatCss = read("src/features/hero/HeroConversation.module.css");
 const backdrop = read("src/features/site-shell/HeroMotionBackground.tsx");
 const scene = read("public/ryze-canvas/src/main.js");
+const svgIntro = read("public/ryze-canvas/index.html");
 
 test("Contact us is a small surfaced header action, not floating hero copy", () => {
   assert.doesNotMatch(hero, /className=\{styles\.contact\}/);
@@ -50,4 +51,7 @@ test("Mascot appears in same form row at every wide breakpoint", () => {
 test("Existing large brand intro remains enabled and renders the Ryze logo", () => {
   assert.match(backdrop, /ryze-canvas\/index\.html/);
   assert.match(scene, /Original SVG logo on 3D plane/);
+  assert.match(svgIntro, /function renderWind\(/);
+  assert.doesNotMatch(svgIntro, /melting=false;/);
+  assert.match(svgIntro, /frame.dataset.state=\x27assembling\x27/);
 });
