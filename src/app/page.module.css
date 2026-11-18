@@ -20,7 +20,23 @@
 }
 
 @media (width < 75rem) {
-  .desktopCookies { display: none; }
+  /* Mobile consent is part of the document, not a floating layer over CTA/navigation. */
+  .desktopCookies {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    display: block;
+    inline-size: min(calc(100% - 2rem), 40rem);
+    margin: clamp(1.25rem, 4svh, 2rem) auto 0;
+    pointer-events: auto;
+  }
+  .desktopCookies :global(aside) {
+    position: static;
+    inset: auto;
+    inline-size: 100%;
+    max-block-size: none;
+    pointer-events: auto;
+  }
 }
 
 /* Cookie layer is a sibling of Hero; it appears last, after the Dock. */

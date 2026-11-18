@@ -7,10 +7,10 @@ export default function Page() {
   return (
     <div data-theme="dusk">
       <HeroWithNavigation />
-      <SiteFooter />
       <div className={styles.desktopCookies} data-motion-slot="cookies">
         <HomeworkCookieNotice />
       </div>
+      <SiteFooter />
     </div>
   );
 }
