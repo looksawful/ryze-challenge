@@ -1063,3 +1063,41 @@
     }
   }
 }
+
+/* 800–1023px: original Duo rules use absolute positioning. Keep the mascot
+   visible and give it, the form, and integrations three non-overlapping slots. */
+@layer components {
+  @media (min-width: 800px) and (max-width: 1023px) {
+    .hero[data-conversational-hero] {
+      --mascot-slot: clamp(166px, 19vw, 190px);
+      --logos-slot: clamp(162px, 18vw, 184px);
+    }
+    .hero[data-conversational-hero] > .mascot {
+      display: block;
+      position: absolute;
+      grid-area: auto;
+      inset: auto auto clamp(12px, 2svh, 24px) clamp(14px, 1.8vw, 22px);
+      inline-size: calc(var(--mascot-slot) - 26px);
+      block-size: clamp(138px, 18vw, 180px);
+      z-index: 2;
+    }
+    .hero[data-conversational-hero] > .action {
+      display: block;
+      position: absolute;
+      grid-area: auto;
+      inset: auto auto clamp(12px, 2svh, 24px) var(--mascot-slot);
+      inline-size: calc(100% - var(--mascot-slot) - var(--logos-slot) - 32px);
+      margin: 0;
+      z-index: 4;
+    }
+    .hero[data-conversational-hero] > .integration {
+      display: block;
+      position: absolute;
+      grid-area: auto;
+      inset: auto 16px clamp(24px, 3svh, 34px) auto;
+      inline-size: var(--logos-slot);
+      margin: 0;
+      z-index: 3;
+    }
+  }
+}
