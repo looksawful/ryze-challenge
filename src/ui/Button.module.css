@@ -9,17 +9,19 @@
   }
 
   .regular {
-    min-inline-size: 100px;
-    min-block-size: 50px;
-    padding-inline: 14px;
-    font-size: 15px;
+    min-inline-size: 6.25rem;
+    min-block-size: 3.125rem;
+    padding-inline: 0.875rem;
+    font-size: 0.9375rem;
     font-weight: 700;
   }
 
   .compact {
-    padding: 8px 12px;
-    font-size: 13px;
-    font-weight: 400;
+    min-block-size: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.2;
   }
 
   .primary {

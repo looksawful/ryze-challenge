@@ -2,20 +2,20 @@
   .heading {
     font-family: var(--font-heading);
     font-synthesis: none;
-    font-size: var(--type-heading-size, clamp(32px, 11.4vw, 48px));
+    font-size: var(--type-heading-size, clamp(2rem, 11.4vw, 3rem));
     font-weight: 400;
     line-height: 1.04;
     letter-spacing: -0.035em;
   }
 
   .lead {
-    font-size: var(--type-lead-size, 21px);
+    font-size: var(--type-lead-size, 1.3125rem);
     font-weight: 600;
     line-height: 1.38;
   }
 
   .paragraph {
-    font-size: var(--type-paragraph-size, 22px);
+    font-size: var(--type-paragraph-size, 1rem);
     line-height: 1.38;
   }
 }

@@ -700,8 +700,11 @@
     }
     .header[data-variant="dock"] .mobileDock {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(max-content, 1fr));
       min-height: 66px;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scrollbar-width: none;
       position: fixed;
       inset-block-start: max(10px, env(safe-area-inset-top));
       inset-inline-start: 12px;
@@ -734,7 +737,7 @@
       border-radius: 16px;
       color: inherit;
       background: transparent;
-      font: 500 clamp(10px, 1.5vw, 13px)/1.2 var(--font-body);
+      font: 500 clamp(0.8125rem, 0.5625rem + 1.1vw, 0.875rem)/1.25 var(--font-body);
       white-space: nowrap;
       text-decoration: none;
       cursor: pointer;
@@ -926,7 +929,7 @@
     }
     .header[data-variant="dock"] .mobileSiteSection .description {
       margin-top: 5px;
-      font-size: .74rem;
+      font-size: .8125rem;
       font-weight: 400;
       line-height: 1.35;
     }

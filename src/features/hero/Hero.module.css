@@ -414,6 +414,7 @@
   @media (width >= 700px) and (width < 1024px) and (orientation: landscape) and (max-height: 500px) {
     .hero {
       min-block-size: 100svh;
+      block-size: auto;
       padding-block: 86px 8px;
       grid-template-rows: 0 86px 28px 50px minmax(0, 1fr) 50px;
     }
@@ -526,8 +527,8 @@
      The normal portrait composition remains unchanged on taller screens. */
   @media (width < 700px) and (max-height: 650px) {
     .hero {
-      min-block-size: 0;
-      block-size: 100svh;
+      min-block-size: 100svh;
+      block-size: auto;
       grid-template-rows: repeat(5, auto) minmax(110px, 1fr);
       row-gap: 2px;
       padding-block-start: max(80px, calc(72px + env(safe-area-inset-top)));
@@ -553,8 +554,8 @@
 
   @media (width >= 1024px) and (max-height: 607px) {
     .hero {
-      min-block-size: 0;
-      block-size: 100svh;
+      min-block-size: 100svh;
+      block-size: auto;
       margin-block-start: 0;
       padding: max(96px, calc(86px + env(safe-area-inset-top))) 20px 8px;
       grid-template-rows: 46px minmax(100px, 1fr) 36px minmax(138px, 1fr) 64px;
@@ -839,18 +840,18 @@
   @media (width < 700px) and (max-height: 650px) {
     .hero .headline { --type-heading-size: clamp(34px, 10vw, 42px); }
     .hero .lead { --type-lead-size: 16px; line-height: 1.16; }
-    .hero .description { --type-paragraph-size: 14px; line-height: 1.24; }
+    .hero .description { --type-paragraph-size: 16px; line-height: 1.35; }
   }
   @media (width >= 700px) and (width < 1024px)
     and (orientation: landscape) and (max-height: 500px) {
     .hero .headline { --type-heading-size: clamp(34px, 4.5vw, 42px); }
     .hero .lead { --type-lead-size: 16px; }
-    .hero .description { --type-paragraph-size: 15px; }
+    .hero .description { --type-paragraph-size: 16px; }
   }
   @media (width >= 1024px) and (max-height: 607px) {
     .hero .headline { --type-heading-size: clamp(40px, 4.4vw, 58px); }
     .hero .lead { --type-lead-size: 16px; }
-    .hero .description { --type-paragraph-size: 14px; }
+    .hero .description { --type-paragraph-size: 16px; }
   }
 }
 

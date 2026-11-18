@@ -92,8 +92,8 @@ test("portrait hero retains mascot and integrations above CTA without giant spac
 });
 
 test("Hero supports Duo open and tall tablet compositions independently", () => {
-  assert.match(heroStyles(), /min-width:\s*900px\)[^{]*max-width:\s*1023px/);
-  assert.match(heroStyles(), /min-height:\s*1100px/);
+  assert.match(heroStyles(), /@media \(width >= 900px\) and \(width < 1024px\)\s+and \(min-height: 600px\)/);
+  assert.match(heroStyles(), /@media \(width >= 1024px\) and \(width < 1200px\) and \(min-height: 1100px\)/);
 });
 
 test("Rizzie rests in the existing seated laptop frame while preserving no-JS hiding", () => {
@@ -110,7 +110,7 @@ test("compact motion never shrinks the resting mascot artwork", () => {
 });
 
 test("portrait tablet in the 700-899 width interval has protected CTA layout", () => {
-  assert.match(heroStyles(), /@media \(max-width: 899px\) and \(orientation: portrait\)/);
+  assert.match(heroStyles(), /\(width >= 700px\) and \(width < 900px\) and \(orientation: portrait\) and \(max-height: 900px\)/);
 });
 
 
