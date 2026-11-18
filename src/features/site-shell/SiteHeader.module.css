@@ -1143,39 +1143,29 @@
   }
 }
 
-/* Flim-inspired minimal dock: navigational content remains complete in the native dialog. */
+
+/* Preserve main's complete menus, shelves, links and responsive grid.
+   Round only the floating header surfaces and their interactive chips. */
 @layer components {
-  .header[data-variant="dock"] .mobileContact {
-    display:flex;align-items:center;justify-content:space-between;
-    min-height:52px; padding:15px 0; margin-top:20px;
-    color:var(--nav-foreground); text-decoration:none;
-    font:600 1rem/1.2 var(--font-body);
-    border-top:1px solid color-mix(in oklab,var(--nav-foreground) 14%,transparent);
+  .header[data-variant="dock"] .inner,
+  .header[data-variant="dock"][data-docked="true"] .inner,
+  .header[data-variant="dock"] .mobileDock,
+  .header[data-variant="dock"] .mobileToggle,
+  .header[data-variant="dock"] .mobileDockItem,
+  .header[data-variant="dock"] .navTrigger,
+  .header[data-variant="dock"] .directLink,
+  .header[data-variant="dock"] .nativeMenu > summary {
+    border-radius: 999px;
   }
-  .header[data-variant="dock"] .mobileContact:focus-visible{outline:2px solid currentColor;outline-offset:3px;}
-  @media(width < 75rem){
+  .header[data-variant="dock"] .megaPanel {
+    border-radius: 36px;
+  }
+  @media (width < 75rem) {
     .header[data-variant="dock"] .inner,
-    .header[data-variant="dock"][data-docked="true"] .inner {
-      background:color-mix(in oklab,var(--nav-surface) 94%,transparent);
-      border-radius:999px;
-      width:52px;
-      box-shadow:none;
+    .header[data-variant="dock"][data-docked="true"] .inner,
+    .header[data-variant="dock"] .mobileDock,
+    .header[data-variant="dock"] .mobileToggle {
+      border-radius: 999px;
     }
-    .header[data-variant="dock"] .mobileDialog{
-      width:min(100vw,440px);border-radius:0;
-      box-shadow:-16px 0 48px rgb(0 0 0 / 16%);
-    }
-    .header[data-variant="dock"] .mobileBar{min-height:84px;}
-    .header[data-variant="dock"] .mobileHeading{font-size:clamp(1.5rem,6vw,2rem);font-weight:600;letter-spacing:-.04em;}
-    .header[data-variant="dock"] .mobileSiteSection{grid-template-columns:1fr;gap:0;}
-    .header[data-variant="dock"] .mobileSiteSection .mobileSectionTitle{
-      padding:20px 0 8px;font-size:10px;letter-spacing:.1em;
-    }
-    .header[data-variant="dock"] .mobileSiteSection .mobileLink{
-      background:transparent;min-height:44px;padding:9px 0;
-      font-size:clamp(.95rem,4vw,1.12rem);font-weight:500;border-radius:0;
-    }
-    .header[data-variant="dock"] .mobileProductShelf{margin-top:25px;}
-    .header[data-variant="dock"] .mobileDock{display:none;}
   }
 }
