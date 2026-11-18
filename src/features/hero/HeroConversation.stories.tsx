@@ -10,16 +10,7 @@ const meta = {
   parameters: {
     layout: "fullscreen",
     status: "review",
-    docs: {
-      description: {
-        component: [
-          "Current Ryze CTA: a dark email composer with a pink \"Start for free\" button. It is not the older domain-entry HeroAction.",
-          "Enter an email, not a Shopify URL. The prototype only generates local example replies; it does not create an account, analyze a store, or send email.",
-          "Playground is manual. Empty Email and Ready Preview exercise the actual component's validation and response states through Storybook interactions.",
-          "The animated placeholder runs only after Hero intro release in the full-page screen. For reduced motion, the form is usable without the decorative text animation.",
-        ].join("\n\n"),
-      },
-    },
+
   },
   decorators: [
     (Story) => (

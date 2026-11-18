@@ -24,16 +24,7 @@ const meta = {
   parameters: {
     layout: "fullscreen",
     status: "review",
-    docs: {
-      description: {
-        component: [
-          "The current Ryze navigation uses a left-aligned brand pill, a centered desktop menu, and a small Contact us action on the right.",
-          "Below the desktop threshold, the permanent quick-links strip is replaced by a round menu trigger. Opening it reveals a left-side push drawer and shifts the real Hero surface to the right. Review that behavior in Drawer Open, which uses the production first-screen composition.",
-          "Interactive isolates SiteHeader so enhancement Controls can be tested. On Page uses the complete production HeroWithNavigation and includes the entrance canvas. Real no-JavaScript behavior cannot be exercised inside Storybook.",
-          "The menu is not an alternative design proposal: it reflects the current unmerged implementation. External destinations must not be followed during preview.",
-        ].join("\n\n"),
-      },
-    },
+
   },
   args: { enhancement: "auto" },
   argTypes: {

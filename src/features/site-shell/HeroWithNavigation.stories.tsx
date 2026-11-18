@@ -13,11 +13,7 @@ const meta = {
     layout: "fullscreen",
     fullScreen: true,
     status: "review",
-    docs: {
-      description: {
-        component: "The actual email-first Hero plus production Header, push-drawer and animated logo canvas. This is the new design direction, not the former centered domain-entry screen. First Screen omits Cookie Consent to make layout inspection clear; With Cookie Consent mirrors the real page to reveal overlay conflicts. Responsive stories reuse the same components and viewport presets.",
-      },
-    },
+
   },
 } satisfies Meta<typeof HeroWithNavigation>;
 

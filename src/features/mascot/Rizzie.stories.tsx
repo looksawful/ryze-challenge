@@ -21,16 +21,7 @@ const meta = {
   parameters: {
     layout: "fullscreen",
     status: "review",
-    docs: {
-      description: {
-        component: [
-          "Rizzie is the production Hero character. On desktop it can perch near the Cookie Consent and run to the email composer after the Hero reveal. The full movement sequence must be evaluated in Screens / Full page · Cookie Consent.",
-          "Hover/focus currently suggests booking a call; click opens the external booking page. Do not test that external action in this Storybook.",
-          "The isolated Hero story is intentionally free of custom debug buttons. Use the Scenario Controls and viewport toolbar, or reload the story to reset its state.",
-          "Touch, reduced-motion and unsupported-browser modes use the real component's scenario handling. No-JS simulation in Storybook is not a substitute for testing the real page without JavaScript.",
-        ].join("\n\n"),
-      },
-    },
+
   },
   args: { scenario: "auto" },
   argTypes: {

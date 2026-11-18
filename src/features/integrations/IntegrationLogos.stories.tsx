@@ -11,15 +11,11 @@ const meta = {
   parameters: {
     layout: "padded",
     status: "review",
-    docs: {
-      description: {
-        component: "Five production platform logos and their real caption. Auto uses the actual WebGL/progressive-enhancement behavior; Static shows all logos without WebGL. Static also serves reduced motion and unsupported browsers. Storybook cannot prove no-JavaScript rendering; check that on the actual site.",
-      },
-    },
+
   },
   args: { previewMode: "auto" },
   argTypes: {
-    previewMode: { name: "Preview mode", control: "select", options: ["auto", "static"], description: "Only modes exposed by the real component. WebGL is capability-dependent." },
+    previewMode: { name: "Preview mode", control: "select", options: ["auto", "static"] },
   },
   render: ({ previewMode }, context) => (
     <div
@@ -46,5 +42,5 @@ type Story = StoryObj<typeof meta>;
 export const Preview: Story = {};
 export const Static: Story = {
   args: { previewMode: "static" },
-  parameters: { docs: { description: { story: "Guaranteed list of all five logos and caption, without the particle renderer." } } },
+  parameters: {  },
 };

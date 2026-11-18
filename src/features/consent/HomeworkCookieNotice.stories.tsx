@@ -10,21 +10,13 @@ const meta = {
   tags: ["autodocs"],
   args: { state: "notice", rememberChoice: false },
   argTypes: {
-    state: { control: "select", options: ["notice", "settings", "closed"], description: "Visible state of the real cookie component" },
-    rememberChoice: { control: "boolean", description: "Production persists the decision. Off by default for repeatable visual review." },
+    state: { control: "select", options: ["notice", "settings", "closed"] },
+    rememberChoice: { control: "boolean" },
   },
   parameters: {
     layout: "fullscreen",
     status: "review",
-    docs: {
-      description: {
-        component: [
-          "Current compact Homework Cookie Consent: optional tracking notice, Settings/Reject/Accept and an accessible preferences form. See it in the context of the real email-first Hero, not a blank test canvas.",
-          "Use Controls to preview notice, settings or dismissed. Storybook defaults to non-persistent state so previous local cookie choices do not hide the example.",
-          "The full application uses persistent preferences. Use Screens / Full page · Cookie Consent to inspect how the fixed overlay competes with the CTA on desktop. Without JavaScript, the notice does not appear.",
-        ].join("\n\n"),
-      },
-    },
+
   },
   render: ({ state, rememberChoice }, context) => {
     const theme = context.globals.theme === "dawn" ? "dawn" : "dusk";

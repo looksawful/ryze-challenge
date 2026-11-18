@@ -32,11 +32,10 @@ test("Core components document API, states, and use production primitives", () =
   ]) {
     const source=read(path);
     assert.match(source, /tags:\s*\["autodocs"\]/, path + " docs");
-    assert.match(source, /description:/, path + " guidance");
     assert.match(source, /component:/, path + " production component");
   }
   const foundational=read("src/design-system/Foundations.stories.tsx");
-  assert.match(foundational, /import \{ Typography \} from "\.\.\/ui\/Typography"/);
+  assert.match(foundational, /--color-foreground/);
   assert.doesNotMatch(foundational, /fontSize:\s*"clamp\(40px/);
   assert.match(read("src/features/integrations/IntegrationLogos.stories.tsx"), /export const Static:/);
 });
@@ -52,10 +51,6 @@ test("Canvas shares theme bounds and responsive presets", () => {
   assert.match(css, /sb-main-padded/);
 });
 
-test("Getting started documentation has practical usage and review guidance", () => {
-  const overview=read("src/design-system/Overview.stories.tsx");
-  assert.match(overview, /Getting started/i);
-  assert.match(overview, /Contribut/i);
-  assert.match(overview, /Approved/);
-  assert.match(overview, /Storybook/);
+test("Start Here is absent", () => {
+  assert.doesNotMatch(read(".storybook/preview.tsx"), /Start Here/);
 });

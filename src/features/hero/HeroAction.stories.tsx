@@ -15,15 +15,7 @@ const meta = {
   parameters: {
     layout: "padded",
     status: "deprecated",
-    docs: {
-      description: {
-        component: [
-          "Legacy domain-entry HeroAction, not used in the current Hero. The actual live CTA is the email-first HeroConversation under Components.",
-          "**Historic observation:** \"Start For Free\" opened a local domain demo rather than free registration. This copy-versus-behavior issue was recorded for review; the original wording is not changed here.",
-          "Keep this example only as historical reference while other developers finish the migration. Do not reuse it in new screens.",
-        ].join("\n\n"),
-      },
-    },
+
   },
   render: ({ containerWidth }) => (
     <main style={{ inlineSize: "min(100%, var(--content-width))", maxInlineSize: containerWidth, minBlockSize: 320, marginInline: "auto", paddingInline: "var(--gutter)" }}>

@@ -8,11 +8,7 @@ const meta = {
   parameters: {
     layout: "fullscreen",
     status: "review",
-    docs: {
-      description: {
-        component: "The current email-first Hero without header, cookie banner or Canvas intro. The editorial 12-column desktop layout, asymmetric H1, bottom email composer, Rizzie and integration logos are all rendered by the real production component. Use this as the isolated layout view; Screens / First screen with navigation is the complete page. Existing mobile/Duo visual regressions are tracked separately, not hidden by Storybook-specific CSS.",
-      },
-    },
+
   },
   render: (_args, context) => <Hero theme={context.globals.theme === "dawn" ? "dawn" : "dusk"} />,
 } satisfies Meta<typeof Hero>;

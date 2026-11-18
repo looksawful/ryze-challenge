@@ -5,7 +5,6 @@ import "./storybook-canvas.css";
 const preview: Preview = {
   globalTypes: {
     theme: {
-      description: "The actual Ryze component theme",
       toolbar: { icon: "circlehollow", items: ["dawn", "dusk"], dynamicTitle: true },
     },
   },
@@ -30,7 +29,7 @@ const preview: Preview = {
     layout: "fullscreen",
     options: {
       storySort: {
-        order: ["Design System", ["Start Here", "Foundations", "Components", "Patterns", "Screens"]],
+        order: ["Design System", ["Foundations", "Components", "Patterns", "Screens"]],
       },
     },
     viewport: {

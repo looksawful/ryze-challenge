@@ -37,6 +37,6 @@ test("Rizzie story shows production persona without floating debug controls", ()
 
 test("Legacy HeroAction is marked as archived, not promoted as current CTA", () => {
  const file=read("src/features/hero/HeroAction.stories.tsx");
- assert.match(file,/Legacy/);
- assert.match(file,/not used in the current Hero/i);
+ assert.match(file,/Design System\/Archive\/HeroAction \(legacy\)/);
+ assert.doesNotMatch(file,/docs:\s*\{/);
 });

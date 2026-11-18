@@ -11,11 +11,7 @@ const meta = {
   parameters: {
     layout: "padded",
     status: "review",
-    docs: {
-      description: {
-        component: "The production Typography primitive uses the real --font-heading, --font-body and --type-* CSS tokens. Playground controls the actual component props plus a story-only maximum line width. Compare dawn/dusk with the toolbar and responsive wrapping via Viewport. Source tokens, not a parallel Storybook type scale, determine the visual result.",
-      },
-    },
+
   },
   args: {
     variant: "heading",
@@ -25,9 +21,9 @@ const meta = {
   },
   argTypes: {
     variant: { control: "select", options: ["heading", "lead", "paragraph"] },
-    as: { control: "select", options: ["h1", "h2", "h3", "p", "span"], description: "Semantic HTML element" },
-    children: { control: "text", description: "Real text content" },
-    width: { control: { type: "range", min: 240, max: 1000, step: 20 }, description: "Story-only max width, in CSS pixels; viewport still constrains it" },
+    as: { control: "select", options: ["h1", "h2", "h3", "p", "span"] },
+    children: { control: "text" },
+    width: { control: { type: "range", min: 240, max: 1000, step: 20 } },
   },
   render: ({ variant, as, children, width }) => (
     <div style={{ inlineSize: "100%", maxInlineSize: width }}>

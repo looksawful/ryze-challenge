@@ -16,11 +16,7 @@ const meta = {
   parameters: {
     layout: "padded",
     status: "review",
-    docs: {
-      description: {
-        component: "The production Button component. Use Playground for supported props and States for default, hover, pressed, busy and disabled appearances. This is the library primitive; the Hero CTA is documented separately as HeroAction. Copy and product promises are not changed here.",
-      },
-    },
+
   },
   args: {
     variant: "primary",
@@ -29,10 +25,10 @@ const meta = {
     label: "Continue",
   },
   argTypes: {
-    variant: { control: "radio", options: ["primary", "secondary"], description: "Visual prominence" },
-    size: { control: "radio", options: ["regular", "compact"], description: "Size supported by the live component" },
-    disabled: { control: "boolean", description: "Prevents interaction" },
-    label: { control: "text", description: "Visible button label for this demo" },
+    variant: { control: "radio", options: ["primary", "secondary"] },
+    size: { control: "radio", options: ["regular", "compact"] },
+    disabled: { control: "boolean" },
+    label: { control: "text" },
   },
   render: ({ label, variant, size, disabled }) => (
     <div style={{ display: "grid", placeItems: "center", minBlockSize: "18rem" }}>
@@ -50,11 +46,7 @@ export const States: Story = {
   parameters: { layout: "padded" },
   render: () => (
     <div style={{ display: "grid", gap: "var(--space-6)", maxInlineSize: "48rem" }}>
-      <p style={{ fontSize: "0.875rem", lineHeight: 1.5 }}>
-        Hover and pressed examples use the production visual-state hooks. Tab to a button to inspect actual keyboard focus.
-        Busy is an accessibility state, not a fake spinner.
-      </p>
-      {(["primary", "secondary"] as const).map(variant => (
+{(["primary", "secondary"] as const).map(variant => (
         <section
           key={variant}
           data-theme={variant === "primary" ? "dawn" : "dusk"}
