@@ -4,19 +4,17 @@ import { footerGroups } from "./link-model";
 import { HomeworkCookieSettingsButton } from "../consent/HomeworkCookieNotice";
 import styles from "./SiteFooter.module.css";
 
-/** Footer layout restored from the original Homework prototype. */
+/** Compact Ryze footer, using the existing dusk surface tokens. */
 export function SiteFooter() {
   const prefix = useId();
   return (
     <div className={styles.frame} data-footer-frame>
       <footer id="footer" className={styles.footer} aria-label="Ryze footer" data-theme="dusk">
         <div className={styles.rail}>
-          <a className={styles.brand} href="#main" aria-label="Ryze, back to top">
+          <a className={styles.brand} href="#main" aria-label="Ryze home">
             <Image src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/ryze-lockup-pink.svg`}
               width={126} height={40} alt="" unoptimized />
           </a>
-          <a className={styles.backToTop} href="#main">Back to top <span aria-hidden="true">↑</span></a>
-          <HomeworkCookieSettingsButton className={styles.cookieSettings} />
         </div>
         <div className={styles.columns}>
           {footerGroups.map((group, index) => {
@@ -24,9 +22,14 @@ export function SiteFooter() {
             return (
               <nav className={styles.column} key={group.id} aria-labelledby={titleId}>
                 <h2 id={titleId}>{group.label}</h2>
-                <ul>{group.links.map(link => (
-                  <li key={link.id}><a href={link.href}>{link.label}</a></li>
-                ))}</ul>
+                <ul>
+                  {group.links.map(link => (
+                    <li key={link.id}><a href={link.href}>{link.label}</a></li>
+                  ))}
+                  {group.id === "legal" && (
+                    <li><HomeworkCookieSettingsButton className={styles.cookieSettings} /></li>
+                  )}
+                </ul>
               </nav>
             );
           })}

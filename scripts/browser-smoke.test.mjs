@@ -167,14 +167,24 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
     assert.ok(geometry.userRight<=390&&geometry.userWidth>0&&geometry.assistantWidth>0,
       "chat messages do not fit the mobile viewport");
   });
-  await t.test("dark footer appears after scrolling and contains original Homework links",async()=>{
-    await load(1440,900);
-    await evalJs('window.scrollTo({top:document.documentElement.scrollHeight,behavior:"instant"})');
-    const info=JSON.parse(await evalJs('JSON.stringify((function(){var f=document.querySelector("#footer"),r=f.getBoundingClientRect();return {visible:r.top<innerHeight&&r.bottom>0,cols:f.querySelectorAll("nav").length,back:!!f.querySelector("a[href=\\"#main\\"]"),bg:getComputedStyle(f).backgroundColor}})())'));
-    assert.equal(info.visible,true);
-    assert.equal(info.cols,5);
-    assert.equal(info.back,true);
-    assert.equal(info.bg,"rgb(11, 11, 13)");
+  await t.test("compact gray footer matches dusk tokens and puts Cookie settings in Legal",async()=>{
+    for(const [width,height] of [[390,844],[1440,900]]) {
+      await load(width,height);
+      await evalJs('window.scrollTo({top:document.documentElement.scrollHeight,behavior:"instant"})');
+      const info=JSON.parse(await evalJs('JSON.stringify((function(){var f=document.querySelector("#footer"),r=f.getBoundingClientRect(),s=getComputedStyle(f),a=f.querySelector("nav a"),legal=Array.from(f.querySelectorAll("nav")).find(x=>x.querySelector("h2")?.textContent==="Legal");return {visible:r.top<innerHeight&&r.bottom>0,cols:f.querySelectorAll("nav").length,logo:!!f.querySelector("a[aria-label=\\"Ryze home\\"]"),backButton:/back to top/i.test(Array.from(f.querySelectorAll("a,button")).map(x=>x.textContent).join(" ")),cookieInLegal:!!legal?.querySelector("button")&&/cookie settings/i.test(legal.querySelector("button").textContent),bg:s.backgroundColor,fg:s.color,border:s.borderTopWidth,logoFilter:getComputedStyle(f.querySelector("img")).filter,linkColor:getComputedStyle(a).color,height:r.height,overflow:document.documentElement.scrollWidth-innerWidth}})())'));
+      assert.equal(info.visible,true);
+      assert.equal(info.cols,5);
+      assert.equal(info.logo,true);
+      assert.equal(info.backButton,false);
+      assert.equal(info.cookieInLegal,true);
+      assert.equal(info.bg,"rgb(29, 29, 29)");
+      assert.equal(info.fg,"rgb(247, 247, 247)");
+      assert.equal(info.border,"0px");
+      assert.equal(info.linkColor,info.fg);
+      assert.equal(info.logoFilter,"none");
+      assert.ok(info.height<(width<500?720:400),width+"px footer too tall: "+info.height);
+      assert.ok(info.overflow<=1,width+"px footer overflow");
+    }
   });
   await t.test("mobile modal traps keyboard focus and remains scroll-safe in landscape",async()=>{
     for(const [w,h] of [[390,844],[874,402]]) {
