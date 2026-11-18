@@ -853,7 +853,6 @@
   function start() {
     if(reduce.matches){staticLogo();return;}
     if(tween){tween.kill();tween=null;}
-    melting=false;
     stack.removeAttribute('filter');
     blurNode.setAttribute('stdDeviation','0');
     alphaNode.setAttribute('values','1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0');
@@ -951,7 +950,7 @@
   else if(reduce.addListener) reduce.addListener(preferenceChanged);
   document.addEventListener('visibilitychange',()=>{
     if(!tween)return;
-    if(document.hidden)tween.pause(); else if(frame.dataset.state==='assembling' || frame.dataset.state==='melting')tween.resume();
+    if(document.hidden)tween.pause(); else if(frame.dataset.state==='assembling' || frame.dataset.state==='blowing')tween.resume();
   });
   window.__ryzeStartSequence = start;
   if(reduce.matches) staticLogo();
