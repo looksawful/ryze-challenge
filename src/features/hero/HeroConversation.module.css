@@ -86,14 +86,53 @@
   .composer button:disabled { opacity: .65; cursor: default; }
 
 
-  /* Inline, accessible form feedback. No result card, gallery or fake audit. */
-  .reply {
-    margin: 0 0 12px;
-    padding-inline: clamp(20px, 3vw, 36px);
-    color: var(--color-foreground);
-    font: 500 clamp(13px, 1.15vw, 15px)/1.4 var(--font-body);
+  /* Return the former text-only chat: submitted URL on the right, typed
+     assistant response on the left. No screenshots, cards or fake report. */
+  .conversation {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: clamp(.5rem, 1.1vw, .8rem);
+    inline-size: 100%;
+    min-inline-size: 0;
+    margin: 0 0 clamp(.75rem, 2vw, 1.1rem);
   }
-  .reply[data-ai-reply="error"] { color: #ff9ea9; }
+  .userReply {
+    align-self: flex-end;
+    max-inline-size: min(85%, 32rem);
+    margin: 0;
+    padding: .65rem 1rem;
+    border-radius: 1rem 1rem .3rem 1rem;
+    background: color-mix(in oklab, var(--color-foreground) 12%, transparent);
+    color: var(--color-foreground);
+    font: 500 clamp(.88rem, 1.2vw, 1.02rem)/1.4 var(--font-body);
+    overflow-wrap: anywhere;
+  }
+  .assistantReply {
+    align-self: flex-start;
+    max-inline-size: min(100%, 44rem);
+    min-block-size: 1.4em;
+    margin: 0;
+    padding-inline: clamp(6px, 1vw, 10px);
+    color: var(--color-foreground);
+    font: 500 clamp(.94rem, 1.35vw, 1.12rem)/1.45 var(--font-body);
+    text-wrap: pretty;
+    overflow-wrap: anywhere;
+  }
+  .conversation[data-ai-reply="error"] .assistantReply { color: #ff9ea9; }
+  .replyCursor {
+    display: inline-block;
+    inline-size: 1px;
+    block-size: 1em;
+    margin-inline-start: 3px;
+    background: currentColor;
+    vertical-align: -.13em;
+    animation: ryze-chat-caret 1s steps(1) infinite;
+  }
+  @keyframes ryze-chat-caret { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .replyCursor { display: none; animation: none; }
+  }
   .staticStart {
     display: inline-flex;
     min-block-size: 62px;

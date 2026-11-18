@@ -27,6 +27,9 @@ export default function HeroConversation() {
   const [website, setWebsite] = useState("");
   const [error, setError] = useState("");
   const [reply, setReply] = useState<{ kind: "error" | "ready"; text: string } | null>(null);
+  const [submittedWebsite, setSubmittedWebsite] = useState<string | null>(null);
+  const replyTextRef = useRef<HTMLSpanElement>(null);
+  const replyTweenRef = useRef<{ kill: () => unknown } | null>(null);
   const field = useRef<HTMLInputElement>(null);
   const composer = useRef<HTMLFormElement>(null);
   const hint = useRef<HTMLSpanElement>(null);
@@ -132,10 +135,55 @@ export default function HeroConversation() {
     };
   }, [introReleased]);
 
+  // Keep the previous GSAP character-by-character chat reply. Never delay
+  // accessible feedback or pretend to fetch a report from a real website.
+  useEffect(() => {
+    const node = replyTextRef.current;
+    replyTweenRef.current?.kill();
+    if (!node || !reply) return;
+    node.textContent = reply.text;
+    node.dataset.chatTyping = "false";
+    if (reducedMotion) return;
+
+    let active = true;
+    node.textContent = "";
+    node.dataset.chatTyping = "true";
+    void import("gsap").then(({ gsap }) => {
+      if (!active || !node.isConnected) return;
+      const counter = { value: 0 };
+      replyTweenRef.current = gsap.to(counter, {
+        value: reply.text.length,
+        duration: reply.text.length * CHAT_RHYTHM.character,
+        snap: { value: 1 },
+        ease: "none",
+        onUpdate: () => {
+          if (active) node.textContent = reply.text.slice(0, Math.round(counter.value));
+        },
+        onComplete: () => {
+          if (active) {
+            node.textContent = reply.text;
+            node.dataset.chatTyping = "false";
+          }
+        },
+      });
+    }).catch(() => {
+      if (active) {
+        node.textContent = reply.text;
+        node.dataset.chatTyping = "false";
+      }
+    });
+    return () => {
+      active = false;
+      replyTweenRef.current?.kill();
+      replyTweenRef.current = null;
+    };
+  }, [reply, reducedMotion]);
+
   function submitWebsite(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     stopPresentation();
     const store = normalizeWebsiteAddress(website);
+    setSubmittedWebsite(website.trim() || null);
     if (!store) {
       const message = website.trim()
         ? "That website address doesn't look right. Could you check it?"
@@ -146,8 +194,8 @@ export default function HeroConversation() {
       return;
     }
     setError("");
-    // A valid address is accepted locally; do not pretend an audit ran.
-    setReply({ kind: "ready", text: "Website address accepted." });
+    // A local format check only. The response is conversation, not a mock audit.
+    setReply({ kind: "ready", text: `Got it, ${store}. Want to explore ads, SEO, or CRO?` });
   }
 
   const overlayVisible = hydrated && introReleased && !reducedMotion && !hasInteracted && !website;
@@ -155,11 +203,20 @@ export default function HeroConversation() {
   return (
     <section id="hero-conversation" className={styles.chat} aria-label="Ryze AI preview">
       {reply && (
-        <p className={styles.reply} data-ai-reply={reply.kind}
-           id={reply.kind === "error" ? "ryze-website-error" : undefined}
-           role={reply.kind === "error" ? "alert" : "status"}>
-          {reply.text}
-        </p>
+        <div className={styles.conversation} data-ai-reply={reply.kind} role="group" aria-label="Chat preview">
+          {submittedWebsite && (
+            <p className={styles.userReply} data-chat-message="user">{submittedWebsite}</p>
+          )}
+          <p className={styles.assistantReply} data-chat-message="assistant" aria-hidden="true">
+            <span ref={replyTextRef} data-chat-text>{reducedMotion ? reply.text : ""}</span>
+            {!reducedMotion && <span className={styles.replyCursor} aria-hidden="true" />}
+          </p>
+          <span className={styles.screenReader}
+                id={reply.kind === "error" ? "ryze-website-error" : undefined}
+                role={reply.kind === "error" ? "alert" : "status"}>
+            {reply.text}
+          </span>
+        </div>
       )}
       <form ref={composer} className={styles.composer} data-state={error ? "error" : undefined} onSubmit={submitWebsite} noValidate>
         <label className={styles.screenReader} htmlFor="ryze-preview-website">Website address</label>
@@ -173,6 +230,7 @@ export default function HeroConversation() {
               setWebsite(event.target.value);
               setError("");
               setReply(null);
+              setSubmittedWebsite(null);
             }}
             aria-invalid={Boolean(error)}
             aria-describedby={error ? "ryze-website-error" : "ryze-website-note"} />

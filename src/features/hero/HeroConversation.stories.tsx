@@ -44,17 +44,18 @@ export const Interactive: Story = { name: "Interactive (manual)" };
 export const MissingWebsite: Story = {
   name: "Empty website · actual validation",
   play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Start for free" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Check for free" }));
     await canvas.findByRole("alert");
   },
 };
 
 export const ReadyPreview: Story = {
-  name: "Valid website · address accepted",
+  name: "Valid website · animated chat reply",
   play: async ({ canvas, userEvent }) => {
     const input = canvas.getByRole("textbox", { name: "Website address" });
     await userEvent.type(input, "example.com");
-    await userEvent.click(canvas.getByRole("button", { name: "Start for free" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Check for free" }));
     await canvas.findByRole("status");
+    await canvas.findByText("example.com");
   },
 };

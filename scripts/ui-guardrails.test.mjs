@@ -62,7 +62,10 @@ test("website CTA names its actual action, does not pretend to analyze a shop", 
   assert.ok(submit);
   assert.equal(attribute(submit,"aria-label"),'"Check for free"');
   assert.ok(submit.getText().includes(">Check for free</button>"));
-  assert.ok(nodes.some(n=>tagName(n)==="p" && attribute(n,"role")?.includes('"alert"')));
+  assert.ok(nodes.some(n=>tagName(n)==="span" && attribute(n,"role")?.includes('"alert"')));
+  assert.ok(nodes.some(n=>tagName(n)==="p" && attribute(n,"data-chat-message")==='"user"'));
+  assert.ok(nodes.some(n=>tagName(n)==="p" && attribute(n,"data-chat-message")==='"assistant"'));
+  assert.match(source("src/features/hero/HeroConversation.tsx"),/CHAT_RHYTHM\.character/);
   assert.ok(!nodes.some(n=>tagName(n)==="Image" && n.pos >= form.pos));
 });
 

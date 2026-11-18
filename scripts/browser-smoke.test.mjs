@@ -138,8 +138,34 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
     await evalJs('document.querySelector("#ryze-preview-website").focus()');
     await cdp("Input.insertText",{text:"example.com"});
     await evalJs('document.querySelector("#hero-conversation form").requestSubmit()');
-    await until(()=>evalJs('document.querySelector("[data-ai-reply=ready]")?.textContent?.includes("accepted")'),"accepted domain");
-    assert.equal(await evalJs('document.querySelectorAll("#hero-conversation img").length'),0);
+    await until(()=>evalJs('document.querySelector("[data-ai-reply=ready]")?.textContent?.includes("Got it")'),"chat reply after valid address");
+    const chat=JSON.parse(await evalJs(`JSON.stringify((()=>{
+      const root=document.querySelector('#hero-conversation');
+      return {
+        user:root.querySelector('[data-chat-message="user"]')?.textContent?.trim(),
+        assistant:root.querySelector('[data-chat-message="assistant"]')?.textContent?.trim(),
+        imageCount:root.querySelectorAll('img').length,
+        proofCount:root.querySelectorAll('[class*="proof"],[class*="previewImage"]').length,
+      };
+    })())`));
+    assert.equal(chat.user,"example.com");
+    assert.ok(chat.assistant?.includes("Got it") && !/analyzing|scanned|report ready/i.test(chat.assistant));
+    assert.equal(chat.imageCount,0);
+    assert.equal(chat.proofCount,0);
+    const geometry=JSON.parse(await evalJs(`JSON.stringify((()=>{
+      const root=document.querySelector('#hero-conversation');
+      const user=root.querySelector('[data-chat-message="user"]').getBoundingClientRect();
+      const assistant=root.querySelector('[data-chat-message="assistant"]').getBoundingClientRect();
+      const composer=root.querySelector('form').getBoundingClientRect();
+      return {overflow:document.documentElement.scrollWidth-innerWidth,
+        userRight:user.right,assistantLeft:assistant.left,
+        assistantBottom:assistant.bottom,composerTop:composer.top,
+        userWidth:user.width,assistantWidth:assistant.width};
+    })())`));
+    assert.ok(geometry.overflow<=1,"chat introduced horizontal overflow");
+    assert.ok(geometry.assistantBottom<=geometry.composerTop+1,"assistant reply overlaps the form");
+    assert.ok(geometry.userRight<=390&&geometry.userWidth>0&&geometry.assistantWidth>0,
+      "chat messages do not fit the mobile viewport");
   });
   await t.test("dark footer appears after scrolling and contains original Homework links",async()=>{
     await load(1440,900);
@@ -175,6 +201,75 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
     await sleep(900);
     const state=JSON.parse(await evalJs(`JSON.stringify({intro:document.querySelector('[data-intro]')?.dataset.intro,paper:document.querySelector('iframe[title="Ryze motion canvas"]')?.contentDocument?.getElementById('frame')?.dataset.state})`));
     assert.deepEqual(state,{intro:"ready",paper:"blown"},"intro restarted after completion");
+  });
+  await t.test("chat reply types characters after a submitted domain, without cards or images",async()=>{
+    await cdp("Emulation.setDeviceMetricsOverride",{width:1440,height:900,deviceScaleFactor:1,mobile:false});
+    await cdp("Emulation.setEmulatedMedia",{media:"screen",features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
+    await cdp("Emulation.setScriptExecutionDisabled",{value:false});
+    await cdp("Page.navigate",{url});
+    await until(()=>evalJs("document.querySelector('[data-intro]')?.dataset.intro==='ready'"),"Hero finished before chat",10000);
+    await evalJs("document.querySelector('#ryze-preview-website').focus()");
+    await cdp("Input.insertText",{text:"example.com"});
+    await evalJs("document.querySelector('#hero-conversation form').requestSubmit()");
+    await until(()=>evalJs('document.querySelector("[data-chat-text]")?.dataset.chatTyping==="true"'),"GSAP typing begins",4000);
+    const during=JSON.parse(await evalJs(`JSON.stringify((()=>{
+      const root=document.querySelector('#hero-conversation');
+      return {
+        sent:root.querySelector('[data-chat-message="user"]')?.textContent.trim(),
+        typed:root.querySelector('[data-chat-text]')?.textContent||"",
+        complete:root.querySelector('[role="status"]')?.textContent.trim()||"",
+        images:root.querySelectorAll('img').length,
+      };
+    })())`));
+    assert.equal(during.sent,"example.com");
+    assert.ok(during.complete.includes("Got it, example.com"));
+    assert.ok(during.typed.length<during.complete.length,"reply must visibly type, not appear fully");
+    assert.equal(during.images,0);
+    await until(()=>evalJs('document.querySelector("[data-chat-text]")?.dataset.chatTyping==="false"'),"chat typed to completion",10000);
+    assert.equal(await evalJs('document.querySelector("[data-chat-text]")?.textContent?.trim()'),
+      during.complete);
+  });
+  await t.test("first-visit cookies and mobile navigation remain pointer-operable",async()=>{
+    for(const [w,h] of [[320,568],[390,844],[430,932],[874,402]]) {
+      await load(w,h);
+      await until(()=>evalJs('!!document.querySelector(\'aside[aria-label="Cookie preferences"]\')'),"cookie notice hydrated "+w,3500);
+      const initial=JSON.parse(await evalJs(`JSON.stringify((()=>{
+        const menu=document.querySelector('button[aria-label="Toggle navigation menu"]');
+        const rect=menu.getBoundingClientRect();
+        const hit=document.elementFromPoint(rect.x+rect.width/2,rect.y+rect.height/2);
+        const notice=document.querySelector('aside[aria-label="Cookie preferences"]');
+        return {menuVisible:rect.width>0&&rect.height>0,menuHit:hit===menu||menu.contains(hit),
+                notice:!!notice,noticeRendered:notice?notice.getBoundingClientRect().height>0:false};
+      })())`));
+      assert.ok(initial.menuVisible&&initial.menuHit,w+" menu button obscured");
+      assert.ok(initial.notice&&initial.noticeRendered,w+" cookie notice missing: "+JSON.stringify(initial));
+      await evalJs('document.querySelector("button[aria-label=\\"Toggle navigation menu\\"]").click()');
+      await until(()=>evalJs("document.querySelector('dialog')?.open===true"),"open modal "+w);
+      await sleep(500); // Wait for the drawer entrance before hit testing a moving target.
+      const closeHit=JSON.parse(await evalJs(`JSON.stringify((()=>{
+        const close=document.querySelector('dialog button[aria-label="Close navigation"]'),r=close.getBoundingClientRect();
+        const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+        return {visible:r.width>0&&r.height>0,hit:hit===close||close.contains(hit),focus:close.closest('dialog').contains(document.activeElement)};
+      })())`));
+      assert.ok(closeHit.visible&&closeHit.hit,w+" close button obscured");
+      assert.ok(closeHit.focus,w+" modal failed to contain initial focus");
+      await evalJs('document.querySelector("dialog button[aria-label=\\"Close navigation\\"]").click()');
+      await until(()=>evalJs("document.querySelector('dialog')?.open===false"),"closed modal "+w);
+    }
+  });
+  await t.test("cookie choices save locally and footer settings reopens the form",async()=>{
+    await load(390,844);
+    await until(()=>evalJs('!!document.querySelector(\'aside[aria-label="Cookie preferences"]\')'),"initial cookie notice");
+    await evalJs('Array.from(document.querySelectorAll(\'aside[aria-label="Cookie preferences"] button\')).find(b=>b.textContent.trim()==="Reject")?.click()');
+    await until(()=>evalJs(`!document.querySelector('aside[aria-label="Cookie preferences"]')`),"cookie notice dismissed");
+    assert.equal(await evalJs("JSON.parse(localStorage.getItem('ryze-cookie-preferences'))?.analytics"),false);
+    assert.equal(await evalJs("JSON.parse(localStorage.getItem('ryze-cookie-preferences'))?.marketing"),false);
+    await evalJs("document.querySelector('footer [data-cookie-settings-trigger]').click()");
+    await until(()=>evalJs("!!document.querySelector('aside[data-settings] h2')"),"reopened cookie settings");
+    assert.equal(await evalJs("document.querySelector('aside[data-settings] h2')?.textContent"),"Cookie settings");
+    await evalJs("document.querySelector('aside[data-settings] form').requestSubmit()");
+    await until(()=>evalJs("!document.querySelector('aside[data-settings]')"),"saved cookie settings");
+    await evalJs("localStorage.removeItem('ryze-cookie-preferences')");
   });
   await t.test("no JavaScript still exposes a working CTA and navigation",async()=>{
     await load(390,844,false);
