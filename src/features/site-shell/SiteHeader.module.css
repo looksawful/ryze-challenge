@@ -1142,3 +1142,101 @@
     }
   }
 }
+
+
+/* Preserve main's complete menus, shelves, links and responsive grid.
+   Round only the floating header surfaces and their interactive chips. */
+@layer components {
+  .header[data-variant="dock"] .inner,
+  .header[data-variant="dock"][data-docked="true"] .inner,
+  .header[data-variant="dock"] .mobileDock,
+  .header[data-variant="dock"] .mobileToggle,
+  .header[data-variant="dock"] .mobileDockItem,
+  .header[data-variant="dock"] .navTrigger,
+  .header[data-variant="dock"] .directLink,
+  .header[data-variant="dock"] .nativeMenu > summary {
+    border-radius: 999px;
+  }
+  .header[data-variant="dock"] .megaPanel {
+    border-radius: 36px;
+  }
+  @media (width < 75rem) {
+    .header[data-variant="dock"] .inner,
+    .header[data-variant="dock"][data-docked="true"] .inner,
+    .header[data-variant="dock"] .mobileDock,
+    .header[data-variant="dock"] .mobileToggle {
+      border-radius: 999px;
+    }
+  }
+}
+
+/* The actual Ryze lockup and contact live beside the canonical desktop dock. */
+@layer components {
+  @media (min-width: 75rem) {
+    .header[data-variant="dock"] .brand {
+      display: inline-flex;
+      position: fixed;
+      inset-block-start: max(12px, env(safe-area-inset-top));
+      inset-inline-start: clamp(16px, 2.2vw, 38px);
+      align-items: center;
+      justify-content: center;
+      inline-size: auto;
+      block-size: clamp(52px, 5.2vw, 72px);
+      padding-inline: 18px;
+      border-radius: 999px;
+      background: var(--nav-surface);
+      pointer-events: auto;
+      z-index: 92;
+    }
+    .header[data-variant="dock"] .brandImage {
+      display: block;
+      inline-size: clamp(92px, 8vw, 126px);
+      block-size: auto;
+      object-fit: contain;
+    }
+    .header[data-variant="dock"] .actions {
+      display: flex;
+      position: fixed;
+      inset-block-start: max(12px, env(safe-area-inset-top));
+      inset-inline-end: clamp(16px, 2.2vw, 38px);
+      align-items: center;
+      z-index: 92;
+      pointer-events: auto;
+    }
+    .header[data-variant="dock"] .booking {
+      display: inline-flex;
+      min-block-size: 43px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      color: var(--nav-foreground);
+      background: var(--nav-surface);
+      box-shadow: none;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .header[data-variant="dock"] .booking:hover {
+      background: color-mix(in oklab, var(--nav-surface) 85%, var(--nav-foreground));
+    }
+  }
+  @media (max-width: 74.999rem) {
+    .header[data-variant="dock"] .booking { display: none; }
+  }
+  .header[data-variant="dock"] .mobileStart {
+    display: inline-flex;
+    align-self: flex-start;
+    min-block-size: 42px;
+    margin-block: 10px 4px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--nav-foreground) 12%, var(--nav-inside));
+    color: var(--nav-foreground);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .header[data-variant="dock"] .mobileStart:hover {
+    background: color-mix(in oklab, var(--nav-foreground) 20%, var(--nav-inside));
+  }
+}

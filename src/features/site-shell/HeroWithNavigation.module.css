@@ -83,3 +83,13 @@
     }
   }
 }
+
+/* A decorative intro must never hide the active email-first Hero. */
+@layer components {
+  .stage:has([data-conversational-hero]) > :global(main),
+  .stage:has([data-conversational-hero]) .navigation {
+    opacity:1;
+    pointer-events:auto;
+  }
+  .stage:has([data-conversational-hero]) .navigation { animation:none!important; }
+}

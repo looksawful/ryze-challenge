@@ -326,7 +326,7 @@ export function SiteHeader({
               </details>
             ))}
             {headerLinks.map((destination) => destinationAnchor(destination, styles.directLink))}
-            {variant === "dock" && <a className={styles.mobileStart} href={shopifyStartHref}>Start</a>}
+            {variant === "dock" && <a className={styles.mobileStart} href={bookingLink.href} target="_blank" rel="noopener noreferrer">Contact us</a>}
             </nav>
           </details>
         ) : (
@@ -378,7 +378,9 @@ export function SiteHeader({
         )}
 
         <div className={styles.actions} data-preview-part="header-actions">
-          {destinationAnchor(bookingLink, styles.booking)}
+          {variant === "dock" ? (
+            <a className={styles.booking} href={bookingLink.href} target="_blank" rel="noopener noreferrer">Contact us</a>
+          ) : destinationAnchor(bookingLink, styles.booking)}
           {mode !== "static" && (
             <button ref={menuTriggerRef} type="button" className={styles.mobileToggle}
                     aria-label="Toggle navigation menu" aria-expanded={mobileOpen}
@@ -404,7 +406,7 @@ export function SiteHeader({
                 </svg></button>
           </div>
           <nav className={styles.mobileList} aria-label="Site destinations">
-            {variant === "dock" && <a className={styles.mobileStart} href={shopifyStartHref}>Start</a>}
+            {variant === "dock" && <a className={styles.mobileStart} href={bookingLink.href} target="_blank" rel="noopener noreferrer">Contact us</a>}
             {mobileSiteSections.map((group) => (
               <section key={group.id} className={styles.mobileSiteSection}>
                 <h2 className={styles.mobileSectionTitle}>{group.label}</h2>

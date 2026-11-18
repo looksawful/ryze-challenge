@@ -93,16 +93,6 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
     };
   }, [theme]);
 
-  useEffect(() => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    const regions = [
-      stage.querySelector<HTMLElement>("main#main"),
-      stage.querySelector<HTMLElement>(`.${styles.navigation}`),
-    ];
-    regions.forEach(region => { if (region) region.inert = introPhase === "playing"; });
-    return () => regions.forEach(region => { if (region) region.inert = false; });
-  }, [introPhase]);
 
   return (
     <div ref={stageRef} className={styles.stage} data-theme={theme} data-ryze-dark-end={theme === "dusk" || undefined} data-motion-driver="css" data-intro={introPhase}>

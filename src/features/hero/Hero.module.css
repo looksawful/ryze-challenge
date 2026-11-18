@@ -889,3 +889,215 @@
     }
   }
 }
+
+
+/* Experimental email-first Hero. Content, typography, and mascot geometry above
+   are copied verbatim from current main; only CTA layout differs here.
+   The wordmark is intentionally absent from Hero JSX, not Canvas. */
+@layer components {
+  .hero[data-conversational-hero] > .action {
+    z-index: 4;
+    inline-size: min(100%, 940px);
+    min-inline-size: 0;
+    max-inline-size: none;
+    margin-inline: auto;
+  }
+  .hero[data-conversational-hero] > .integration {
+    min-inline-size: 0;
+    max-inline-size: 300px;
+  }
+  .hero[data-conversational-hero] > .contact {
+    position: absolute;
+    inset: auto clamp(14px, 2vw, 30px) clamp(10px, 2svh, 24px) auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 5;
+    min-block-size: 44px;
+    padding: 8px 2px;
+    color: var(--color-foreground);
+    font: 600 14px/1.25 var(--font-body);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .hero[data-conversational-hero] > .contact:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+  .hero[data-conversational-hero] > .action button[type="submit"] {
+    font-size: clamp(16px, 1.15vw, 18px);
+  }
+  @media (width >= 1024px) {
+    /* The original desktop type, copy and mascot remain in their main grid
+       areas. The enlarged form spans its own bottom row, logos alongside it. */
+    .hero[data-conversational-hero] > .action {
+      grid-area: 5 / 3 / 6 / 11;
+      inline-size: 100%;
+      min-inline-size: 0;
+      justify-self: center;
+      align-self: center;
+      margin: clamp(6px, 1.2svh, 16px) 0 0;
+    }
+    .hero[data-conversational-hero] > .integration {
+      grid-area: 5 / 11 / 6 / 13;
+      inline-size: min(100%, 290px);
+      margin: 0;
+      justify-self: stretch;
+      align-self: center;
+    }
+    .hero[data-conversational-hero] {
+      padding-block-end: clamp(75px, 8svh, 95px);
+    }
+  }
+
+  @media (width >= 800px) and (width < 1024px) {
+    .hero[data-conversational-hero] > .action {
+      grid-area: 5 / 1 / 6 / -1;
+      inline-size: min(100%, 820px);
+      justify-self: center;
+      margin-block-start: 12px;
+    }
+    .hero[data-conversational-hero] > .integration {
+      grid-area: 6 / 2 / 7 / -1;
+      inline-size: min(100%, 290px);
+      justify-self: end;
+      margin: 0;
+    }
+    .hero[data-conversational-hero] { block-size: auto; min-block-size: 100svh; }
+  }
+
+  @media (width < 800px) {
+    /* Keep exact main typography and mascot size. Its grid content flows
+       vertically, ending with the full-width composer near the viewport bottom. */
+    .hero[data-conversational-hero] {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: auto auto auto minmax(120px, 1fr) auto;
+      grid-template-areas:
+        "headline headline"
+        "lead lead"
+        "description description"
+        "mascot integration"
+        "action action";
+      align-content: stretch;
+      gap: clamp(8px, 1.5svh, 16px);
+      min-block-size: 100svh;
+      block-size: auto;
+      inline-size: 100%;
+      padding: max(92px, calc(78px + env(safe-area-inset-top)))
+        clamp(16px, 4vw, 24px)
+        max(26px, env(safe-area-inset-bottom));
+    }
+    .hero[data-conversational-hero] > .headline {
+      grid-area: headline;
+      margin: clamp(4px, 1svh, 12px) 0 0;
+    }
+    .hero[data-conversational-hero] > .lead {
+      grid-area: lead;
+      margin: clamp(6px, 1svh, 14px) 0 0;
+    }
+    .hero[data-conversational-hero] > .description {
+      grid-area: description;
+      margin: 0;
+    }
+    .hero[data-conversational-hero] > .mascot {
+      grid-area: mascot;
+      justify-self: stretch;
+      align-self: end;
+      margin: 0;
+    }
+    .hero[data-conversational-hero] > .integration {
+      grid-area: integration;
+      inline-size: 100%;
+      max-inline-size: none;
+      min-inline-size: 0;
+      align-self: end;
+      margin: 0;
+    }
+    .hero[data-conversational-hero] > .action {
+      grid-area: action;
+      justify-self: stretch;
+      align-self: end;
+      inline-size: 100%;
+      margin: 0;
+    }
+    .hero[data-conversational-hero] > .contact { display: none; }
+    .hero[data-conversational-hero] > .action button[type="submit"] {
+      font-size: clamp(14px, 3.75vw, 16px);
+    }
+  }
+
+  @media (width < 800px) and (max-height: 600px) {
+    .hero[data-conversational-hero] {
+      grid-template-rows: auto auto auto minmax(92px, auto) auto;
+      padding-block-start: max(76px, calc(60px + env(safe-area-inset-top)));
+    }
+  }
+}
+
+/* Fixed mascot insertion point aligned beside the email composer at all wide
+   breakpoints, not an arbitrary position higher up the hero. */
+@layer components {
+  @media (width >= 800px) {
+    .hero[data-conversational-hero] > .mascot {
+      position: relative;
+      inset: auto;
+      grid-area: 5 / 1 / 6 / 3;
+      justify-self: start;
+      align-self: center;
+      inline-size: min(100%, 190px);
+      block-size: clamp(118px, 13vw, 192px);
+      margin: 0;
+      z-index: 3;
+    }
+  }
+  @media (width >= 800px) and (width < 1024px) {
+    .hero[data-conversational-hero] > .action {
+      grid-area: 5 / 1 / 6 / -1;
+      inline-size: calc(100% - clamp(150px, 20vw, 190px));
+      justify-self: end;
+    }
+    .hero[data-conversational-hero] > .mascot {
+      inline-size: clamp(125px, 16vw, 165px);
+      block-size: clamp(126px, 19vw, 175px);
+    }
+  }
+}
+
+/* 800–1023px: original Duo rules use absolute positioning. Keep the mascot
+   visible and give it, the form, and integrations three non-overlapping slots. */
+@layer components {
+  @media (min-width: 800px) and (max-width: 1023px) {
+    .hero[data-conversational-hero] {
+      --mascot-slot: clamp(166px, 19vw, 190px);
+      --logos-slot: clamp(162px, 18vw, 184px);
+    }
+    .hero[data-conversational-hero] > .mascot {
+      display: block;
+      position: absolute;
+      grid-area: auto;
+      inset: auto auto clamp(12px, 2svh, 24px) clamp(14px, 1.8vw, 22px);
+      inline-size: calc(var(--mascot-slot) - 26px);
+      block-size: clamp(138px, 18vw, 180px);
+      z-index: 2;
+    }
+    .hero[data-conversational-hero] > .action {
+      display: block;
+      position: absolute;
+      grid-area: auto;
+      inset: auto auto clamp(12px, 2svh, 24px) var(--mascot-slot);
+      inline-size: calc(100% - var(--mascot-slot) - var(--logos-slot) - 32px);
+      margin: 0;
+      z-index: 4;
+    }
+    .hero[data-conversational-hero] > .integration {
+      display: block;
+      position: absolute;
+      grid-area: auto;
+      inset: auto 16px clamp(24px, 3svh, 34px) auto;
+      inline-size: var(--logos-slot);
+      margin: 0;
+      z-index: 3;
+    }
+  }
+}
