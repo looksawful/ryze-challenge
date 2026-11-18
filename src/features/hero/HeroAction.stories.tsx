@@ -12,7 +12,14 @@ const meta = {
   },
   parameters: {
     layout: "padded",
-    docs: { description: { component: "Real HeroAction. The real form fills its parent container when expanded. The width control switches between inline and drawer; check the full laptop layout in First screen with navigation." } },
+    docs: {
+      description: {
+        component: [
+          "Real HeroAction. The real form fills its parent container when expanded. The width control switches between inline and drawer; check the full laptop layout in First screen with navigation.",
+          "**Observations / potentially misleading messaging:** The “Start For Free” CTA opens a local domain-entry demo, not actual account registration or a free service trial. The button label is intentionally unchanged; this is a copy-versus-behavior observation for review, not a proposed rename.",
+        ].join("\n\n"),
+      },
+    },
   },
   render: ({ containerWidth }) => (
     <main style={{ inlineSize: "min(100%, var(--content-width))", maxInlineSize: containerWidth, minBlockSize: 320, marginInline: "auto", paddingInline: "var(--gutter)" }}>
