@@ -1,11 +1,12 @@
 import type { Preview } from "@storybook/nextjs-vite";
 import "../src/app/foundation.css";
+import "./storybook-canvas.css";
 
 const preview: Preview = {
   globalTypes: {
     theme: {
-      description: "Component theme",
-      toolbar: { icon: "circlehollow", items: ["dawn", "dusk"] },
+      description: "The actual Ryze component theme",
+      toolbar: { icon: "circlehollow", items: ["dawn", "dusk"], dynamicTitle: true },
     },
   },
   initialGlobals: { theme: "dusk" },
@@ -14,6 +15,9 @@ const preview: Preview = {
       <div
         data-theme={context.globals.theme === "dawn" ? "dawn" : "dusk"}
         style={{
+          minHeight: "100svh",
+          boxSizing: "border-box",
+          padding: context.parameters.layout === "fullscreen" ? 0 : "var(--space-6)",
           background: "var(--color-background)",
           color: "var(--color-foreground)",
         }}
@@ -23,9 +27,16 @@ const preview: Preview = {
     ),
   ],
   parameters: {
-    layout: "padded",
+    layout: "fullscreen",
+    options: {
+      storySort: {
+        order: ["Design System", ["Start Here", "Foundations", "Components", "Patterns", "Screens"]],
+      },
+    },
     viewport: {
       options: {
+        phoneCompact: { name: "Compact 320 × 568", styles: { width: "320px", height: "568px" }, type: "mobile" },
+        phoneStandard: { name: "Phone 390 × 844", styles: { width: "390px", height: "844px" }, type: "mobile" },
         phone: { name: "Mobile 402 × 874", styles: { width: "402px", height: "874px" }, type: "mobile" },
         phoneLandscape: { name: "Landscape 874 × 402", styles: { width: "874px", height: "402px" }, type: "mobile" },
         duoClosed: { name: "Duo Closed 466 × 678", styles: { width: "466px", height: "678px" }, type: "mobile" },

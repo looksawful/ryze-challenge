@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import styles from "./HeroConversation.module.css";
+import { CHAT_RHYTHM } from "../../motion/tokens";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const capabilities = [
@@ -24,6 +25,7 @@ export default function HeroConversation() {
   const [hydrated, setHydrated] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [introReleased, setIntroReleased] = useState(false);
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [reply, setReply] = useState<{ kind: "error" | "processing" | "ready"; text: string } | null>(null);
@@ -60,6 +62,18 @@ export default function HeroConversation() {
   }, []);
 
   useEffect(() => {
+    const stage = composer.current?.closest<HTMLElement>("[data-intro]");
+    if (!stage || stage.dataset.intro !== "playing" ||
+        matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setIntroReleased(true);
+    }
+    const onReveal = () => setIntroReleased(true);
+    window.addEventListener("ryze:hero-reveal", onReveal);
+    return () => window.removeEventListener("ryze:hero-reveal", onReveal);
+  }, []);
+
+  useEffect(() => {
+    if (!introReleased) return;
     let alive = true;
     let media: { revert: () => void } | null = null;
     void import("gsap").then(({ gsap }) => {
@@ -79,7 +93,7 @@ export default function HeroConversation() {
             { clipPath: `inset(0 0 0 calc(100% - ${conditions.compact ? 150 : 200}px) round 999px)` },
             {
               clipPath: "inset(0 0 0 0 round 999px)",
-              duration: conditions.compact ? 0.7 : 0.9,
+              duration: CHAT_RHYTHM.reveal,
               ease: "power3.inOut",
               clearProps: "clipPath",
               onComplete: () => {
@@ -90,7 +104,7 @@ export default function HeroConversation() {
                   cycle.call(() => { counter.characters = 0; if (hint.current) hint.current.textContent = ""; });
                   cycle.to(counter, {
                     characters: phrase.length,
-                    duration: phrase.length * 0.031,
+                    duration: phrase.length * CHAT_RHYTHM.character,
                     ease: "none",
                     snap: { characters: 1 },
                     onUpdate: () => {
@@ -98,10 +112,10 @@ export default function HeroConversation() {
                         hint.current.textContent = phrase.slice(0, Math.round(counter.characters));
                     },
                   });
-                  cycle.to({}, { duration: 1.5 });
+                  cycle.to({}, { duration: CHAT_RHYTHM.pause });
                   cycle.to(counter, {
                     characters: 0,
-                    duration: phrase.length * 0.018,
+                    duration: phrase.length * CHAT_RHYTHM.eraseCharacter,
                     ease: "none",
                     snap: { characters: 1 },
                     onUpdate: () => {
@@ -109,7 +123,7 @@ export default function HeroConversation() {
                         hint.current.textContent = phrase.slice(0, Math.round(counter.characters));
                     },
                   });
-                  cycle.to({}, { duration: 0.18 });
+                  cycle.to({}, { duration: CHAT_RHYTHM.gap });
                 }
                 typedAnimation.current = cycle;
               },
@@ -132,7 +146,7 @@ export default function HeroConversation() {
       activeAnimation.current?.progress(1);
       media?.revert();
     };
-  }, []);
+  }, [introReleased]);
 
   useEffect(() => {
     return () => {
@@ -156,7 +170,7 @@ export default function HeroConversation() {
       node.textContent = "";
       replyTweenRef.current = gsap.to(count, {
         value: reply.text.length,
-        duration: Math.min(2.4, Math.max(0.36, reply.text.length * .035)),
+        duration: reply.text.length * CHAT_RHYTHM.character,
         snap: { value: 1 },
         ease: "none",
         onUpdate: () => { if (live) node.textContent = reply.text.slice(0, Math.round(count.value)); },
@@ -186,16 +200,19 @@ export default function HeroConversation() {
     }
     setError("");
     setSubmitted(false);
-    setReply({ kind: "processing", text: "Starting your preview. Let's explore what Ryze can do." });
+    const processingCopy = "Starting your preview. Let's explore what Ryze can do.";
+    setReply({ kind: "processing", text: processingCopy });
     processingTimer.current = setTimeout(() => {
       setSubmitted(true);
       setReply({ kind: "ready", text: "Here is a sample of what your AI marketing workspace could explore." });
       processingTimer.current = null;
-    }, reducedMotion ? 100 : 2100);
+    }, reducedMotion ? 100 : Math.ceil(
+      (processingCopy.length * CHAT_RHYTHM.character + CHAT_RHYTHM.processingTail) * 1000
+    ));
   }
 
   const active = capabilities[selected];
-  const overlayVisible = hydrated && !reducedMotion && !hasInteracted && !email;
+  const overlayVisible = hydrated && introReleased && !reducedMotion && !hasInteracted && !email;
 
   return (
     <section id="hero-conversation" className={styles.chat} aria-label="Ryze AI preview">

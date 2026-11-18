@@ -35,6 +35,11 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
       if (alive) gsapReady = gsap;
     }).catch(() => { /* CSS entrance remains fully functional. */ });
 
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      setIntroPhase("ready");
+    };
     const beginReveal = () => {
       if (finished || revealStarted) return;
       revealStarted = true;
@@ -50,7 +55,7 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
           }, stage);
           if (entrance) {
             stage.dataset.motionDriver = "gsap";
-            entrance.play(0);
+            entrance.eventCallback("onComplete", finish);
           }
         } catch {
           motionContext?.revert();
@@ -58,34 +63,37 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
           stage.dataset.motionDriver = "css";
         }
       }
-      setIntroPhase(current => current === "playing" ? "revealing" : current);
-    };
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      setIntroPhase("ready");
+      window.dispatchEvent(new Event("ryze:hero-reveal"));
+      if (entrance) {
+        setIntroPhase("revealing");
+        entrance.play(0);
+      } else {
+        finish();
+      }
     };
     const onMessage = (event: MessageEvent) => {
       const frame = stageRef.current?.querySelector<HTMLIFrameElement>(
         'iframe[title="Ryze motion canvas"]'
       );
       if (event.origin !== window.location.origin || event.source !== frame?.contentWindow) return;
-      if (event.data?.type === "ryze:assembled" && !finished) beginReveal();
-      if (event.data?.type === "ryze:intro-complete") finish();
+      // The paper mark must assemble and blow away before the text timeline.
+      if (event.data?.type === "ryze:intro-complete") beginReveal();
     };
     const onPreferenceChange = () => {
       if (!reduced.matches) return;
       entrance?.progress(1);
       stageRef.current?.removeAttribute("data-motion-driver");
+      entrance?.revertSplit();
       motionContext?.revert();
       finish();
     };
     window.addEventListener("message", onMessage);
     reduced.addEventListener("change", onPreferenceChange);
     // Asset/WebGL failures must never strand the user behind an invisible Hero.
-    const watchdog = window.setTimeout(finish, 24000);
+    const watchdog = window.setTimeout(beginReveal, 6500);
     return () => {
       alive = false;
+      entrance?.revertSplit();
       motionContext?.revert();
       window.clearTimeout(watchdog);
       window.removeEventListener("message", onMessage);
@@ -100,6 +108,7 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
         <style>{`
           .${styles.stage}[data-intro="playing"] > main,
           .${styles.stage}[data-intro="playing"] .${styles.navigation} {
+            visibility: visible !important;
             opacity: 1 !important;
             pointer-events: auto !important;
           }

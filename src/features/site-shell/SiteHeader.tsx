@@ -92,6 +92,7 @@ export function SiteHeader({
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const brandRef = useRef<HTMLAnchorElement>(null);
   const wasMobileOpen = useRef(false);
+  const mobileCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const desktopNavRef = useRef<HTMLElement>(null);
   const rootRef = useRef<HTMLElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -113,11 +114,23 @@ export function SiteHeader({
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
+    if (mobileCloseTimer.current) clearTimeout(mobileCloseTimer.current);
     if (mobileOpen) {
-      if (!dialog.open) dialog.showModal();
-      dialog.querySelector<HTMLHeadingElement>("[data-mobile-heading]")?.focus();
+      if (!dialog.open) dialog.show();
+      document.documentElement.dataset.ryzeMobileMenu = "open";
+      requestAnimationFrame(() => {
+        if (dialog.open) {
+          dialog.dataset.slide = "open";
+          dialog.querySelector<HTMLHeadingElement>("[data-mobile-heading]")?.focus({ preventScroll: true });
+        }
+      });
     } else {
-      if (dialog.open) dialog.close();
+      document.documentElement.removeAttribute("data-ryze-mobile-menu");
+      dialog.removeAttribute("data-slide");
+      if (dialog.open) {
+        mobileCloseTimer.current = setTimeout(() => dialog.close(),
+          matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 360);
+      }
       if (wasMobileOpen.current) {
         const visibleTrigger = [menuTriggerRef.current, brandRef.current]
           .find((item) => item && item.getClientRects().length);
@@ -125,6 +138,31 @@ export function SiteHeader({
       }
     }
     wasMobileOpen.current = mobileOpen;
+    return () => { if (mobileCloseTimer.current) clearTimeout(mobileCloseTimer.current); };
+  }, [mobileOpen]);
+
+  useEffect(() => () => document.documentElement.removeAttribute("data-ryze-mobile-menu"), []);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); closeMobile(); return; }
+      if (event.key !== "Tab") return;
+      const targets = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )).filter(node => node.getClientRects().length > 0);
+      if (!targets.length) return;
+      const first=targets[0], last=targets[targets.length-1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [mobileOpen]);
 
   useEffect(() => {
@@ -268,6 +306,7 @@ export function SiteHeader({
 
   function selectShopifySection(event: MouseEvent<HTMLAnchorElement>, section: ShopifyDockSection) {
     event.preventDefault();
+    closeMobile();
     const target = document.getElementById(section.targetId);
     if (target) {
       target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
@@ -298,7 +337,7 @@ export function SiteHeader({
 
   return (
     <header ref={rootRef} className={styles.header} data-theme={theme}
-            data-variant={variant} data-enhancement={mode} data-docked="false" data-scroll-hidden="false">
+            data-variant={variant} data-enhancement={mode} data-docked="false" data-scroll-hidden="false" data-menu-open={mobileOpen}>
       <div className={styles.inner}>
         <a ref={brandRef} href="https://www.get-ryze.ai/" className={styles.brand}
            data-preview-part="header-brand"
@@ -384,6 +423,7 @@ export function SiteHeader({
           {mode !== "static" && (
             <button ref={menuTriggerRef} type="button" className={styles.mobileToggle}
                     aria-label="Toggle navigation menu" aria-expanded={mobileOpen}
+                    aria-controls={uid + "-mobile-menu"}
                     onClick={() => mobileOpen ? closeMobile() : setMobileOpen(true)}>
               <span className={styles.toggleLines} aria-hidden="true"><i /><i /></span>
             </button>
@@ -392,8 +432,8 @@ export function SiteHeader({
       </div>
 
       {mode !== "static" && (
-        <dialog ref={dialogRef} className={styles.mobileDialog} data-preview-part="mobile-menu"
-                data-theme={theme} aria-label="Ryze site navigation"
+        <dialog ref={dialogRef} id={uid + "-mobile-menu"} className={styles.mobileDialog} data-preview-part="mobile-menu"
+                data-theme={theme} aria-modal={mobileOpen} aria-label="Ryze site navigation"
                 onClick={(event) => { if (event.target === event.currentTarget) closeMobile(); }}
                 onCancel={(event) => { event.preventDefault(); closeMobile(); }}
                 onClose={closeMobile}>
@@ -406,7 +446,20 @@ export function SiteHeader({
                 </svg></button>
           </div>
           <nav className={styles.mobileList} aria-label="Site destinations">
-            {variant === "dock" && <a className={styles.mobileStart} href={bookingLink.href} target="_blank" rel="noopener noreferrer">Contact us</a>}
+            {variant === "dock" && (
+              <section className={styles.drawerQuickLinks} aria-label="Shopify quick navigation"
+                       data-preview-part="mobile-dock">
+                <h2 className={styles.mobileSectionTitle}>Shopify Autopilot</h2>
+                {shopifyDockSections.map((section) => (
+                  <a key={section.id} href={section.href} className={styles.drawerQuickLink}
+                     onClick={(event) => selectShopifySection(event, section)}>{section.label}</a>
+                ))}
+                <a className={styles.drawerQuickLink} href={shopifyPricingHref}>Pricing</a>
+                <a className={styles.drawerQuickLink} href={shopifyStartHref}>Start</a>
+                <a className={styles.mobileStart} href={bookingLink.href}
+                   target="_blank" rel="noopener noreferrer">Contact us</a>
+              </section>
+            )}
             {mobileSiteSections.map((group) => (
               <section key={group.id} className={styles.mobileSiteSection}>
                 <h2 className={styles.mobileSectionTitle}>{group.label}</h2>
@@ -436,19 +489,6 @@ export function SiteHeader({
             {showMobileCookieSettings && <HomeworkCookieSettingsButton className={styles.mobileLink} />}
           </nav>
         </dialog>
-      )}
-
-      {variant === "dock" && (
-        <nav className={styles.mobileDock} aria-label="Shopify quick navigation"
-             data-preview-part="mobile-dock">
-          {shopifyDockSections.map((section) => (
-            <a key={section.id} className={styles.mobileDockItem} href={section.href}
-               onClick={(event) => selectShopifySection(event, section)}>
-              <span>{section.label}</span>
-            </a>
-          ))}
-          <a className={styles.mobileDockItem} href={shopifyPricingHref}>Pricing</a>
-        </nav>
       )}
 
       <noscript>

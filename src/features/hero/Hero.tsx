@@ -1,6 +1,9 @@
 "use client";
 
+import { useRef } from "react";
 import styles from "./Hero.module.css";
+import { useRizzieStageMotion } from "./useRizzieStageMotion";
+import { bookingLink } from "../site-shell/link-model";
 import IntegrationLogos from "../integrations/IntegrationLogos";
 import HeroConversation from "./HeroConversation";
 import { Typography } from "../../ui/Typography";
@@ -14,9 +17,11 @@ type HeroProps = {
 };
 
 export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, theme = "dusk" }: HeroProps) {
+  const mascotZoneRef = useRef<HTMLDivElement>(null);
+  useRizzieStageMotion(mascotZoneRef);
   return (
     <main className={styles.hero} data-theme={theme} id="main" data-conversational-hero>
-      <Typography as="h1" variant="heading" className={styles.headline} data-motion-slot="headline">
+      <Typography as="h1" variant="heading" className={styles.headline} data-motion-slot="headline" aria-label="AI autopilot for your Shopify">
         <span>AI autopilot <span className={styles.muted}>for</span></span>{" "}
         <span><span className={styles.muted}>your</span> Shopify</span>
       </Typography>
@@ -25,9 +30,10 @@ export default function Hero({ mascotScenario = "auto", mascotResetKey = 0, them
         Paid ads, SEO, AI visibility &amp; CRO. One AI autopilot built around your business.
       </Typography>
 
-      <div className={styles.mascot} data-motion-slot="mascot">
+      <div className={styles.mascot} data-motion-slot="mascot" ref={mascotZoneRef}>
         <RizzieMascot key={`${mascotScenario}:${mascotResetKey}`} scenario={mascotScenario}
-          onActivate={() => document.getElementById("ryze-preview-email")?.focus()} actionOpen={false} />
+          onActivate={() => window.open(bookingLink.href, "_blank", "noopener,noreferrer")}
+          href={bookingLink.href} ambientWander={false} interactiveDesktopOnly actionOpen={false} />
       </div>
       <div className={styles.action} data-motion-slot="action">
         <HeroConversation />

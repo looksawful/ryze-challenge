@@ -92,6 +92,17 @@
     text-align: center;
   }
 
+  /* In the narrow Hero the pet is a larger decorative companion, not a link
+     or draggable hit target. Existing desktop pet behavior is unchanged. */
+  .zone[data-mobile-inert="true"] {
+    --rizzie-art-size: clamp(7.75rem, 39vw, 11rem);
+  }
+  .zone[data-mobile-inert="true"] .pet {
+    pointer-events: none;
+    touch-action: auto;
+    cursor: default;
+    transition: none;
+  }
   .zone[data-mode="static"] .pet { transition: none; }
 
   .pet:focus-visible, .closeBubble:focus-visible {
@@ -106,10 +117,10 @@
     max-block-size: none;
     overflow: visible;
     padding: 10px 34px 10px 15px;
-    border: 0;
-    border-radius: 999px;
-    background: var(--color-background);
-    color: var(--color-foreground);
+    border: 1px solid #242424;
+    border-radius: 22px;
+    background: #fff;
+    color: #181818;
     font-size: 14px;
     line-height: 1.35;
     text-align: center;
@@ -128,7 +139,9 @@
     block-size: 10px;
     inset-block-end: 15px;
     inset-inline-start: -6px;
-    background: var(--color-background);
+    background: #fff;
+    border-inline-start: 1px solid #242424;
+    border-block-end: 1px solid #242424;
     transform: rotate(45deg);
   }
   .bubble[data-side="left"]::before {
@@ -177,5 +190,4 @@
     from { opacity: 0; translate: 0 7px; scale: .98; }
     to { opacity: 1; translate: 0 0; scale: 1; }
   }
-
 }

@@ -43,9 +43,9 @@ test("Form uses accent pink submit and conversation replies instead of alert/bor
   assert.doesNotMatch(chat, /className=\{styles\.error\}/);
 });
 
-test("Mascot appears in same form row at every wide breakpoint", () => {
-  assert.match(heroCss, /@media\s*\(width >= 800px\)[\s\S]*?\.mascot/);
-  assert.match(heroCss, /grid-area:\s*5\s*\/\s*1\s*\/\s*6\s*\/\s*3/);
+test("Mascot ends to the left of the email form in the fluid desktop grid", () => {
+  assert.match(heroCss, /\.mascot\s*\{[^}]*grid-column:\s*1\s*\/\s*3/s);
+  assert.match(heroCss, /\.action\s*\{[^}]*grid-column:\s*3\s*\/\s*11/s);
 });
 
 test("Existing large brand intro remains enabled and renders the Ryze logo", () => {

@@ -10,7 +10,7 @@
 .desktopCookies :global(aside) {
   position: absolute;
   inset-block-start: auto;
-  inset-block-end: max(16px, env(safe-area-inset-bottom));
+  inset-block-end: max(9rem, env(safe-area-inset-bottom));
   inset-inline-start: auto;
   inset-inline-end: 16px;
   inline-size: min(24rem, calc(100vw - 32px));

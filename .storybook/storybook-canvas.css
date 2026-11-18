@@ -1,0 +1,9 @@
+/* The Storybook-only viewport follows the real Ryze theme wrapper.
+   This file must not be imported by the production site. */
+body.sb-show-main.sb-main-padded {
+  padding: 0;
+}
+
+#storybook-root {
+  min-block-size: 100svh;
+}

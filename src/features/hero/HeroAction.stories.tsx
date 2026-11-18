@@ -4,19 +4,23 @@ import heroStyles from "./Hero.module.css";
 
 type Controls = { containerWidth: number };
 
+/** Archive only: deliberately not the CTA used on the current landing page. */
 const meta = {
-  title: "Design System/Components/HeroAction",
+  title: "Design System/Archive/HeroAction (legacy)",
+  tags: ["autodocs"],
   args: { containerWidth: 940 },
   argTypes: {
     containerWidth: { control: { type: "range", min: 320, max: 1200, step: 20 } },
   },
   parameters: {
     layout: "padded",
+    status: "deprecated",
     docs: {
       description: {
         component: [
-          "Real HeroAction. The real form fills its parent container when expanded. The width control switches between inline and drawer; check the full laptop layout in First screen with navigation.",
-          "**Observations / potentially misleading messaging:** The “Start For Free” CTA opens a local domain-entry demo, not actual account registration or a free service trial. The button label is intentionally unchanged; this is a copy-versus-behavior observation for review, not a proposed rename.",
+          "Legacy domain-entry HeroAction, not used in the current Hero. The actual live CTA is the email-first HeroConversation under Components.",
+          "**Historic observation:** \"Start For Free\" opened a local domain demo rather than free registration. This copy-versus-behavior issue was recorded for review; the original wording is not changed here.",
+          "Keep this example only as historical reference while other developers finish the migration. Do not reuse it in new screens.",
         ].join("\n\n"),
       },
     },
@@ -32,5 +36,4 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
 export const Interactive: Story = {};

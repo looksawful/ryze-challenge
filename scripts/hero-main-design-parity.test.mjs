@@ -21,11 +21,12 @@ test("Hero uses canonical text, semantics and no static wordmark, keeping animat
   assert.match(canvas, /ryze:wind-start/);
 });
 
-test("restored canonical mascot dimensions and responsive typography", () => {
-  assert.match(css, /block-size: clamp\(156px, 23svh, 208px\)/);
-  assert.match(css, /--type-heading-size: clamp\(72px, 6\.667vw, 108px\)/);
-  assert.match(css, /--type-heading-size: clamp\(39px, 12\.3vw, 50px\)/);
-  assert.match(css, /Duo Open:/);
+test("relative headline and editorial copy are shared by laptop and desktop", () => {
+  assert.match(css, /--type-heading-size: clamp\(3\.15rem, 6\.15vw, 8\.15rem\)/);
+  assert.match(css, /\.headline > span \+ span\s*\{ text-align: end; \}/);
+  assert.match(css, /\.lead\s*\{[^}]*inline-size: min\(100%, 29ch\)/s);
+  assert.match(css, /\.description\s*\{[^}]*max-inline-size: 50ch/s);
+  assert.doesNotMatch(css, /Duo Open:|@media\s*\(width\s*>=\s*2400px\)/);
 });
 
 test("form remains the dominant primary action on desktop and bottom-aligned on mobile", () => {

@@ -1,12 +1,16 @@
+import { SplitText } from "gsap/SplitText";
 import { HERO_ENTRANCE_CUES, MOTION } from "./tokens";
 
-/** Pure DOM choreography. One GSAP timeline, no layout changes.
- * Call inside gsap.context() and revert that context on unmount. */
+/** One orchestrator for the staged Hero entrance. CSS owns all placement.
+ * SplitText operates on the two intentional display lines, never the H1's
+ * meaning or source copy. The returned cleanup restores the source DOM. */
 export function createHeroEntranceTimeline(
   gsap: typeof import("gsap")["gsap"],
   stage: HTMLElement,
   cookieHost: HTMLElement | null,
 ) {
+  gsap.registerPlugin(SplitText);
+  const splits: SplitText[] = [];
   const timeline = gsap.timeline({ paused: true, defaults: { ease: MOTION.enter.ease } });
 
   for (const cue of HERO_ENTRANCE_CUES) {
@@ -20,30 +24,33 @@ export function createHeroEntranceTimeline(
         (child): child is HTMLElement => child instanceof HTMLElement,
       );
       if (lines.length) {
-        // Reveal existing lines without splitting characters or rewriting copy.
         gsap.set(element, { opacity: 1 });
-        timeline.fromTo(lines,
-          { opacity: 0, yPercent: 66 },
-          { opacity: 1, yPercent: 0, duration: cue.duration,
-            stagger: 0.095, ease: MOTION.emphasis.ease, clearProps: "transform" },
-          cue.at);
+        for (const [lineIndex, line] of lines.entries()) {
+          const split = SplitText.create(line, { type: "chars", mask: "chars", aria: "none" });
+          splits.push(split);
+          timeline.fromTo(split.chars,
+            { yPercent: 102, autoAlpha: 0 },
+            { yPercent: 0, autoAlpha: 1, duration: .58, ease: MOTION.emphasis.ease,
+              stagger: .018, clearProps: "transform,opacity,visibility" },
+            cue.at + lineIndex * .13);
+        }
         continue;
       }
     }
 
-    // The Nav wraps a fixed-position dock. Transforming the wrapper would
-    // create a new containing block and disturb its position.
+    // Do not transform the fixed-position navigation's parent.
     const still = cue.name === "navigation" || cue.name === "cookies";
-    const character = cue.name === "mascot";
     const action = cue.name === "action";
     timeline.fromTo(element,
       { autoAlpha: 0, y: still ? 0 : cue.rise,
-        scale: character ? 0.965 : action ? 0.975 : 1 },
+        scale: action ? .975 : 1 },
       { autoAlpha: 1, y: 0, scale: 1, duration: cue.duration,
-        ease: character ? MOTION.character.ease : action ? "back.out(1.12)" : MOTION.enter.ease,
-        clearProps: "transform" },
+        ease: action ? "back.out(1.12)" : MOTION.enter.ease,
+        clearProps: "transform,opacity,visibility" },
       cue.at);
   }
 
-  return timeline;
+  return Object.assign(timeline, {
+    revertSplit() { for (const split of splits) split.revert(); },
+  });
 }

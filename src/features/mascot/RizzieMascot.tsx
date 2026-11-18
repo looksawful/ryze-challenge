@@ -29,9 +29,12 @@ function speechBubblePosition(zone: HTMLElement, pet: { left: number; top: numbe
   return { ...placed, tailX };
 }
 
-export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto", previewAnimation, previewReplayKey }: {
+export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto", previewAnimation, previewReplayKey, href = "#hero-action", ambientWander = true, interactiveDesktopOnly = false }: {
   onActivate: (trigger: HTMLAnchorElement) => void;
   actionOpen: boolean;
+  href?: string;
+  ambientWander?: boolean;
+  interactiveDesktopOnly?: boolean;
   /** Storybook capability override; production always uses automatic detection. */
   scenario?: RizzieScenario;
   /** Storybook only: replay a real sprite animation without altering production behavior. */
@@ -73,8 +76,9 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
     hydrated, scenario, motionAllowed: motion, supported, coarsePointer, touchPoints,
     viewportWidth,
   });
-  const canDrag = (mode.kind === "interactive" && mode.input === "pointer") ||
-    (desktop && supported && hydrated && mode.kind === "static" && mode.reason === "reduced-motion");
+  const mobileInert = interactiveDesktopOnly && (!hydrated || viewportWidth < 800 || coarsePointer);
+  const canDrag = !mobileInert && ((mode.kind === "interactive" && mode.input === "pointer") ||
+    (desktop && supported && hydrated && mode.kind === "static" && mode.reason === "reduced-motion"));
 
   const freezeWalk = useCallback(() => {
     const zone = zoneRef.current;
@@ -239,6 +243,18 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
   }, [freezeWalk]);
 
   useEffect(() => {
+    const onDirectedMotion = (event: Event) => {
+      const action = (event as CustomEvent<{ action?: AnimationName }>).detail?.action;
+      if (!action || !["idle", "working", "running-left", "running-right"].includes(action)) return;
+      animation.current = action;
+      animationAt.current = performance.now();
+      walkUntil.current = action.startsWith("running-") ? Infinity : 0;
+    };
+    window.addEventListener("rizzie:motion", onDirectedMotion);
+    return () => window.removeEventListener("rizzie:motion", onDirectedMotion);
+  }, []);
+
+  useEffect(() => {
     if (!ready || !motion || !visible) return;
     let lastCell = "";
     const tick = () => {
@@ -251,7 +267,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
       }
       let cell;
       if (animation.current === "idle") {
-        cell = resolveSpriteFrame("working", 0);
+        cell = resolveSpriteFrame("idle", now - animationAt.current);
       } else if (animation.current === "gaze") {
         const target = document.querySelector("#hero-action input, #hero-action summary")?.getBoundingClientRect();
         const pet = petRef.current?.getBoundingClientRect();
@@ -300,7 +316,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
 
   const wander = shouldWander({
     desktop,
-    motionAllowed: motion && ready && canDrag && !wasDragged && !detached &&
+    motionAllowed: ambientWander && motion && ready && canDrag && !wasDragged && !detached &&
       (previewAnimation === undefined || previewAnimation === "natural"),
     visible, actionOpen, messageOpen: Boolean(message), compact,
     interacting: engaged || dragging,
@@ -404,6 +420,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
 
   const activate = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
+    if (mobileInert) return;
     if (suppressClick.current) {
       suppressClick.current = false;
       return;
@@ -417,16 +434,23 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
     onActivate(event.currentTarget);
   };
 
+  function offerCall() {
+    if (!desktop || !hydrated || mobileInert) return;
+    freezeWalk();
+    setBubbleStyle({ position: "fixed", visibility: "hidden" });
+    setMessage({ id: ++counter.current, text: "Click to book a call." });
+  }
+
   const animated = canDrag && motion && ready && visible;
   if (mode.kind === "hidden") return null;
   return (
     <section className={styles.zone} ref={zoneRef} aria-label="Rizzie mascot"
-      data-mode={mode.kind} data-compact={compact || undefined}>
-      <a className={styles.pet} ref={petRef} href="#hero-action"
-        aria-label="Rizzie: Start For Free" draggable={false} onClick={activate}
-        onMouseEnter={() => { setEngaged(true); freezeWalk(); }}
+      data-mode={mode.kind} data-compact={compact || undefined} data-mobile-inert={mobileInert || undefined}>
+      <a className={styles.pet} ref={petRef} href={href}
+        aria-label="Rizzie: Book a call" draggable={false} onClick={activate}
+        onMouseEnter={() => { setEngaged(true); offerCall(); }}
         onMouseLeave={() => setEngaged(false)}
-        onFocus={() => { setEngaged(true); freezeWalk(); }}
+        onFocus={() => { setEngaged(true); offerCall(); }}
         onBlur={() => setEngaged(false)}
         onPointerDown={pointerDown} onPointerMove={pointerMove}
         onPointerUp={pointerEnd} onPointerCancel={pointerEnd}
@@ -441,7 +465,7 @@ export default function RizzieMascot({ onActivate, actionOpen, scenario = "auto"
           <span className={styles.sprite} ref={spriteRef} aria-hidden="true"
             style={{ backgroundImage: `url("${atlasSrc}")` }} />
         )}
-        <span className={styles.fallbackLabel}>Start For Free</span>
+        <span className={styles.fallbackLabel}>Book a call</span>
       </a>
       {message && <RizzieMessage key={message.id} text={message.text}
         onClose={dismissMessage} side={bubbleSide} style={bubbleStyle} />}

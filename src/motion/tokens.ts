@@ -10,14 +10,24 @@ export const MOTION = {
   character: { duration: 0.68, ease: "power3.out" },
 } as const;
 
-/** Relative to SVG event ryze:assembled, not navigation time.
- * Cues deliberately overlap. Semantic order remains stable. */
+/** One rhythm for decorative text and AI replies. All values in seconds.
+ * Replies and placeholder typing use the same key cadence. */
+export const CHAT_RHYTHM = {
+  character: 0.045,
+  eraseCharacter: 0.027,
+  pause: 1.2,
+  gap: 0.24,
+  reveal: 0.68,
+  processingTail: 0.45,
+} as const;
+
+/** Relative to the completed paper wind intro, not navigation time.
+ * Cues deliberately overlap after the brand has left the screen. */
 export const HERO_ENTRANCE_CUES = [
   { name: "brand", at: 0, duration: 0.46, rise: -10 },
   { name: "headline", at: 0, duration: 0.76, rise: 32 },
   { name: "lead", at: 0.22, duration: 0.56, rise: 14 },
   { name: "description", at: 0.44, duration: 0.58, rise: 12 },
-  { name: "mascot", at: 0.44, duration: 0.68, rise: 19 },
   { name: "action", at: 0.66, duration: 0.64, rise: 17 },
   { name: "integration", at: 0.66, duration: 0.58, rise: 12 },
   { name: "navigation", at: 0.9, duration: 0.42, rise: 0 },

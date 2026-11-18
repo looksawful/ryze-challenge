@@ -906,7 +906,7 @@
     let cardsStarted=false;
     // Single continuous GSAP clock, one stateful group of 118 paper paths.
     tween=createClockTween(clock,{
-      time:totalDuration,duration:totalDuration,ease:'none',
+      time:totalDuration,duration:totalDuration*.78,ease:'none',
       onUpdate:()=>{
         // Cards join while paper fragments are still assembling, before the gust.
         if(!cardsStarted && clock.time>=scene2Start*.45){

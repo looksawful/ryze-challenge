@@ -24,7 +24,8 @@ test("The first-screen orchestration uses GSAP timelines and the 118-piece assem
   assert.match(composer, /\.fromTo\(/);
   assert.match(shell, /"ryze:assembled"/);
   assert.match(shell, /data-motion-driver/);
-  assert.match(css, /data-motion-driver="gsap"/);
+  assert.match(composer, /SplitText\.create/);
+  assert.match(composer, /revertSplit/);
 });
 
 test("CSS fallback, no-JS and reduced-motion preserve usable first screen", () => {

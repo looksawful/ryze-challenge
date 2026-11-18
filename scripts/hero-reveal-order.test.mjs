@@ -4,7 +4,7 @@ import test from "node:test";
 
 const read = (path) => readFileSync(path, "utf8");
 
-test("Hero reveal starts on the assembled-fragments milestone, before circle completion", () => {
+test("Hero reveals after paper intro completion, not during fragment assembly", () => {
   const source = read("public/ryze-canvas/src/main.js");
   const shell = read("src/features/site-shell/HeroWithNavigation.tsx");
   assert.match(source, /addEventListener\(['"]ryze:assembled['"]/);
@@ -12,22 +12,23 @@ test("Hero reveal starts on the assembled-fragments milestone, before circle com
   assert.match(shell, /event\.data\?\.type === "ryze:assembled"/);
   assert.match(shell, /"revealing"/);
   assert.match(shell, /"ryze:intro-complete"/);
-  assert.match(shell, /24000/);
+  assert.match(shell, /6500/);
 });
 
-test("Reveal order: H1, lead, description, CTA with integrations, navigation, desktop cookie", () => {
-  const hero = read("src/features/hero/Hero.module.css");
+test("One GSAP score reveals split H1 then lead, description, CTA, navigation and cookies", () => {
+  const tokenSource = read("src/motion/tokens.ts");
+  const entrance = read("src/motion/hero-entrance.ts");
   const nav = read("src/features/site-shell/HeroWithNavigation.module.css");
   const cookie = read("src/app/page.module.css");
-  assert.match(hero, /\.headline\s*\{\s*--hero-enter-delay:\s*0s/);
-  assert.match(hero, /\.lead\s*\{\s*--hero-enter-delay:\s*\.22s/);
-  assert.match(hero, /\.description\s*\{\s*--hero-enter-delay:\s*\.44s/);
-  assert.match(hero, /\.action\s*,\s*\.integration\s*\{\s*--hero-enter-delay:\s*\.66s/);
-  assert.match(nav, /animation:\s*ryze-nav-reveal\s+\.48s\s+\.9s/);
-  assert.match(cookie, /animation:\s*ryze-cookie-reveal\s+\.48s\s+1\.14s/);
-  assert.match(hero, /prefers-reduced-motion:\s*reduce/);
+  assert.match(tokenSource, /name: "headline", at: 0/);
+  assert.match(tokenSource, /name: "lead", at: 0\.22/);
+  assert.match(tokenSource, /name: "description", at: 0\.44/);
+  assert.match(tokenSource, /name: "action", at: 0\.66/);
+  assert.match(tokenSource, /name: "navigation", at: 0\.9/);
+  assert.match(tokenSource, /name: "cookies", at: 1\.14/);
+  assert.match(entrance, /SplitText\.create/);
+  assert.match(entrance, /revertSplit/);
   assert.match(nav, /prefers-reduced-motion:\s*reduce/);
-  assert.match(nav, /\.stage\[data-intro="ready"\]:not\(\[data-motion-driver="gsap"\]\) \.navigation\s*\{\s*animation:\s*none/);
   assert.match(cookie, /prefers-reduced-motion:\s*reduce/);
 });
 

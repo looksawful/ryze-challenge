@@ -37,12 +37,19 @@
     z-index: 40;
   }
 
-  /* Release content on SVG assembly, but keep the Canvas running until the
-     pink circle has shrunk. The menu enters after the CTA group. */
+  /* Paper intro, then the staggered GSAP text/CTA/navigation entrance. */
   .stage[data-intro="playing"] > :global(main),
   .stage[data-intro="playing"] .navigation {
+    visibility: hidden;
     opacity: 0;
     pointer-events: none;
+  }
+  .stage[data-intro="revealing"] > :global(main),
+  .stage[data-intro="ready"] > :global(main),
+  .stage[data-intro="revealing"] .navigation,
+  .stage[data-intro="ready"] .navigation {
+    visibility: visible;
+    pointer-events: auto;
   }
   .stage[data-intro="revealing"]:not([data-motion-driver="gsap"]):not([data-theme="dawn"]) .navigation,
   .stage[data-intro="ready"]:not([data-motion-driver="gsap"]):not([data-theme="dawn"]) .navigation {
@@ -64,6 +71,7 @@
     }
     .stage[data-intro="playing"] > :global(main),
     .stage[data-intro="playing"] .navigation {
+      visibility: visible;
       opacity: 1;
       pointer-events: auto;
     }
@@ -84,12 +92,31 @@
   }
 }
 
-/* A decorative intro must never hide the active email-first Hero. */
+/* The rounded hero surface shifts to reveal the sidebar UNDER it. */
 @layer components {
-  .stage:has([data-conversational-hero]) > :global(main),
-  .stage:has([data-conversational-hero]) .navigation {
-    opacity:1;
-    pointer-events:auto;
+  @media (width < 75rem) {
+    .stage { --ryze-menu-width: min(82vw, 21rem); }
+    .stage > :global(main), .stage .motionBackdrop {
+      transition: transform .36s cubic-bezier(.2,.85,.25,1),
+                  border-radius .36s cubic-bezier(.2,.85,.25,1);
+    }
+    :global(html[data-ryze-mobile-menu="open"]) .stage {
+      background: var(--nav-inside); overflow: clip; max-block-size: 100dvh;
+    }
+    :global(html[data-ryze-mobile-menu="open"]) .stage > :global(main) {
+      position: relative; z-index: 60;
+      transform: translateX(var(--ryze-menu-width));
+      border-radius: 25px 0 0 25px;
+      overflow: clip; background: var(--color-background);
+      pointer-events: none; box-shadow: -4px 0 26px rgb(0 0 0 / 15%);
+    }
+    :global(html[data-ryze-mobile-menu="open"]) .stage .motionBackdrop {
+      transform: translateX(var(--ryze-menu-width));
+      border-radius: 25px 0 0 25px;
+    }
+    :global(html[data-ryze-mobile-menu="open"]) .stage .navigation { z-index: 40; }
   }
-  .stage:has([data-conversational-hero]) .navigation { animation:none!important; }
+  @media (prefers-reduced-motion: reduce) {
+    .stage > :global(main), .stage .motionBackdrop { transition: none; }
+  }
 }

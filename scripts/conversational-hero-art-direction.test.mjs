@@ -14,7 +14,7 @@ test("Hero has one adaptive row for form and integrations, without background ca
   assert.match(hero, /className=\{styles\.action\}/);
   assert.doesNotMatch(hero, /styles\.actionCluster/);
   assert.match(hero, /<IntegrationLogos\s*\/>/);
-  assert.match(css, /--type-heading-size:\s*clamp\(72px,\s*6\.667vw,\s*108px\)/);
+  assert.match(css, /--type-heading-size:\s*clamp\(3\.15rem,\s*6\.15vw,\s*8\.15rem\)/);
   assert.match(css, /@media\s*\(width\s*<\s*800px\)/);
 });
 
