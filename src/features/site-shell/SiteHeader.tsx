@@ -91,7 +91,6 @@ export function SiteHeader({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const brandRef = useRef<HTMLAnchorElement>(null);
-  const wasMobileOpen = useRef(false);
   const mobileCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const desktopNavRef = useRef<HTMLElement>(null);
   const rootRef = useRef<HTMLElement>(null);
@@ -116,12 +115,12 @@ export function SiteHeader({
     if (!dialog) return;
     if (mobileCloseTimer.current) clearTimeout(mobileCloseTimer.current);
     if (mobileOpen) {
-      if (!dialog.open) dialog.show();
+      if (!dialog.open) dialog.showModal();
       document.documentElement.dataset.ryzeMobileMenu = "open";
       requestAnimationFrame(() => {
         if (dialog.open) {
           dialog.dataset.slide = "open";
-          dialog.querySelector<HTMLHeadingElement>("[data-mobile-heading]")?.focus({ preventScroll: true });
+          dialog.querySelector<HTMLButtonElement>('button[aria-label="Close navigation"]')?.focus({ preventScroll: true });
         }
       });
     } else {
@@ -131,13 +130,7 @@ export function SiteHeader({
         mobileCloseTimer.current = setTimeout(() => dialog.close(),
           matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 360);
       }
-      if (wasMobileOpen.current) {
-        const visibleTrigger = [menuTriggerRef.current, brandRef.current]
-          .find((item) => item && item.getClientRects().length);
-        visibleTrigger?.focus({ preventScroll: true });
-      }
     }
-    wasMobileOpen.current = mobileOpen;
     return () => { if (mobileCloseTimer.current) clearTimeout(mobileCloseTimer.current); };
   }, [mobileOpen]);
 
@@ -147,22 +140,31 @@ export function SiteHeader({
     if (!mobileOpen) return;
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { event.preventDefault(); closeMobile(); return; }
+    // Safari and Chromium differ in where Shift+Tab goes from the dialog
+    // itself. Keep keyboard traversal inside the open modal in both.
+    const containFocus = (event: KeyboardEvent) => {
       if (event.key !== "Tab") return;
       const targets = Array.from(dialog.querySelectorAll<HTMLElement>(
         'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      )).filter(node => node.getClientRects().length > 0);
-      if (!targets.length) return;
-      const first=targets[0], last=targets[targets.length-1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();first.focus();
+      )).filter(node => node.getClientRects().length > 0 && !node.closest('[inert]'));
+      if (!targets.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = targets[0];
+      const last = targets[targets.length - 1];
+      const current = document.activeElement;
+      if (event.shiftKey && (!dialog.contains(current) || current === first || current === dialog)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (!dialog.contains(current) || current === last)) {
+        event.preventDefault();
+        first.focus();
       }
     };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", containFocus, true);
+    return () => document.removeEventListener("keydown", containFocus, true);
   }, [mobileOpen]);
 
   useEffect(() => {
@@ -433,7 +435,7 @@ export function SiteHeader({
 
       {mode !== "static" && (
         <dialog ref={dialogRef} id={uid + "-mobile-menu"} className={styles.mobileDialog} data-preview-part="mobile-menu"
-                data-theme={theme} aria-modal={mobileOpen} aria-label="Ryze site navigation"
+                data-theme={theme} aria-modal="true" aria-label="Ryze site navigation"
                 onClick={(event) => { if (event.target === event.currentTarget) closeMobile(); }}
                 onCancel={(event) => { event.preventDefault(); closeMobile(); }}
                 onClose={closeMobile}>

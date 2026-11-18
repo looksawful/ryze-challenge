@@ -1208,16 +1208,24 @@
       min-block-size: 52px;
       padding: 0 22px;
       border-radius: 999px;
-      color: var(--nav-foreground);
-      background: var(--nav-surface);
+      color: var(--accent-current, #ff5af1);
+      background: transparent;
+      border: 2px solid var(--accent-current, #ff5af1);
       box-shadow: none;
       font-size: 14px;
       font-weight: 600;
       line-height: 1.2;
       white-space: nowrap;
+      transition: border-color 180ms ease, color 180ms ease;
     }
     .header[data-variant="dock"] .booking:hover {
-      background: color-mix(in oklab, var(--nav-surface) 85%, var(--nav-foreground));
+      background: transparent;
+      color: var(--nav-foreground);
+      border-color: var(--nav-foreground);
+    }
+    .header[data-variant="dock"] .booking:focus-visible {
+      outline: 2px solid var(--accent-current, #ff5af1);
+      outline-offset: 3px;
     }
   }
   @media (max-width: 74.999rem) {

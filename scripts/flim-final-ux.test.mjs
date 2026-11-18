@@ -37,9 +37,9 @@ test("Consent has one short notice without an unused heading, retains the settin
 
 test("Form uses accent pink submit and conversation replies instead of alert/bordered error states", () => {
   assert.match(chatCss, /\.composer button[\s\S]*?background:\s*var\(--accent-current/);
-  assert.match(chat, /role="status"/);
-  assert.match(chat, /role="alert"/);
-  assert.match(chat, /Preparing a sample preview/);
+  assert.match(chat, /role=\{reply\.kind === "error" \? "alert" : "status"\}/);
+  assert.match(chat, /Website address accepted/);
+  assert.doesNotMatch(chat, /<Image\b/);
   assert.doesNotMatch(chat, /className=\{styles\.error\}/);
 });
 
@@ -54,4 +54,22 @@ test("Existing large brand intro remains enabled and renders the Ryze logo", () 
   assert.match(svgIntro, /function renderWind\(/);
   assert.doesNotMatch(svgIntro, /melting=false;/);
   assert.match(svgIntro, /frame.dataset.state=\x27assembling\x27/);
+});
+
+test("header contact is a transparent accent-outline action", () => {
+  assert.match(headerCss, /\.header\[data-variant="dock"\] \.booking \{[^}]*border: 2px solid var\(--accent-current/s);
+  assert.match(headerCss, /\.header\[data-variant="dock"\] \.booking \{[^}]*background: transparent/s);
+});
+
+test("mobile navigation is modal and keyboard focus cannot leave the drawer", () => {
+  assert.match(header, /dialog\.showModal\(\)/);
+  assert.match(header, /document\.addEventListener\("keydown", containFocus, true\)/);
+  assert.match(header, /aria-modal="true"/);
+});
+
+test("product cards reuse the original four interface screenshots", () => {
+  const model = read("src/features/site-shell/link-model.ts");
+  for (const image of [
+    "paid-ads-walkthrough.webp", "seo.png", "site-audit.png", "reporting.png"
+  ]) assert.match(model, new RegExp("/ryze-media/navigation/" + image.replace(".", "\\.")));
 });

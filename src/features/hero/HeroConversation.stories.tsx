@@ -54,15 +54,16 @@ export const MissingWebsite: Story = {
   name: "Empty website · actual validation",
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Start for free" }));
+    await canvas.findByRole("alert");
   },
 };
 
 export const ReadyPreview: Story = {
-  name: "Valid website · AI preview",
+  name: "Valid website · address accepted",
   play: async ({ canvas, userEvent }) => {
     const input = canvas.getByRole("textbox", { name: "Website address" });
     await userEvent.type(input, "example.com");
     await userEvent.click(canvas.getByRole("button", { name: "Start for free" }));
-    await canvas.findByRole("region", { name: "Ryze capability examples" }, { timeout: 8000 });
+    await canvas.findByRole("status");
   },
 };

@@ -20,6 +20,22 @@ test("chat shell is transparent and the input alone owns the pill surface", () =
 });
 
 test("website address is a local preview, not a fictitious subscription", () => {
-  assert.match(component, /No website was contacted or analyzed/);
-  assert.match(component, /setSubmitted\(true\)/);
+  assert.match(component, /Website address accepted/);
+  assert.match(component, /role=\{reply\.kind === "error" \? "alert" : "status"\}/);
+  assert.doesNotMatch(component, /className=\{styles\.proof\}/);
+  assert.doesNotMatch(component, /<Image\b/);
+});
+
+test("valid submission is text-only and invalid addresses produce accessible feedback", () => {
+  assert.match(component, /Website address accepted\./);
+  assert.match(component, /aria-invalid=\{Boolean\(error\)\}/);
+  assert.match(component, /id=\{reply\.kind === "error" \? "ryze-website-error"/);
+  assert.doesNotMatch(component, /className=\{styles\.(?:proof|previewImage|choices)\}/);
+  assert.doesNotMatch(component, /capabilities\.map/);
+});
+
+test("no-JavaScript action has a real destination, not a disabled submit", () => {
+  assert.match(component, /<noscript>/);
+  assert.match(component, /className=\{styles\.staticStart\}/);
+  assert.match(css, /\.chat:has\(\.staticStart\) \.composer \{ display: none; \}/);
 });
