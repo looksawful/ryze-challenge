@@ -247,7 +247,8 @@
     .hero {
       inline-size: min(1947px, calc(100% - 560px));
       grid-template-columns: repeat(12, minmax(0, 1fr));
-      grid-template-rows: 270px 240px minmax(150px, 1fr) 130px;
+      grid-template-rows: 270px 240px clamp(220px, 21svh, 300px) 130px;
+      align-content: start;
       padding: 0 20px 100px;
     }
     .brand { grid-column: 10 / 13; grid-row: 1; justify-self: end; align-self: center; margin-inline: 0; }
@@ -607,14 +608,14 @@
     }
     .brand {
       position: absolute;
-      inset: 62% auto auto 63%;
+      inset: clamp(5.5rem, 14svh, 6.75rem) clamp(1.5rem, 5vw, 3.5rem) auto auto;
       margin: 0;
       font-size: clamp(38px, 5vw, 54px);
     }
     .brandMark { inline-size: 50px; block-size: 50px; }
     .lead {
       position: absolute;
-      inset: auto auto 15px clamp(24px, 4vw, 52px);
+      inset: calc(max(6rem, 14svh) + 7.5rem) auto auto clamp(1.5rem, 4vw, 3.25rem);
       inline-size: min(44%, 410px);
       margin: 0;
       --type-lead-size: 19px;
@@ -640,7 +641,7 @@
     .integration {
       position: absolute;
       grid-area: auto;
-      inset: 100px 28px auto auto;
+      inset: 180px 28px auto auto;
       inline-size: min(25%, 225px);
       margin: 0;
     }

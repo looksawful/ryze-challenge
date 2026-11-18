@@ -41,3 +41,35 @@ export const Notebook: Story = {
     },
   },
 };
+
+export const DuoOpen: Story = {
+  name: "Duo Open · 951 × 669",
+  parameters: {
+    viewport: {
+      defaultViewport: "ryzeDuoOpen",
+      options: {
+        ryzeDuoOpen: {
+          name: "Duo Open 951 × 669",
+          styles: { width: "951px", height: "669px" },
+          type: "tablet",
+        },
+      },
+    },
+  },
+};
+
+export const Ultrawide: Story = {
+  name: "Ultrawide · 2560 × 1440",
+  parameters: {
+    viewport: {
+      defaultViewport: "ryzeUltrawide",
+      options: {
+        ryzeUltrawide: {
+          name: "Ultrawide 2560 × 1440",
+          styles: { width: "2560px", height: "1440px" },
+          type: "desktop",
+        },
+      },
+    },
+  },
+};
