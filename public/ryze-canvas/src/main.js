@@ -1,4 +1,5 @@
 import * as THREE from '../vendor/three/three.module.js';
+import { createPaperShards } from './paper-shards.mjs';
 import { orbitAt, perspectiveScale, SHOW_MEDIA_CARDS, CARD_COUNT, CARD_ASPECT, ORBIT_DURATION, CARD_STAGGER, CAMERA_FOV, CARD_WORLD_RATIO } from './orbit.js';
 import { cardMedia, coverUV } from './media.js';
 
@@ -123,6 +124,7 @@ if(renderer){
   map:logoTexture,transparent:true,opacity:1,alphaTest:.018,alphaToCoverage:true,
   depthTest:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}));
  logo.position.z=0;logo.name='Original SVG logo on 3D plane';scene.add(logo);
+ const paperShards=createPaperShards(scene,logoShape);
  const helpers=new THREE.Group();
  helpers.name='Perspective and orbit helpers';
  scene.add(helpers);
@@ -404,6 +406,7 @@ if(renderer){
   logoCanvas.width=Math.max(1,Math.round(W*density));
   logoCanvas.height=Math.max(1,Math.round(H*density));
   logo.scale.set(W,H,1);
+  paperShards.resize(W,H,renderer.getPixelRatio(),cameraDistance);
   // Helpers share the SAME camera and orbit math as the real cards.
   const gridSize=minDim*2.4;
   for(const [grid,z] of [[farGrid,-cameraDistance*.8],[logoGrid,0],[nearGrid,cameraDistance*.45]]){
@@ -435,12 +438,14 @@ if(renderer){
  function frameRender(){
   raf=0;
   if(!running)return;
-  logo.rotation.z=-THREE.MathUtils.degToRad(Number(frame.dataset.logoRotation||0));
+  const rotation=Number(frame.dataset.logoRotation||0);
+  logo.rotation.z=-THREE.MathUtils.degToRad(rotation);
+  paperShards.update(Number(frame.dataset.assemblyProgress||0),Number(frame.dataset.windProgress||0),rotation);
   drawLogo();
   for(const c of cards)if(c.active)positionCard(c);
   renderer.render(scene,camera);
   window.__ryze3d={status:'webgl',sceneState:frame.dataset.state,
-   originalPieces:pieces.length,cardCount:cards.length,videoCount:videoElements.length,orbitCycle,
+   originalPieces:pieces.length,paperShards:paperShards.count,cardCount:cards.length,videoCount:videoElements.length,orbitCycle,
    videos:videoElements.map(v=>({readyState:v.readyState,paused:v.paused,time:v.currentTime})),orbitStarted,orbitFinished,
    cameraZ:cameraDistance,intro:{windFadeComplete,orbitFinished,introEventSent,logoScale:1-logoIntro.progress},cards:cards.map(c=>({
     index:c.index,progress:c.progress,x:c.mesh.position.x,y:c.mesh.position.y,
@@ -517,6 +522,7 @@ if(renderer){
  });
  window.addEventListener('pagehide',()=>{
   videoElements.forEach(v=>v.pause());
+  paperShards.dispose();
  });
  resize();
  apply();

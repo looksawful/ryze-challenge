@@ -29,3 +29,12 @@ GitHub Pages is deployed by `.github/workflows/pages.yml` on push to **dev**; th
 
 ## Limitations
 Physical Safari/iPhone visual sign-off was not performed in this work session. Browser smoke validates desktop Chrome and simulated mobile viewports; do not represent that as an iOS Safari pass.
+
+## Follow-up: visible micro paper fragments (2026-11-19)
+User observation: the previous local preview showed only the 118 large polygons, without the requested particle cloud.
+- Added `public/ryze-canvas/src/paper-shards.mjs`: 2,100 deterministic, irregular triangular micro-fragments on desktop, 1,350 on tablets, 950 on phones, sampled from the exact `#ryze-shape` silhouette.
+- GPU `THREE.Points` in the existing renderer: one geometry, one shader material, no second WebGL scene. Sizes, trajectories, delays, four-sided entry and wind velocities vary. Opaque cutouts physically leave the viewport, without opacity fades.
+- The original 118-piece clock exports `assemblyProgress` and `windProgress`; there is no competing particle animation clock. Original paper cutouts and the integration-logo effect remain unchanged.
+- Acceptance: `scripts/paper-shards.test.mjs` 2/2 pass; production build + Chrome browser smoke 14/14 pass, including a GPU-shards presence assertion; lint and typecheck pass.
+- Real-time Chrome desktop and 390x844 mobile screenshots were inspected. Frame captures are outside the repository at `D:\inwork\_ryze_particle_realframes`.
+- Titan preview: `http://127.0.0.1:5177`; release not merged or deployed.

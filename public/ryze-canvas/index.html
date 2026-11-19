@@ -826,6 +826,7 @@
   const windDuration = 1.88, holdDuration = .26;
   function renderWind(progress, prepared) {
     const p = Math.max(0, Math.min(1, progress));
+    frame.dataset.windProgress=p.toFixed(5);
     frame.dataset.state = 'blowing';
     stack.removeAttribute('filter');
     blurNode.setAttribute('stdDeviation','0');
@@ -859,6 +860,8 @@
     alphaNode.setAttribute('values','1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0');
     pathEls.forEach((path,i)=>{path.setAttribute('d',initialPaths[i]);pieces[i].style.opacity='1';});
     frame.dataset.logoRotation='-45';
+    frame.dataset.assemblyProgress='0';
+    frame.dataset.windProgress='0';
     const {sw,sh,ox,oy,scale,span}=layout();
     const rand=randomGenerator(117031);
     const prepared=[];
@@ -912,6 +915,7 @@
       time:totalDuration,duration:totalDuration*.76,ease:'none',
       onUpdate:()=>{
         const progress=ease(clock.time/scene2Start);
+        frame.dataset.assemblyProgress=progress.toFixed(5);
         frame.dataset.logoRotation=(-45*(1-progress)).toFixed(3);
         placement.setAttribute('transform',`translate(${ox} ${oy}) scale(${scale}) rotate(${frame.dataset.logoRotation} 20 20)`);
         // Cards join while paper fragments are still assembling, before the gust.
