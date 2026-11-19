@@ -105,11 +105,16 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
           const navigation=header.querySelector('[data-preview-part="header-navigation"]');
           const contact=header.querySelector('[data-preview-part="header-actions"] a');
           return {brand:center(brand),brandVisible:getComputedStyle(brand).display!=="none",
+            wordmarkTop:brand.querySelector("img")?.getBoundingClientRect().top,
+            navigationTop:navigation.getBoundingClientRect().top,
             navigation:center(navigation),contact:center(contact)};
         })())`));
         const label=`${width}x${height} docked=${docked}`;
-        if(positions.brandVisible)
+        if(positions.brandVisible) {
           assert.ok(Math.abs(positions.brand-positions.navigation)<=1,`${label}: brand offset ${JSON.stringify(positions)}`);
+          assert.ok(Math.abs(positions.wordmarkTop-positions.navigationTop)<=1,
+            `${label}: wordmark sits below the menu top ${JSON.stringify(positions)}`);
+        }
         assert.ok(Math.abs(positions.contact-positions.navigation)<=1,`${label}: contact offset ${JSON.stringify(positions)}`);
       }
     }
