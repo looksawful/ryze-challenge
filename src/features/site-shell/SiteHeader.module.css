@@ -1331,6 +1331,45 @@
   }
 }
 
+/* Desktop alignment: brand, navigation and contact share the dock's center line. */
+@layer components {
+  @media (min-width: 75rem) {
+    .header[data-variant="dock"] {
+      --dock-top: max(12px, env(safe-area-inset-top));
+      --dock-row-height: 4.75rem;
+      --dock-control-height: 44px;
+    }
+    .header[data-variant="dock"][data-docked="true"] {
+      --dock-row-height: 3.65rem;
+    }
+    .header[data-variant="dock"] .inner,
+    .header[data-variant="dock"][data-docked="true"] .inner {
+      min-height: var(--dock-row-height);
+    }
+    .header[data-variant="dock"] .brand,
+    .header[data-variant="dock"] .actions {
+      inset-block-start: calc(
+        var(--dock-top) + (var(--dock-row-height) - var(--dock-control-height)) / 2
+      );
+    }
+    .header[data-variant="dock"] .brand,
+    .header[data-variant="dock"] .booking {
+      block-size: var(--dock-control-height);
+      min-block-size: var(--dock-control-height);
+    }
+  }
+  @media (min-width: 75rem) and (max-width: 124.9375rem)
+    and (min-height: 40rem) and (max-height: 62.5rem) {
+    .header[data-variant="dock"] {
+      --dock-top: max(6px, env(safe-area-inset-top));
+      --dock-row-height: 3.5rem;
+    }
+    .header[data-variant="dock"][data-docked="true"] {
+      --dock-row-height: 3.125rem;
+    }
+  }
+}
+
 /* Pricing uses the real source plan tiers in the same mega-panel system. */
 @layer components {
   .header .pricingHighlights {

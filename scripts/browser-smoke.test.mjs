@@ -92,6 +92,28 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
       assert.ok(info.font>=32,"heading at "+w);
     }
   });
+  await t.test("desktop header controls share one vertical center in both dock states",async()=>{
+    for(const [width,height] of [[1200,800],[1440,900],[1920,1080]]) {
+      await load(width,height);
+      for(const docked of [false,true]) {
+        await evalJs(`document.querySelector('header[data-variant="dock"]').dataset.docked=${JSON.stringify(docked ? "true" : "false")}`);
+        await sleep(650); // Let the existing dock-size transition settle.
+        const positions=JSON.parse(await evalJs(`JSON.stringify((()=>{
+          const header=document.querySelector('header[data-variant="dock"]');
+          const center=el=>{const r=el.getBoundingClientRect();return r.y+r.height/2};
+          const brand=header.querySelector('[data-preview-part="header-brand"]');
+          const navigation=header.querySelector('[data-preview-part="header-navigation"]');
+          const contact=header.querySelector('[data-preview-part="header-actions"] a');
+          return {brand:center(brand),brandVisible:getComputedStyle(brand).display!=="none",
+            navigation:center(navigation),contact:center(contact)};
+        })())`));
+        const label=`${width}x${height} docked=${docked}`;
+        if(positions.brandVisible)
+          assert.ok(Math.abs(positions.brand-positions.navigation)<=1,`${label}: brand offset ${JSON.stringify(positions)}`);
+        assert.ok(Math.abs(positions.contact-positions.navigation)<=1,`${label}: contact offset ${JSON.stringify(positions)}`);
+      }
+    }
+  });
   await t.test("solutions and pricing show correct real links and amounts",async()=>{
     await load(1440,900);
     await evalJs('Array.from(document.querySelectorAll("header nav button")).find(b=>b.textContent.trim().startsWith("Solutions"))?.click()');
