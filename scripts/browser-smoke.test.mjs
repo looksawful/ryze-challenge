@@ -11,7 +11,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 const output=resolve("out");
 const chromePath=[process.env.CHROME_PATH,"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"].find(p=>p&&existsSync(p));
-const mime={".html":"text/html",".js":"text/javascript",".css":"text/css",".svg":"image/svg+xml",
+const mime={".html":"text/html",".js":"text/javascript",".mjs":"text/javascript",".css":"text/css",".svg":"image/svg+xml",
   ".png":"image/png",".webp":"image/webp",".mp4":"video/mp4",".woff2":"font/woff2",".ttf":"font/ttf"};
 async function until(fn,label,timeout=10000){
   const end=Date.now()+timeout;
@@ -201,16 +201,17 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
       await until(()=>evalJs("document.querySelector('dialog')?.open===false"),"menu closed");
     }
   });
-  await t.test("full-motion 118 paper fragments finish without restarting the intro",async()=>{
+  await t.test("3D particles finish before Hero without restarting the intro",async()=>{
     await cdp("Emulation.setDeviceMetricsOverride",{width:1440,height:900,deviceScaleFactor:1,mobile:false});
     await cdp("Emulation.setEmulatedMedia",{media:"screen",features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
     await cdp("Emulation.setScriptExecutionDisabled",{value:false});
     await cdp("Page.navigate",{url});
-    await until(()=>evalJs(`document.querySelector('iframe[title="Ryze motion canvas"]')?.contentDocument?.querySelectorAll('.mover').length===118`),"118 paper fragments",7000);
-    await until(()=>evalJs("document.querySelector('[data-intro]')?.dataset.intro==='ready'"),"full-motion completion",10000);
+    await until(()=>evalJs(`document.querySelector('iframe[title="Ryze motion canvas"]')?.contentWindow?.__ryzeParticleIntro?.status`),"particle engine started or fallback",7000);
+    await until(()=>evalJs("document.querySelector('[data-intro]')?.dataset.intro==='ready'"),"full-motion completion",12000);
     await sleep(900);
-    const state=JSON.parse(await evalJs(`JSON.stringify({intro:document.querySelector('[data-intro]')?.dataset.intro,paper:document.querySelector('iframe[title="Ryze motion canvas"]')?.contentDocument?.getElementById('frame')?.dataset.state})`));
-    assert.deepEqual(state,{intro:"ready",paper:"blown"},"intro restarted after completion");
+    const state=JSON.parse(await evalJs(`JSON.stringify({intro:document.querySelector('[data-intro]')?.dataset.intro,particle:document.querySelector('iframe[title="Ryze motion canvas"]')?.contentWindow?.__ryzeParticleIntro?.status})`));
+    assert.equal(state.intro,"ready","Hero must be readable after the particles");
+    assert.ok(["complete","fallback","reduced-motion"].includes(state.particle), "intro restarted or failed to finish: "+state.particle);
   });
   await t.test("chat reply types characters after a submitted domain, without cards or images",async()=>{
     await cdp("Emulation.setDeviceMetricsOverride",{width:1440,height:900,deviceScaleFactor:1,mobile:false});

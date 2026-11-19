@@ -29,7 +29,7 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
     let gsapReady: typeof import("gsap")["gsap"] | null = null;
     let motionContext: ReturnType<(typeof import("gsap"))["gsap"]["context"]> | null = null;
     let entrance: ReturnType<typeof createHeroEntranceTimeline> | null = null;
-    // Preload while the 118 pieces assemble. No extra blocking load at the cue.
+    // Preload GSAP during the particle convergence; avoid a second load at reveal.
     void import("gsap").then(({ gsap }) => {
       if (alive) gsapReady = gsap;
     }).catch(() => { /* CSS entrance remains fully functional. */ });
@@ -75,7 +75,7 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
         'iframe[title="Ryze motion canvas"]'
       );
       if (event.origin !== window.location.origin || event.source !== frame?.contentWindow) return;
-      // The paper mark must assemble and blow away before the text timeline.
+      // The particle mark must finish before the Hero text timeline.
       if (event.data?.type === "ryze:intro-complete") beginReveal();
     };
     const onPreferenceChange = () => {
@@ -89,7 +89,7 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
     window.addEventListener("message", onMessage);
     reduced.addEventListener("change", onPreferenceChange);
     // Asset/WebGL failures must never strand the user behind an invisible Hero.
-    const watchdog = window.setTimeout(beginReveal, 3600);
+    const watchdog = window.setTimeout(beginReveal, 8500);
     return () => {
       alive = false;
       entrance?.revertSplit();
