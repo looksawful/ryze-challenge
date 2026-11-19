@@ -87,7 +87,7 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
       assert.ok(info.overflow<=1,"overflow at "+w+": "+info.overflow);
       assert.equal(info.headings,1,"one H1 at "+w);
       assert.ok(info.prose>0,"prose at "+w);
-      assert.equal(info.footer,true,"footer at "+w);
+      assert.equal(info.footer,false,"footer must not be mounted at "+w);
       assert.match(info.text,/AI autopilot for your Shopify/);
       assert.ok(info.font>=32,"heading at "+w);
     }
@@ -191,23 +191,17 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
     assert.ok(geometry.userRight<=390&&geometry.userWidth===0&&geometry.assistantWidth>0,
       "preparing status does not fit the mobile viewport");
   });
-  await t.test("compact gray footer matches dusk tokens and puts Cookie settings in Legal",async()=>{
+  await t.test("no footer or empty footer frame; cookie layer remains",async()=>{
     for(const [width,height] of [[390,844],[1440,900]]) {
       await load(width,height);
-      await evalJs('window.scrollTo({top:document.documentElement.scrollHeight,behavior:"instant"})');
-      const info=JSON.parse(await evalJs('JSON.stringify((function(){var f=document.querySelector("#footer"),r=f.getBoundingClientRect(),s=getComputedStyle(f),a=f.querySelector("nav a"),legal=Array.from(f.querySelectorAll("nav")).find(x=>x.querySelector("h2")?.textContent==="Legal");return {visible:r.top<innerHeight&&r.bottom>0,cols:f.querySelectorAll("nav").length,logo:!!f.querySelector("a[aria-label=\\"Ryze home\\"]"),backButton:/back to top/i.test(Array.from(f.querySelectorAll("a,button")).map(x=>x.textContent).join(" ")),cookieInLegal:!!legal?.querySelector("button")&&/cookie settings/i.test(legal.querySelector("button").textContent),bg:s.backgroundColor,fg:s.color,border:s.borderTopWidth,logoFilter:getComputedStyle(f.querySelector("img")).filter,linkColor:getComputedStyle(a).color,height:r.height,overflow:document.documentElement.scrollWidth-innerWidth}})())'));
-      assert.equal(info.visible,true);
-      assert.equal(info.cols,5);
-      assert.equal(info.logo,true);
-      assert.equal(info.backButton,false);
-      assert.equal(info.cookieInLegal,true);
-      assert.equal(info.bg,"rgb(29, 29, 29)");
-      assert.equal(info.fg,"rgb(247, 247, 247)");
-      assert.equal(info.border,"0px");
-      assert.equal(info.linkColor,info.fg);
-      assert.equal(info.logoFilter,"none");
-      assert.ok(info.height<(width<500?720:400),width+"px footer too tall: "+info.height);
-      assert.ok(info.overflow<=1,width+"px footer overflow");
+      const info=JSON.parse(await evalJs(`JSON.stringify({
+        footer:!!document.querySelector('footer, #footer, [data-footer-frame]'),
+        cookies:!!document.querySelector('[data-motion-slot="cookies"]'),
+        overflow:document.documentElement.scrollWidth-innerWidth
+      })`));
+      assert.equal(info.footer,false,"footer must not mount at "+width);
+      assert.equal(info.cookies,true,"consent layer must remain at "+width);
+      assert.ok(info.overflow<=1,"horizontal overflow at "+width);
     }
   });
   await t.test("mobile modal traps keyboard focus and remains scroll-safe in landscape",async()=>{
@@ -291,18 +285,15 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
       await until(()=>evalJs("document.querySelector('dialog')?.open===false"),"closed modal "+w);
     }
   });
-  await t.test("cookie choices save locally and footer settings reopens the form",async()=>{
+  await t.test("cookie choices persist after the footer is removed",async()=>{
     await load(390,844);
-    await until(()=>evalJs('!!document.querySelector(\'aside[aria-label="Cookie preferences"]\')'),"initial cookie notice");
-    await evalJs('Array.from(document.querySelectorAll(\'aside[aria-label="Cookie preferences"] button\')).find(b=>b.textContent.trim()==="Reject")?.click()');
+    await until(()=>evalJs(`!!document.querySelector('aside[aria-label="Cookie preferences"]')`),"initial cookie notice");
+    await evalJs(`Array.from(document.querySelectorAll('aside[aria-label="Cookie preferences"] button')).find(b=>b.textContent.trim()==="Reject")?.click()`);
     await until(()=>evalJs(`!document.querySelector('aside[aria-label="Cookie preferences"]')`),"cookie notice dismissed");
     assert.equal(await evalJs("JSON.parse(localStorage.getItem('ryze-cookie-preferences'))?.analytics"),false);
     assert.equal(await evalJs("JSON.parse(localStorage.getItem('ryze-cookie-preferences'))?.marketing"),false);
-    await evalJs("document.querySelector('footer [data-cookie-settings-trigger]').click()");
-    await until(()=>evalJs("!!document.querySelector('aside[data-settings] h2')"),"reopened cookie settings");
-    assert.equal(await evalJs("document.querySelector('aside[data-settings] h2')?.textContent"),"Cookie settings");
-    await evalJs("document.querySelector('aside[data-settings] form').requestSubmit()");
-    await until(()=>evalJs("!document.querySelector('aside[data-settings]')"),"saved cookie settings");
+    await load(390,844);
+    assert.equal(await evalJs(`!!document.querySelector('aside[aria-label="Cookie preferences"]')`),false,"stored choice must survive reload");
     await evalJs("localStorage.removeItem('ryze-cookie-preferences')");
   });
   await t.test("mascot stays tethered to cookie notice while scrolling on desktop",async()=>{
@@ -315,7 +306,7 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
     const measure=async()=>JSON.parse(await evalJs("JSON.stringify((()=>{const pet=document.querySelector('[aria-label=\"Rizzie: Book a call\"]').getBoundingClientRect();const cookie=document.querySelector('[data-motion-slot=\"cookies\"] aside').getBoundingClientRect();return {gap:cookie.top-pet.bottom,petWidth:pet.width,cookieTop:cookie.top,scrollable:document.documentElement.scrollHeight-innerHeight};})())"));
     const first=await measure();
     assert.ok(first.petWidth>=170&&first.petWidth<=230,"mascot uses desktop min/max sizes");
-    assert.ok(first.scrollable>100,"page must scroll to reproduce tether bug");
+    assert.ok(Number.isFinite(first.gap),"mascot/cookie placement must be measurable");
     await evalJs("window.scrollTo({top: Math.min(300, document.documentElement.scrollHeight-innerHeight), behavior:'instant'})");
     await sleep(180);
     const second=await measure();
@@ -325,9 +316,9 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
     await sleep(180);
     const bottom=await measure();
     assert.ok(Math.abs(bottom.gap-first.gap)<4,
-      "mascot detached at the footer: "+JSON.stringify({first,bottom}));
+      "mascot detached near document end: "+JSON.stringify({first,bottom}));
     const visible=JSON.parse(await evalJs("JSON.stringify((()=>{const pet=document.querySelector('[aria-label=\"Rizzie: Book a call\"]'),rect=pet.getBoundingClientRect(),hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height*.25);return {top:rect.top,bottom:rect.bottom,hit:!!hit&&(hit===pet||pet.contains(hit)),topmost:hit?.tagName};})())"));
-    assert.ok(visible.hit,"mascot is occluded near the footer: "+JSON.stringify(visible));
+    assert.ok(visible.hit,"mascot is occluded near document end: "+JSON.stringify(visible));
   });
   await t.test("valid domain shows spinning logo and navigates to the real Ryze scan",async()=>{
     await load(390,844);
@@ -339,11 +330,11 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
     assert.ok(pending.logo&&pending.disabled&&pending.aria?.includes("Preparing your audit on Ryze"),"wrong handoff state: "+JSON.stringify(pending));
     await until(()=>evalJs("location.hostname==='reports.get-ryze.ai' && location.pathname==='/scan'"),"redirect to official Ryze scan",8500);
   });
-  await t.test("mobile replies do not reposition form, mascot, integrations or footer",async()=>{
+  await t.test("mobile replies do not reposition form, mascot, integrations or cookies",async()=>{
     for (const [w,h] of [[320,568],[390,844],[874,402]]) {
       await load(w,h);
-      const geometry=async()=>JSON.parse(await evalJs("JSON.stringify((()=>{const ids={form:'#hero-conversation form',mascot:'[data-motion-slot=mascot]',integrations:'[data-motion-slot=integration]',footer:'#footer',cookies:'[data-motion-slot=cookies]'};const result={documentHeight:document.documentElement.scrollHeight,scrollY:scrollY};for(const [key,query] of Object.entries(ids)){const el=document.querySelector(query),r=el.getBoundingClientRect();result[key]=Math.round((r.top+scrollY)*10)/10;}return result})())"));
-      const compare=(start,end,scenario)=>{for(const key of ['form','mascot','integrations','footer','cookies'])assert.ok(Math.abs(start[key]-end[key])<2,w+'x'+h+' '+scenario+' moved '+key+': '+JSON.stringify({start,end}));assert.ok(Math.abs(start.documentHeight-end.documentHeight)<2,w+'x'+h+' '+scenario+' changed document height');};
+      const geometry=async()=>JSON.parse(await evalJs("JSON.stringify((()=>{const ids={form:'#hero-conversation form',mascot:'[data-motion-slot=mascot]',integrations:'[data-motion-slot=integration]',cookies:'[data-motion-slot=cookies]'};const result={documentHeight:document.documentElement.scrollHeight,scrollY:scrollY};for(const [key,query] of Object.entries(ids)){const el=document.querySelector(query),r=el.getBoundingClientRect();result[key]=Math.round((r.top+scrollY)*10)/10;}return result})())"));
+      const compare=(start,end,scenario)=>{for(const key of ['form','mascot','integrations','cookies'])assert.ok(Math.abs(start[key]-end[key])<2,w+'x'+h+' '+scenario+' moved '+key+': '+JSON.stringify({start,end}));assert.ok(Math.abs(start.documentHeight-end.documentHeight)<2,w+'x'+h+' '+scenario+' changed document height');};
       const initial=await geometry();
       await evalJs("document.querySelector('#hero-conversation form').requestSubmit()");
       await until(()=>evalJs('!!document.querySelector("[data-ai-reply=error]")'),"visible invalid-address error");
@@ -360,9 +351,14 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
       assert.ok(await evalJs("getComputedStyle(document.querySelector('[data-audit-loader]')).visibility!=='hidden'"),"audit status should be visible");
     }
   });
-  await t.test("no JavaScript still exposes a working CTA and navigation",async()=>{
+  await t.test("no JavaScript still exposes the CTA and navigation without a footer",async()=>{
     await load(390,844,false);
-    const info=JSON.parse(await evalJs('JSON.stringify({heading:!!document.querySelector("main h1"),cta:!!document.querySelector("#hero-conversation noscript a[href^=\\"https:\\"]"),footer:!!document.querySelector("footer"),links:document.querySelectorAll("footer a[href]").length})'));
-    assert.ok(info.heading&&info.cta&&info.footer&&info.links>=10);
+    const info=JSON.parse(await evalJs(`JSON.stringify({
+      heading:!!document.querySelector("main h1"),
+      cta:!!document.querySelector('#hero-conversation noscript a[href^="https:"]'),
+      footer:!!document.querySelector("footer"),
+      links:document.querySelectorAll('nav[aria-label="All destinations"] a[href]').length
+    })`));
+    assert.ok(info.heading&&info.cta&&!info.footer&&info.links>=10);
   });
 });
