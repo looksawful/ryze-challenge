@@ -159,13 +159,15 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
       const composer=root.querySelector('form').getBoundingClientRect();
       return {overflow:document.documentElement.scrollWidth-innerWidth,
         userRight:user.right,assistantLeft:assistant.left,
-        assistantBottom:assistant.bottom,composerTop:composer.top,
+        assistantTop:assistant.top,assistantBottom:assistant.bottom,composerTop:composer.top,composerBottom:composer.bottom,composerVisibility:getComputedStyle(root.querySelector("form")).visibility,
         userWidth:user.width,assistantWidth:assistant.width};
     })())`));
     assert.ok(geometry.overflow<=1,"chat introduced horizontal overflow");
-    assert.ok(geometry.assistantBottom<=geometry.composerTop+1,"assistant reply overlaps the form");
-    assert.ok(geometry.userRight<=390&&geometry.userWidth>0&&geometry.assistantWidth>0,
-      "chat messages do not fit the mobile viewport");
+    assert.equal(geometry.composerVisibility,"hidden","submitted mobile composer is replaced by the preparing status");
+    assert.ok(geometry.assistantTop>=geometry.composerTop-1&&geometry.assistantBottom<=geometry.composerBottom+1,
+      "preparing status must fit in the existing composer footprint");
+    assert.ok(geometry.userRight<=390&&geometry.userWidth===0&&geometry.assistantWidth>0,
+      "preparing status does not fit the mobile viewport");
   });
   await t.test("compact gray footer matches dusk tokens and puts Cookie settings in Legal",async()=>{
     for(const [width,height] of [[390,844],[1440,900]]) {
@@ -314,6 +316,27 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
     const pending=JSON.parse(await evalJs("JSON.stringify((()=>{const loader=document.querySelector('[data-audit-loader]');return {aria:document.querySelector('[role=\"status\"]')?.textContent?.trim(),logo:!!loader.querySelector('img'),disabled:document.querySelector('#hero-conversation form button').disabled};})())"));
     assert.ok(pending.logo&&pending.disabled&&pending.aria?.includes("Preparing your audit on Ryze"),"wrong handoff state: "+JSON.stringify(pending));
     await until(()=>evalJs("location.hostname==='reports.get-ryze.ai' && location.pathname==='/scan'"),"redirect to official Ryze scan",8500);
+  });
+  await t.test("mobile replies do not reposition form, mascot, integrations or footer",async()=>{
+    for (const [w,h] of [[320,568],[390,844],[874,402]]) {
+      await load(w,h);
+      const geometry=async()=>JSON.parse(await evalJs("JSON.stringify((()=>{const ids={form:'#hero-conversation form',mascot:'[data-motion-slot=mascot]',integrations:'[data-motion-slot=integration]',footer:'#footer',cookies:'[data-motion-slot=cookies]'};const result={documentHeight:document.documentElement.scrollHeight,scrollY:scrollY};for(const [key,query] of Object.entries(ids)){const el=document.querySelector(query),r=el.getBoundingClientRect();result[key]=Math.round((r.top+scrollY)*10)/10;}return result})())"));
+      const compare=(start,end,scenario)=>{for(const key of ['form','mascot','integrations','footer','cookies'])assert.ok(Math.abs(start[key]-end[key])<2,w+'x'+h+' '+scenario+' moved '+key+': '+JSON.stringify({start,end}));assert.ok(Math.abs(start.documentHeight-end.documentHeight)<2,w+'x'+h+' '+scenario+' changed document height');};
+      const initial=await geometry();
+      await evalJs("document.querySelector('#hero-conversation form').requestSubmit()");
+      await until(()=>evalJs('!!document.querySelector("[data-ai-reply=error]")'),"visible invalid-address error");
+      await sleep(200);
+      compare(initial,await geometry(),"invalid address");
+      await evalJs("document.querySelector('#ryze-preview-website').focus()");
+      await cdp("Input.insertText",{text:"example.com"});
+      await until(()=>evalJs("document.querySelector('#ryze-preview-website')?.value==='example.com'"),"valid input");
+      const entered=await geometry();
+      await evalJs("document.querySelector('#hero-conversation form').requestSubmit()");
+      await until(()=>evalJs('!!document.querySelector("[data-audit-loader]")'),"audit loader");
+      await sleep(180);
+      compare(entered,await geometry(),"successful address");
+      assert.ok(await evalJs("getComputedStyle(document.querySelector('[data-audit-loader]')).visibility!=='hidden'"),"audit status should be visible");
+    }
   });
   await t.test("no JavaScript still exposes a working CTA and navigation",async()=>{
     await load(390,844,false);
