@@ -94,3 +94,10 @@ test("visible copy passes a bounded typo and punctuation lint", () => {
   }
   assert.ok(words.some(value=>value.includes("Plugs into")) && words.some(value=>value.includes("any platform")));
 });
+
+test("motion canvas hides the completed mark before scripts execute", () => {
+  const html=source("public/ryze-canvas/index.html");
+  const firstStyle=html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? "";
+  const finishedMark=firstStyle.match(/#finished-mark\s*\{([^}]*)\}/)?.[1] ?? "";
+  assert.match(finishedMark, /opacity:\s*0\s*;/, "finished SVG must not flash before animation initialization");
+});

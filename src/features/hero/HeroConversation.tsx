@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import styles from "./HeroConversation.module.css";
 import { CHAT_RHYTHM } from "../../motion/tokens";
@@ -18,6 +19,8 @@ export const placeholderPhrases = [
 const subscribeToHydration = () => () => {};
 const getClientHydrated = () => true;
 const getServerHydrated = () => false;
+const auditUrl = "https://reports.get-ryze.ai/scan";
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export default function HeroConversation() {
   const hydrated = useSyncExternalStore(subscribeToHydration, getClientHydrated, getServerHydrated);
@@ -28,6 +31,7 @@ export default function HeroConversation() {
   const [error, setError] = useState("");
   const [reply, setReply] = useState<{ kind: "error" | "ready"; text: string } | null>(null);
   const [submittedWebsite, setSubmittedWebsite] = useState<string | null>(null);
+  const [preparingAudit, setPreparingAudit] = useState(false);
   const replyTextRef = useRef<HTMLSpanElement>(null);
   const replyTweenRef = useRef<{ kill: () => unknown } | null>(null);
   const field = useRef<HTMLInputElement>(null);
@@ -179,8 +183,16 @@ export default function HeroConversation() {
     };
   }, [reply, reducedMotion]);
 
+  useEffect(() => {
+    if (!preparingAudit) return;
+    // Only a handoff to Ryze's public scan page; this preview does not scan.
+    const timeout = window.setTimeout(() => window.location.assign(auditUrl), 2400);
+    return () => window.clearTimeout(timeout);
+  }, [preparingAudit]);
+
   function submitWebsite(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (preparingAudit) return;
     stopPresentation();
     const store = normalizeWebsiteAddress(website);
     setSubmittedWebsite(website.trim() || null);
@@ -189,13 +201,15 @@ export default function HeroConversation() {
         ? "That website address doesn't look right. Could you check it?"
         : "I'll need your website address to get started.";
       setError(message);
+      setPreparingAudit(false);
       setReply({ kind: "error", text: message });
       field.current?.focus();
       return;
     }
     setError("");
-    // A local format check only. The response is conversation, not a mock audit.
-    setReply({ kind: "ready", text: `Got it, ${store}. Want to explore ads, SEO, or CRO?` });
+    // Accepted locally; the actual audit begins only on Ryze after navigation.
+    setReply({ kind: "ready", text: "Preparing your audit on Ryze..." });
+    setPreparingAudit(true);
   }
 
   const overlayVisible = hydrated && introReleased && !reducedMotion && !hasInteracted && !website;
@@ -208,6 +222,11 @@ export default function HeroConversation() {
             <p className={styles.userReply} data-chat-message="user">{submittedWebsite}</p>
           )}
           <p className={styles.assistantReply} data-chat-message="assistant" aria-hidden="true">
+            {preparingAudit && (
+              <span className={styles.auditLoader} data-audit-loader aria-hidden="true">
+                <Image src={`${basePath}/brand-mark.svg`} width={36} height={36} unoptimized alt="" />
+              </span>
+            )}
             <span ref={replyTextRef} data-chat-text>{reducedMotion ? reply.text : ""}</span>
             {!reducedMotion && <span className={styles.replyCursor} aria-hidden="true" />}
           </p>
@@ -231,16 +250,17 @@ export default function HeroConversation() {
               setError("");
               setReply(null);
               setSubmittedWebsite(null);
+              setPreparingAudit(false);
             }}
             aria-invalid={Boolean(error)}
             aria-describedby={error ? "ryze-website-error" : "ryze-website-note"} />
           {overlayVisible && <span className={styles.animatedPlaceholder} data-animated-placeholder aria-hidden="true" ref={hint}>Enter your website…</span>}
         </div>
-        <button type="submit" disabled={!hydrated} aria-label="Check for free">Check for free</button>
+        <button type="submit" disabled={!hydrated || preparingAudit} aria-label="Check for free">Check for free</button>
       </form>
-      <p className={styles.screenReader} id="ryze-website-note">This preview checks address formatting locally; no website is contacted.</p>
+      <p className={styles.screenReader} id="ryze-website-note">This preview checks address formatting locally, then opens the official Ryze scan page. It does not run an audit here.</p>
       <noscript>
-        <a className={styles.staticStart} href="https://reports.get-ryze.ai/o/all">Check for free</a>
+        <a className={styles.staticStart} href={auditUrl}>Check for free</a>
       </noscript>
 
     </section>

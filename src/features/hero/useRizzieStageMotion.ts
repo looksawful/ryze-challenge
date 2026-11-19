@@ -58,15 +58,15 @@ export function useRizzieStageMotion(zoneRef: RefObject<HTMLDivElement | null>) 
       const cookie = openNotice();
       if (cookie && !focused) {
         arrived = false;
-        // Only reposition if the cookie geometry changed, not on every DOM mutation.
+        // Recalculate against the live cookie rect, including during scroll and sticky movement.
         const origin = position();
         const x = Math.max(12, Math.min(innerWidth - origin.width - 12,
           cookie.right - origin.width * .75)) - origin.left;
-        const y = Math.max(12, cookie.top - origin.height + 14) - origin.top;
+        const y = cookie.top - origin.height + 14 - origin.top;
         gsap.set(zone, { x, y });
         perched = true;
+        if (!perched) signal("idle");
         zone.dataset.ryzePlacement = "cookies";
-        signal("idle");
         return;
       }
       if (arrived) return;
@@ -108,6 +108,10 @@ export function useRizzieStageMotion(zoneRef: RefObject<HTMLDivElement | null>) 
     window.addEventListener("ryze:hero-reveal", onReveal);
     window.addEventListener("ryze:cookie-preferences-changed", schedule);
     window.addEventListener("resize", schedule, { passive: true });
+    // Cookie notice can be in normal flow or fixed while the Hero slot scrolls.
+    window.addEventListener("scroll", schedule, { passive: true, capture: true });
+    window.visualViewport?.addEventListener("scroll", schedule, { passive: true });
+    window.visualViewport?.addEventListener("resize", schedule, { passive: true });
     desktop.addEventListener("change", schedule);
     reduced.addEventListener("change", schedule);
     const observer = new MutationObserver(schedule);
@@ -129,6 +133,9 @@ export function useRizzieStageMotion(zoneRef: RefObject<HTMLDivElement | null>) 
       window.removeEventListener("ryze:hero-reveal", onReveal);
       window.removeEventListener("ryze:cookie-preferences-changed", schedule);
       window.removeEventListener("resize", schedule);
+      window.removeEventListener("scroll", schedule, true);
+      window.visualViewport?.removeEventListener("scroll", schedule);
+      window.visualViewport?.removeEventListener("resize", schedule);
       desktop.removeEventListener("change", schedule);
       reduced.removeEventListener("change", schedule);
     };

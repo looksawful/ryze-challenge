@@ -138,7 +138,7 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
     await evalJs('document.querySelector("#ryze-preview-website").focus()');
     await cdp("Input.insertText",{text:"example.com"});
     await evalJs('document.querySelector("#hero-conversation form").requestSubmit()');
-    await until(()=>evalJs('document.querySelector("[data-ai-reply=ready]")?.textContent?.includes("Got it")'),"chat reply after valid address");
+    await until(()=>evalJs('document.querySelector("[data-ai-reply=ready]")?.textContent?.includes("Preparing your audit on Ryze")'),"chat reply after valid address");
     const chat=JSON.parse(await evalJs(`JSON.stringify((()=>{
       const root=document.querySelector('#hero-conversation');
       return {
@@ -149,8 +149,8 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
       };
     })())`));
     assert.equal(chat.user,"example.com");
-    assert.ok(chat.assistant?.includes("Got it") && !/analyzing|scanned|report ready/i.test(chat.assistant));
-    assert.equal(chat.imageCount,0);
+    assert.ok(chat.assistant?.includes("Preparing your audit on Ryze") && !/scanned|report ready/i.test(chat.assistant));
+    assert.equal(chat.imageCount,1,"logo loading indicator appears");
     assert.equal(chat.proofCount,0);
     const geometry=JSON.parse(await evalJs(`JSON.stringify((()=>{
       const root=document.querySelector('#hero-conversation');
@@ -233,9 +233,9 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
       };
     })())`));
     assert.equal(during.sent,"example.com");
-    assert.ok(during.complete.includes("Got it, example.com"));
+    assert.ok(during.complete.includes("Preparing your audit on Ryze"));
     assert.ok(during.typed.length<during.complete.length,"reply must visibly type, not appear fully");
-    assert.equal(during.images,0);
+    assert.equal(during.images,1,"real Ryze logo displays during handoff");
     await until(()=>evalJs('document.querySelector("[data-chat-text]")?.dataset.chatTyping==="false"'),"chat typed to completion",10000);
     assert.equal(await evalJs('document.querySelector("[data-chat-text]")?.textContent?.trim()'),
       during.complete);
@@ -281,6 +281,40 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
     await evalJs("document.querySelector('aside[data-settings] form').requestSubmit()");
     await until(()=>evalJs("!document.querySelector('aside[data-settings]')"),"saved cookie settings");
     await evalJs("localStorage.removeItem('ryze-cookie-preferences')");
+  });
+  await t.test("mascot stays tethered to cookie notice while scrolling on desktop",async()=>{
+    await cdp("Emulation.setDeviceMetricsOverride",{width:1440,height:900,deviceScaleFactor:1,mobile:false});
+    await cdp("Emulation.setEmulatedMedia",{media:"screen",features:[{name:"prefers-reduced-motion",value:"no-preference"}]});
+    await cdp("Emulation.setScriptExecutionDisabled",{value:false});
+    await cdp("Page.navigate",{url});
+    await until(()=>evalJs('document.querySelector("[data-intro]")?.dataset.intro==="ready"'),"Hero ready for mascot tether",12000);
+    await until(()=>evalJs('document.querySelector("[data-motion-slot=mascot]")?.dataset.ryzePlacement==="cookies"'),"mascot perched at cookies",6000);
+    const measure=async()=>JSON.parse(await evalJs("JSON.stringify((()=>{const pet=document.querySelector('[aria-label=\"Rizzie: Book a call\"]').getBoundingClientRect();const cookie=document.querySelector('[data-motion-slot=\"cookies\"] aside').getBoundingClientRect();return {gap:cookie.top-pet.bottom,petWidth:pet.width,cookieTop:cookie.top,scrollable:document.documentElement.scrollHeight-innerHeight};})())"));
+    const first=await measure();
+    assert.ok(first.petWidth>=170&&first.petWidth<=230,"mascot uses desktop min/max sizes");
+    assert.ok(first.scrollable>100,"page must scroll to reproduce tether bug");
+    await evalJs("window.scrollTo({top: Math.min(300, document.documentElement.scrollHeight-innerHeight), behavior:'instant'})");
+    await sleep(180);
+    const second=await measure();
+    assert.ok(Math.abs(second.gap-first.gap)<4,
+      "mascot detached from cookies when scrolling: "+JSON.stringify({first,second}));
+    await evalJs("window.scrollTo({top: document.documentElement.scrollHeight-innerHeight, behavior:'instant'})");
+    await sleep(180);
+    const bottom=await measure();
+    assert.ok(Math.abs(bottom.gap-first.gap)<4,
+      "mascot detached at the footer: "+JSON.stringify({first,bottom}));
+    const visible=JSON.parse(await evalJs("JSON.stringify((()=>{const pet=document.querySelector('[aria-label=\"Rizzie: Book a call\"]'),rect=pet.getBoundingClientRect(),hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height*.25);return {top:rect.top,bottom:rect.bottom,hit:!!hit&&(hit===pet||pet.contains(hit)),topmost:hit?.tagName};})())"));
+    assert.ok(visible.hit,"mascot is occluded near the footer: "+JSON.stringify(visible));
+  });
+  await t.test("valid domain shows spinning logo and navigates to the real Ryze scan",async()=>{
+    await load(390,844);
+    await evalJs('document.querySelector("#ryze-preview-website").focus()');
+    await cdp("Input.insertText",{text:"example.com"});
+    await evalJs('document.querySelector("#hero-conversation form").requestSubmit()');
+    await until(()=>evalJs('!!document.querySelector("[data-audit-loader]")'),"audit logo loader",2000);
+    const pending=JSON.parse(await evalJs("JSON.stringify((()=>{const loader=document.querySelector('[data-audit-loader]');return {aria:document.querySelector('[role=\"status\"]')?.textContent?.trim(),logo:!!loader.querySelector('img'),disabled:document.querySelector('#hero-conversation form button').disabled};})())"));
+    assert.ok(pending.logo&&pending.disabled&&pending.aria?.includes("Preparing your audit on Ryze"),"wrong handoff state: "+JSON.stringify(pending));
+    await until(()=>evalJs("location.hostname==='reports.get-ryze.ai' && location.pathname==='/scan'"),"redirect to official Ryze scan",8500);
   });
   await t.test("no JavaScript still exposes a working CTA and navigation",async()=>{
     await load(390,844,false);
