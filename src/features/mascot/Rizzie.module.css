@@ -17,6 +17,11 @@
     );
   }
 
+  /* Desktop-only optical increase with a bounded minimum and maximum. */
+  @media (min-width: 1200px) {
+    .zone { --rizzie-art-size: clamp(11rem, 10.8vw, 13.75rem); }
+  }
+
   .pet {
     --walk-x: 8px;
     position: absolute;

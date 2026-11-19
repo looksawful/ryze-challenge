@@ -98,6 +98,12 @@
     pointer-events: none;
     z-index: 3;
   }
+  @media (min-width: 1200px) {
+    .mascot {
+      inline-size: min(100%, 14.5rem);
+      block-size: clamp(12rem, 20svh, 15rem);
+    }
+  }
   .mascot > section { inline-size: 100%; block-size: 100%; margin: 0; }
   .mascot:empty { display: none; }
   .action {
