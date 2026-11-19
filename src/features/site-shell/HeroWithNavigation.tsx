@@ -29,7 +29,7 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
     let gsapReady: typeof import("gsap")["gsap"] | null = null;
     let motionContext: ReturnType<(typeof import("gsap"))["gsap"]["context"]> | null = null;
     let entrance: ReturnType<typeof createHeroEntranceTimeline> | null = null;
-    // Preload GSAP during the particle convergence; avoid a second load at reveal.
+    // Preload GSAP while the original paper cutouts assemble and disperse.
     void import("gsap").then(({ gsap }) => {
       if (alive) gsapReady = gsap;
     }).catch(() => { /* CSS entrance remains fully functional. */ });
@@ -75,7 +75,7 @@ export function HeroWithNavigation({ theme = "dusk" }: HeroWithNavigationProps) 
         'iframe[title="Ryze motion canvas"]'
       );
       if (event.origin !== window.location.origin || event.source !== frame?.contentWindow) return;
-      // The particle mark must finish before the Hero text timeline.
+      // Show Hero only after paper cutouts assemble and blow offscreen.
       if (event.data?.type === "ryze:intro-complete") beginReveal();
     };
     const onPreferenceChange = () => {

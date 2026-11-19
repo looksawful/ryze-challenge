@@ -22,7 +22,7 @@ export function HeroMotionBackground() {
     <div className={styles.motionBackdrop} aria-hidden="true">
       <iframe
         title="Ryze motion canvas"
-        src={basePath + "/ryze-canvas/particle-intro.html"}
+        src={basePath + "/ryze-canvas/index.html"}
         tabIndex={-1}
         loading="eager"
         className={styles.motionFrame}

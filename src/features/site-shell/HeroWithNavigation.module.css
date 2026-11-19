@@ -37,7 +37,7 @@
     z-index: 40;
   }
 
-  /* Particle intro, then the existing GSAP text/CTA/navigation entrance. */
+  /* Paper intro, then the staggered GSAP text/CTA/navigation entrance. */
   .stage[data-intro="playing"] > :global(main),
   .stage[data-intro="playing"] .navigation {
     visibility: hidden;

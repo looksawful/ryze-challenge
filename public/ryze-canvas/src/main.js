@@ -75,7 +75,7 @@ function drawMelt(){
 }
 // Scale the 3D Ryze mark within the full-viewport plane; keep its world origin unchanged.
 const logoUnitPixels=()=>{
- const logoPixels = Math.min(116, Math.max(88, Math.min(frame.clientWidth,frame.clientHeight)*.18));
+ const logoPixels = Math.min(240, Math.max(144, Math.min(frame.clientWidth,frame.clientHeight)*.31));
  const density = logoCanvas.width / Math.max(1,frame.clientWidth);
  return logoPixels * density / 40;
 };
@@ -245,7 +245,7 @@ if(renderer){
  const plane=new THREE.PlaneGeometry(1,1);
  let W=1,H=1,minDim=1,cameraDistance=1;
  let running=true,raf=0,orbitStarted=false,orbitFinished=!SHOW_MEDIA_CARDS,timeline,orbitCycle=0;
- let windFadeComplete=false,introEventSent=false,windFadeTween;
+ let windFadeComplete=false,introEventSent=false;
  const logoIntro={progress:0};
  const STORAGE_KEY='ryze-motionpath-cinematic-6-v3';
  const defaults={fov:CAMERA_FOV,yaw:0,pitch:0,roll:0,tx:0,ty:0,tz:0,logoYaw:0,logoPitch:0,logoZ:0,paused:false};
@@ -435,6 +435,7 @@ if(renderer){
  function frameRender(){
   raf=0;
   if(!running)return;
+  logo.rotation.z=-THREE.MathUtils.degToRad(Number(frame.dataset.logoRotation||0));
   drawLogo();
   for(const c of cards)if(c.active)positionCard(c);
   renderer.render(scene,camera);
@@ -469,28 +470,12 @@ if(renderer){
   }
  });
  frame.addEventListener('ryze:wind-start',()=>{
-  windFadeTween?.kill();
   windFadeComplete=false;
   logo.visible=true;
   logo.material.opacity=1;
-  const fade={value:1};
-  // Fade begins with the wind, not when the pieces finish moving.
-  windFadeTween=gsap.to(fade,{
-   value:0,duration:1.78,ease:'power2.in',
-   onUpdate:()=>{
-    logo.material.opacity=fade.value;
-    running=true;render();
-   },
-   onComplete:()=>{
-    windFadeComplete=true;
-    logo.visible=false;
-    announceIntroComplete();
-    running=true;render();
-   }
-  });
+  running=true;render();
  });
  frame.addEventListener('ryze:blown',()=>{
-  windFadeTween?.kill();
   windFadeComplete=true;
   logo.visible=false;
   announceIntroComplete();
@@ -531,7 +516,6 @@ if(renderer){
   orbitFinished=true;running=true;render();
  });
  window.addEventListener('pagehide',()=>{
-  windFadeTween?.kill();
   videoElements.forEach(v=>v.pause());
  });
  resize();
