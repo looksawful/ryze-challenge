@@ -23,3 +23,6 @@ One `CONTEXT.md` and root `docs/adr/`. See `docs/agents/domain.md`.
 
 ### Current scope
 Read `docs/spec/hero.md`, `docs/spec/visual-system.md` and `docs/spec/component-inventory.md` before implementing visible UI. Unresolved component details are in `docs/spec/open-questions.md`. For public product vocabulary, use `docs/agents/business-context.md` and verify claims against its linked sources; do not copy unsupported claims.
+
+### English content review
+For manual English copy editing, drafting or fact-checking, consult `docs/agents/content-review.md` and its linked `.agents/skills/` files. Advisory/report-only by default; no automatic copy replacement or new CI/Pages gate.
