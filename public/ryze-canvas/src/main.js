@@ -1,4 +1,5 @@
 import * as THREE from '../vendor/three/three.module.js';
+import { createPaperShards } from './paper-shards.mjs';
 import { orbitAt, perspectiveScale, SHOW_MEDIA_CARDS, CARD_COUNT, CARD_ASPECT, ORBIT_DURATION, CARD_STAGGER, CAMERA_FOV, CARD_WORLD_RATIO } from './orbit.js';
 import { cardMedia, coverUV } from './media.js';
 
@@ -75,7 +76,7 @@ function drawMelt(){
 }
 // Scale the 3D Ryze mark within the full-viewport plane; keep its world origin unchanged.
 const logoUnitPixels=()=>{
- const logoPixels = Math.min(116, Math.max(88, Math.min(frame.clientWidth,frame.clientHeight)*.18));
+ const logoPixels = Math.min(240, Math.max(144, Math.min(frame.clientWidth,frame.clientHeight)*.31));
  const density = logoCanvas.width / Math.max(1,frame.clientWidth);
  return logoPixels * density / 40;
 };
@@ -123,6 +124,7 @@ if(renderer){
   map:logoTexture,transparent:true,opacity:1,alphaTest:.018,alphaToCoverage:true,
   depthTest:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}));
  logo.position.z=0;logo.name='Original SVG logo on 3D plane';scene.add(logo);
+ const paperShards=createPaperShards(scene,logoShape);
  const helpers=new THREE.Group();
  helpers.name='Perspective and orbit helpers';
  scene.add(helpers);
@@ -245,7 +247,7 @@ if(renderer){
  const plane=new THREE.PlaneGeometry(1,1);
  let W=1,H=1,minDim=1,cameraDistance=1;
  let running=true,raf=0,orbitStarted=false,orbitFinished=!SHOW_MEDIA_CARDS,timeline,orbitCycle=0;
- let windFadeComplete=false,introEventSent=false,windFadeTween;
+ let windFadeComplete=false,introEventSent=false;
  const logoIntro={progress:0};
  const STORAGE_KEY='ryze-motionpath-cinematic-6-v3';
  const defaults={fov:CAMERA_FOV,yaw:0,pitch:0,roll:0,tx:0,ty:0,tz:0,logoYaw:0,logoPitch:0,logoZ:0,paused:false};
@@ -404,6 +406,7 @@ if(renderer){
   logoCanvas.width=Math.max(1,Math.round(W*density));
   logoCanvas.height=Math.max(1,Math.round(H*density));
   logo.scale.set(W,H,1);
+  paperShards.resize(W,H,renderer.getPixelRatio(),cameraDistance);
   // Helpers share the SAME camera and orbit math as the real cards.
   const gridSize=minDim*2.4;
   for(const [grid,z] of [[farGrid,-cameraDistance*.8],[logoGrid,0],[nearGrid,cameraDistance*.45]]){
@@ -435,11 +438,14 @@ if(renderer){
  function frameRender(){
   raf=0;
   if(!running)return;
+  const rotation=Number(frame.dataset.logoRotation||0);
+  logo.rotation.z=-THREE.MathUtils.degToRad(rotation);
+  paperShards.update(Number(frame.dataset.assemblyProgress||0),Number(frame.dataset.windProgress||0),rotation);
   drawLogo();
   for(const c of cards)if(c.active)positionCard(c);
   renderer.render(scene,camera);
   window.__ryze3d={status:'webgl',sceneState:frame.dataset.state,
-   originalPieces:pieces.length,cardCount:cards.length,videoCount:videoElements.length,orbitCycle,
+   originalPieces:pieces.length,paperShards:paperShards.count,cardCount:cards.length,videoCount:videoElements.length,orbitCycle,
    videos:videoElements.map(v=>({readyState:v.readyState,paused:v.paused,time:v.currentTime})),orbitStarted,orbitFinished,
    cameraZ:cameraDistance,intro:{windFadeComplete,orbitFinished,introEventSent,logoScale:1-logoIntro.progress},cards:cards.map(c=>({
     index:c.index,progress:c.progress,x:c.mesh.position.x,y:c.mesh.position.y,
@@ -469,28 +475,12 @@ if(renderer){
   }
  });
  frame.addEventListener('ryze:wind-start',()=>{
-  windFadeTween?.kill();
   windFadeComplete=false;
   logo.visible=true;
   logo.material.opacity=1;
-  const fade={value:1};
-  // Fade begins with the wind, not when the pieces finish moving.
-  windFadeTween=gsap.to(fade,{
-   value:0,duration:1.78,ease:'power2.in',
-   onUpdate:()=>{
-    logo.material.opacity=fade.value;
-    running=true;render();
-   },
-   onComplete:()=>{
-    windFadeComplete=true;
-    logo.visible=false;
-    announceIntroComplete();
-    running=true;render();
-   }
-  });
+  running=true;render();
  });
  frame.addEventListener('ryze:blown',()=>{
-  windFadeTween?.kill();
   windFadeComplete=true;
   logo.visible=false;
   announceIntroComplete();
@@ -531,8 +521,8 @@ if(renderer){
   orbitFinished=true;running=true;render();
  });
  window.addEventListener('pagehide',()=>{
-  windFadeTween?.kill();
   videoElements.forEach(v=>v.pause());
+  paperShards.dispose();
  });
  resize();
  apply();

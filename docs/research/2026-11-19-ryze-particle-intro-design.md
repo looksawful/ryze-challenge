@@ -1,4 +1,6 @@
 # Ryze brand intro: wide-field particle convergence
+
+**SUPERSEDED 2026-11-19:** The user clarified that the moving particles must remain the *original paper-cut polygons* and retain their assemble-then-wind-away logic. Do not implement the point-cloud engine proposed below. Current implemented specification, validation and release: [cut-paper intro report](../reports/2026-11-19-ryze-cut-paper-intro.md).
 Date: 2026-11-19 · Scope: research and implementation planning only · Tracker: [#89](https://github.com/looksawful/ryze-challenge/issues/89)
 
 ## Observed source-of-truth (dev)

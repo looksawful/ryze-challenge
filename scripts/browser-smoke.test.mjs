@@ -11,7 +11,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 const output=resolve("out");
 const chromePath=[process.env.CHROME_PATH,"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"].find(p=>p&&existsSync(p));
-const mime={".html":"text/html",".js":"text/javascript",".css":"text/css",".svg":"image/svg+xml",
+const mime={".html":"text/html",".js":"text/javascript",".mjs":"text/javascript",".css":"text/css",".svg":"image/svg+xml",
   ".png":"image/png",".webp":"image/webp",".mp4":"video/mp4",".woff2":"font/woff2",".ttf":"font/ttf"};
 async function until(fn,label,timeout=10000){
   const end=Date.now()+timeout;
@@ -207,7 +207,12 @@ test("exported page: actual browser contracts", {timeout:120000},async t=>{
     await cdp("Emulation.setScriptExecutionDisabled",{value:false});
     await cdp("Page.navigate",{url});
     await until(()=>evalJs(`document.querySelector('iframe[title="Ryze motion canvas"]')?.contentDocument?.querySelectorAll('.mover').length===118`),"118 paper fragments",7000);
-    await until(()=>evalJs("document.querySelector('[data-intro]')?.dataset.intro==='ready'"),"full-motion completion",10000);
+    await until(()=>evalJs(`document.querySelector('iframe[title="Ryze motion canvas"]')?.contentWindow?.__ryze3d?.paperShards>=950`),"micro-paper shards visible in WebGL",7000);
+    await until(()=>evalJs(`document.querySelector('iframe[title="Ryze motion canvas"]')?.contentDocument?.getElementById('frame')?.dataset.state==='blowing'`),"cut-paper wind begins",10000);
+    const wind=JSON.parse(await evalJs(`JSON.stringify((()=>{const f=document.querySelector('iframe[title="Ryze motion canvas"]').contentDocument;return {angle:Number(f.getElementById('frame').dataset.logoRotation),opacity:f.querySelector('.mover').style.opacity}})())`));
+    assert.equal(wind.angle,0,"the assembled mark must return from -45 degrees to 0");
+    assert.equal(wind.opacity,"1","paper fragments must blow away without fading");
+    await until(()=>evalJs("document.querySelector('[data-intro]')?.dataset.intro==='ready'"),"full-motion completion",12000);
     await sleep(900);
     const state=JSON.parse(await evalJs(`JSON.stringify({intro:document.querySelector('[data-intro]')?.dataset.intro,paper:document.querySelector('iframe[title="Ryze motion canvas"]')?.contentDocument?.getElementById('frame')?.dataset.state})`));
     assert.deepEqual(state,{intro:"ready",paper:"blown"},"intro restarted after completion");
